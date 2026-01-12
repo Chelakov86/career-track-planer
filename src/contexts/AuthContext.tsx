@@ -1,118 +1,95 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
-
-// Add type definition for window.google
-declare global {
-  interface Window {
-    google?: any;
-  }
-}
+import { supabase } from '../lib/supabase';
 
 interface AuthContextType {
   user: User | null;
-  login: () => Promise<void>;
-  logout: () => void;
+  loginWithGoogle: () => Promise<void>;
+  loginWithEmail: (email: string) => Promise<void>;
+  logout: () => Promise<void>;
   isLoading: boolean;
-  isRealAuthAvailable: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helper to decode JWT from Google
-const decodeJwt = (token: string) => {
-  try {
-    const base64Url = token.split('.')[1];
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
-    return JSON.parse(jsonPayload);
-  } catch (e) {
-    console.error("Failed to decode JWT", e);
-    return null;
-  }
-};
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
-  // Check if we have a real Client ID provided in environment
-  const CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-  const isRealAuthAvailable = !!CLIENT_ID;
 
   useEffect(() => {
-    // Check local storage for existing session
-    const storedUser = localStorage.getItem('career_track_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        setUser(mapSupabaseUserToUser(session.user));
+      }
+      setIsLoading(false);
+    });
+
+    // Listen for changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        setUser(mapSupabaseUserToUser(session.user));
+      } else {
+        setUser(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  // Initialize Google Sign-In if available
-  useEffect(() => {
-    if (!isRealAuthAvailable) return;
-
-    const initializeGoogleAuth = () => {
-      if (window.google && window.google.accounts) {
-        window.google.accounts.id.initialize({
-          client_id: CLIENT_ID,
-          callback: handleCredentialResponse,
-          auto_select: false // Don't auto-select to give user choice
-        });
-      } else {
-        // Retry if script hasn't loaded
-        setTimeout(initializeGoogleAuth, 100);
-      }
+  const mapSupabaseUserToUser = (supabaseUser: any): User => {
+    return {
+      id: supabaseUser.id,
+      name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+      email: supabaseUser.email || '',
+      avatar: supabaseUser.user_metadata?.avatar_url || supabaseUser.user_metadata?.picture || `https://api.dicebear.com/7.x/avataaars/svg?seed=${supabaseUser.id}`
     };
+  };
 
-    initializeGoogleAuth();
-  }, [isRealAuthAvailable, CLIENT_ID]);
-
-  const handleCredentialResponse = (response: any) => {
-    const payload = decodeJwt(response.credential);
-    if (payload) {
-      const newUser: User = {
-        id: payload.sub,
-        name: payload.name,
-        email: payload.email,
-        avatar: payload.picture
-      };
-      
-      setUser(newUser);
-      localStorage.setItem('career_track_user', JSON.stringify(newUser));
+  const loginWithGoogle = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error logging in with Google:", error);
+      throw error;
     }
   };
 
-  const login = async () => {
-    // This is the Mock Login fallback
-    setIsLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const mockUser: User = {
-      id: 'mock_user_' + Math.floor(Math.random() * 10000),
-      name: 'Demo User',
-      email: 'demo@example.com',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Demo'
-    };
-    
-    setUser(mockUser);
-    localStorage.setItem('career_track_user', JSON.stringify(mockUser));
-    setIsLoading(false);
+  const loginWithEmail = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error sending magic link:", error);
+      throw error;
+    }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem('career_track_user');
-    // If real auth, we might want to disable auto-select on next load
-    if (isRealAuthAvailable && window.google) {
-      window.google.accounts.id.disableAutoSelect();
-    }
+    localStorage.removeItem('career_track_jobs');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading, isRealAuthAvailable }}>
+    <AuthContext.Provider value={{ user, loginWithGoogle, loginWithEmail, logout, isLoading }}>
       {children}
     </AuthContext.Provider>
   );
