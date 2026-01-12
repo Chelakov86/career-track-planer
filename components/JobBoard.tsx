@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { JobApplication, ApplicationStatus, RoleFocus, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { Plus, Trash2, ExternalLink, Filter, ChevronRight, MapPin, DollarSign, Search, Pencil, X, Download } from 'lucide-react';
@@ -18,9 +18,14 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<Partial<JobApplication>>({});
   
-  // Drag and Drop State
+  // Drag and Drop State (Mouse & Touch)
   const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
+  
+  // Touch specific state
+  const [isTouchDragging, setIsTouchDragging] = useState(false);
+  const [touchPos, setTouchPos] = useState<{x: number, y: number} | null>(null);
+  const dragItemTimer = useRef<any>(null);
 
   const t = TRANSLATIONS[language];
   const columns = Object.values(ApplicationStatus);
@@ -81,9 +86,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   };
 
   const handleExportCSV = () => {
-    // BOM for Excel to recognize UTF-8
     const BOM = "\uFEFF"; 
-    
     const headers = [
       t.board.placeholders.company,
       t.board.placeholders.position,
@@ -127,7 +130,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     document.body.removeChild(link);
   };
 
-  // Drag and Drop Handlers
+  // --- Mouse Drag Handlers ---
   const handleDragStart = (e: React.DragEvent, jobId: string) => {
     setDraggedItemId(jobId);
     e.dataTransfer.setData('jobId', jobId);
@@ -140,7 +143,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   };
 
   const handleDragOver = (e: React.DragEvent, status: ApplicationStatus) => {
-    e.preventDefault(); // Necessary to allow dropping
+    e.preventDefault(); 
     if (dragOverColumn !== status) {
       setDragOverColumn(status);
     }
@@ -149,10 +152,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const handleDragLeave = (e: React.DragEvent) => {
     const currentTarget = e.currentTarget;
     const relatedTarget = e.relatedTarget as Node;
-    
-    // Only clear if we actually left the container, not just entered a child
     if (currentTarget.contains(relatedTarget)) return;
-
     setDragOverColumn(null);
   };
 
@@ -161,13 +161,77 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     setDragOverColumn(null);
     setDraggedItemId(null);
     const jobId = e.dataTransfer.getData('jobId');
-    
     if (jobId) {
       const job = jobs.find(j => j.id === jobId);
-      // Only update if status actually changed
       if (job && job.status !== status) {
         onUpdateStatus(jobId, status);
       }
+    }
+  };
+
+  // --- Touch Drag Handlers ---
+  const handleTouchStart = (e: React.TouchEvent, job: JobApplication) => {
+    const touch = e.touches[0];
+    const x = touch.clientX;
+    const y = touch.clientY;
+
+    // Start a timer for long press
+    dragItemTimer.current = setTimeout(() => {
+      setDraggedItemId(job.id);
+      setIsTouchDragging(true);
+      setTouchPos({ x, y });
+      document.body.style.overflow = 'hidden'; // Lock scroll
+      // Try to vibrate for feedback
+      if (navigator.vibrate) navigator.vibrate(50);
+    }, 300); // 300ms long press to activate drag
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isTouchDragging) {
+      // If we move before the timer fires, it's a scroll, not a drag. Cancel timer.
+      if (dragItemTimer.current) {
+        clearTimeout(dragItemTimer.current);
+        dragItemTimer.current = null;
+      }
+      return;
+    }
+
+    // If dragging, prevent default processing (scrolling)
+    if (e.cancelable) e.preventDefault();
+
+    const touch = e.touches[0];
+    setTouchPos({ x: touch.clientX, y: touch.clientY });
+
+    // Identify which column is under the finger
+    // We must hide the ghost pointer events so we can see through it
+    const element = document.elementFromPoint(touch.clientX, touch.clientY);
+    const column = element?.closest('[data-column-id]');
+    
+    if (column) {
+      const status = column.getAttribute('data-column-id') as ApplicationStatus;
+      if (dragOverColumn !== status) setDragOverColumn(status);
+    } else {
+      setDragOverColumn(null);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    // Clear timer if it's pending
+    if (dragItemTimer.current) {
+      clearTimeout(dragItemTimer.current);
+      dragItemTimer.current = null;
+    }
+
+    if (isTouchDragging) {
+      if (draggedItemId && dragOverColumn) {
+        onUpdateStatus(draggedItemId, dragOverColumn);
+      }
+      // Reset
+      document.body.style.overflow = '';
+      setIsTouchDragging(false);
+      setTouchPos(null);
+      setDraggedItemId(null);
+      setDragOverColumn(null);
     }
   };
 
@@ -179,9 +243,102 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
   const filteredJobs = jobs.filter(j => filter === 'All' || j.roleType === filter);
 
+  // Reusable Card Component
+  const JobCardItem = ({ job, isGhost = false }: { job: JobApplication, isGhost?: boolean }) => (
+    <div 
+      className={`bg-white p-3 rounded-lg border border-gray-200 shadow-sm transition-all relative ${
+          isGhost ? 'shadow-2xl ring-2 ring-indigo-500 rotate-3 z-50 opacity-90' : 
+          draggedItemId === job.id && !isGhost ? 'opacity-30 grayscale' : 
+          'hover:shadow-md hover:-translate-y-0.5'
+        } ${!isGhost ? 'cursor-grab active:cursor-grabbing group' : ''}`}
+      draggable={!isGhost}
+      onDragStart={(e) => !isGhost && handleDragStart(e, job.id)}
+      onDragEnd={!isGhost ? handleDragEnd : undefined}
+      
+      // Touch Events
+      onTouchStart={(e) => !isGhost && handleTouchStart(e, job)}
+      onTouchMove={!isGhost ? handleTouchMove : undefined}
+      onTouchEnd={!isGhost ? handleTouchEnd : undefined}
+    >
+      <div className="flex justify-between items-start mb-2">
+        <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${
+          job.roleType === 'PM' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-purple-50 text-purple-700 border-purple-100'
+        }`}>
+          {job.roleType}
+        </span>
+        {!isGhost && (
+          <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button 
+              onClick={() => openEditModal(job)}
+              className="text-gray-400 hover:text-indigo-600 p-1 hover:bg-gray-50 rounded"
+              title={t.board.editJob}
+            >
+              <Pencil className="w-3.5 h-3.5" />
+            </button>
+            <button 
+              onClick={() => setDeleteId(job.id)}
+              className="text-gray-400 hover:text-red-500 p-1 hover:bg-gray-50 rounded"
+              title="Delete"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+      </div>
+      
+      <h4 className="font-semibold text-gray-800 text-sm truncate pr-4">{job.position}</h4>
+      <p className="text-gray-500 text-xs mb-2 font-medium">{job.company}</p>
+      
+      <div className="flex flex-col gap-1 mb-3">
+         <div className="flex items-center gap-1 text-gray-400 text-xs">
+           <MapPin className="w-3 h-3" /> {job.location}
+         </div>
+         {job.salary && (
+           <div className="flex items-center gap-1 text-gray-400 text-xs">
+             <DollarSign className="w-3 h-3" /> {job.salary}
+           </div>
+         )}
+      </div>
+
+      <div className="flex justify-between items-center pt-2 border-t border-gray-50">
+        <span className="text-[10px] text-gray-400">{job.lastUpdated}</span>
+        
+        {!isGhost && getNextStatus(job.status) && (
+          <button 
+            onClick={() => onUpdateStatus(job.id, getNextStatus(job.status)!)}
+            className="p-1 rounded-full hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 transition-colors"
+            title={`-> ${t.board.status[getNextStatus(job.status)!]}`}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col relative">
       
+      {/* Ghost Element for Touch Drag */}
+      {isTouchDragging && touchPos && draggedItemId && (
+        <div 
+          style={{ 
+            position: 'fixed', 
+            left: touchPos.x, 
+            top: touchPos.y, 
+            width: '280px', 
+            pointerEvents: 'none', 
+            zIndex: 9999,
+            transform: 'translate(-50%, -50%)' 
+          }}
+        >
+          {(() => {
+            const job = jobs.find(j => j.id === draggedItemId);
+            return job ? <JobCardItem job={job} isGhost={true} /> : null;
+          })()}
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {deleteId && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
@@ -386,6 +543,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           {columns.map(status => (
             <div 
               key={status} 
+              data-column-id={status}
               onDragOver={(e) => handleDragOver(e, status)}
               onDrop={(e) => handleDrop(e, status)}
               onDragLeave={handleDragLeave}
@@ -408,69 +566,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               
               <div className="p-2 space-y-3 overflow-y-auto flex-1 custom-scrollbar">
                 {filteredJobs.filter(j => j.status === status).map(job => (
-                  <div 
-                    key={job.id} 
-                    draggable
-                    onDragStart={(e) => handleDragStart(e, job.id)}
-                    onDragEnd={handleDragEnd}
-                    className={`bg-white p-3 rounded-lg border border-gray-200 shadow-sm transition-all cursor-grab active:cursor-grabbing group relative ${
-                        draggedItemId === job.id 
-                          ? 'opacity-40 ring-2 ring-indigo-400 rotate-2 scale-95 grayscale' 
-                          : 'hover:shadow-md hover:-translate-y-0.5'
-                      }`}
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${
-                        job.roleType === 'PM' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-purple-50 text-purple-700 border-purple-100'
-                      }`}>
-                        {job.roleType}
-                      </span>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button 
-                          onClick={() => openEditModal(job)}
-                          className="text-gray-400 hover:text-indigo-600 p-1 hover:bg-gray-50 rounded"
-                          title={t.board.editJob}
-                        >
-                          <Pencil className="w-3.5 h-3.5" />
-                        </button>
-                        <button 
-                          onClick={() => setDeleteId(job.id)}
-                          className="text-gray-400 hover:text-red-500 p-1 hover:bg-gray-50 rounded"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <h4 className="font-semibold text-gray-800 text-sm truncate pr-4">{job.position}</h4>
-                    <p className="text-gray-500 text-xs mb-2 font-medium">{job.company}</p>
-                    
-                    <div className="flex flex-col gap-1 mb-3">
-                       <div className="flex items-center gap-1 text-gray-400 text-xs">
-                         <MapPin className="w-3 h-3" /> {job.location}
-                       </div>
-                       {job.salary && (
-                         <div className="flex items-center gap-1 text-gray-400 text-xs">
-                           <DollarSign className="w-3 h-3" /> {job.salary}
-                         </div>
-                       )}
-                    </div>
-
-                    <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-                      <span className="text-[10px] text-gray-400">{job.lastUpdated}</span>
-                      
-                      {getNextStatus(job.status) && (
-                        <button 
-                          onClick={() => onUpdateStatus(job.id, getNextStatus(job.status)!)}
-                          className="p-1 rounded-full hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 transition-colors"
-                          title={`-> ${t.board.status[getNextStatus(job.status)!]}`}
-                        >
-                          <ChevronRight className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                   <JobCardItem key={job.id} job={job} />
                 ))}
                 {/* Visual Placeholder for drop zone */}
                 {dragOverColumn === status && (
