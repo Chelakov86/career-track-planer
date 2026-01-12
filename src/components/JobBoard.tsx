@@ -109,7 +109,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       // Edit existing
       onEditJob({
         ...data,
-        lastUpdated: new Date().toISOString().split('T')[0]
+        lastUpdated: new Date().toISOString().split('T')[0],
+        // Preserve link field - convert empty string to undefined for optional field
+        link: data.link && data.link.trim() ? data.link.trim() : undefined
       } as JobApplication);
     } else {
       // Create new
@@ -124,7 +126,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         lastUpdated: new Date().toISOString().split('T')[0],
         notes: data.notes || '',
         salary: data.salary,
-        link: data.link,
+        // Preserve link field - convert empty string to undefined for optional field
+        link: data.link && data.link.trim() ? data.link.trim() : undefined
       };
       onAddJob(job);
     }
@@ -358,6 +361,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       {/* Add/Edit Job Modal */}
       {showModal && (
         <JobModal
+          key={formData.id || 'new'} // Force remount when editing different job
           initialData={formData}
           language={language}
           onSave={handleSaveJob}

@@ -37,7 +37,8 @@ export const useJobs = (user: User | null) => {
                     lastUpdated: job.last_updated,
                     notes: job.notes,
                     salary: job.salary,
-                    link: job.link
+                    // Preserve link value - keep strings, convert null to undefined for consistency
+                    link: job.link != null ? job.link : undefined
                 }));
                 setJobs(mappedJobs);
             }

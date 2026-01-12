@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { X, ExternalLink } from 'lucide-react';
 import { JobApplication, ApplicationStatus, RoleFocus, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
@@ -16,18 +16,36 @@ export const JobModal: React.FC<JobModalProps> = ({
     onSave,
     onCancel
 }) => {
-    const [formData, setFormData] = useState<Partial<JobApplication>>(initialData);
+    // Initialize formData with proper handling of null/undefined link
+    const initializeFormData = (data: Partial<JobApplication>) => ({
+        ...data,
+        // Preserve string values, convert null/undefined to empty string for display
+        link: (data.link && typeof data.link === 'string') ? data.link : ''
+    });
+
+    const [formData, setFormData] = useState<Partial<JobApplication>>(() => initializeFormData(initialData));
+    const isInitialMount = useRef(true);
     const t = TRANSLATIONS[language];
     const columns = Object.values(ApplicationStatus);
 
+    // Update formData when initialData changes, but only on initial mount or when job ID changes
+    // This ensures fresh data is loaded after page reload while preventing resets during editing
     useEffect(() => {
-        // When initialData changes, update formData completely
-        // Explicitly include link field to ensure it's preserved (even if undefined/null)
-        setFormData({
-            ...initialData,
-            link: initialData.link !== undefined ? initialData.link : ''
-        });
-    }, [initialData]);
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            // Initial mount - formData already initialized via useState initializer
+            return;
+        }
+        
+        // If job ID changed, update formData (different job being edited)
+        // The key on JobModal handles remounting, but this is a safety net
+        const currentId = initialData.id;
+        const prevId = formData.id;
+        if (currentId !== prevId) {
+            setFormData(initializeFormData(initialData));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initialData.id]);
 
     const handleSave = () => {
         if (!formData.company || !formData.position) return;
