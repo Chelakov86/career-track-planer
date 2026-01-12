@@ -1,3 +1,4 @@
+
 export type RoleFocus = 'PM' | 'QA' | 'General';
 
 export type Language = 'en' | 'de';
@@ -9,6 +10,13 @@ export enum ApplicationStatus {
   INTERVIEW = 'INTERVIEW',
   OFFER = 'OFFER',
   REJECTED = 'REJECTED'
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
 }
 
 export interface JobApplication {

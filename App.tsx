@@ -2,37 +2,62 @@ import React, { useState, useEffect } from 'react';
 import { ScheduleView } from './components/ScheduleView';
 import { JobBoard } from './components/JobBoard';
 import { Dashboard } from './components/Dashboard';
+import { LoginPage } from './components/LoginPage';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { MOCK_JOBS, getSchedule, TRANSLATIONS } from './constants';
 import { ScheduleBlock, JobApplication, RoleFocus, ApplicationStatus, Language } from './types';
-import { Calendar, Layout, BarChart2, Briefcase, Menu, X, Settings, Globe } from 'lucide-react';
+import { Calendar, Layout, BarChart2, Briefcase, Menu, X, Settings, Globe, LogOut } from 'lucide-react';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
+  const { user, logout, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<'schedule' | 'board' | 'stats'>('schedule');
   const [language, setLanguage] = useState<Language>('de');
-  
-  // Use getSchedule to get the correct initial schedule based on language
-  // Note: changing language dynamically updates the view, but we keep schedule in state if user edits (not implemented yet), 
-  // for now we just switch the view based on lang.
-  
-  const [jobs, setJobs] = useState<JobApplication[]>(() => {
-    const saved = localStorage.getItem('career_track_jobs');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Basic recovery if stored data used old localized strings as Enum values
-      if (parsed.length > 0 && !Object.values(ApplicationStatus).includes(parsed[0].status)) {
-         return MOCK_JOBS;
-      }
-      return parsed;
-    }
-    return MOCK_JOBS;
-  });
-  
   const [userFocus, setUserFocus] = useState<RoleFocus>('PM');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const [jobs, setJobs] = useState<JobApplication[]>([]);
 
+  // Initialize data based on user login
   useEffect(() => {
-    localStorage.setItem('career_track_jobs', JSON.stringify(jobs));
-  }, [jobs]);
+    if (!user) {
+      setJobs([]); 
+      return;
+    }
+
+    const userKey = `career_track_jobs_${user.id}`;
+    const saved = localStorage.getItem(userKey);
+    
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setJobs(parsed);
+      } catch (e) {
+        setJobs(MOCK_JOBS);
+      }
+    } else {
+      // Data Migration: Check if there is "legacy" data (from before user management was added)
+      // If yes, copy it to the new user. If no, use Mock data.
+      const legacy = localStorage.getItem('career_track_jobs');
+      if (legacy) {
+        try {
+          const parsed = JSON.parse(legacy);
+          setJobs(parsed);
+          // Optional: clear legacy, or keep it as backup. Keeping it is safer.
+        } catch (e) {
+          setJobs(MOCK_JOBS);
+        }
+      } else {
+        setJobs(MOCK_JOBS);
+      }
+    }
+  }, [user]);
+
+  // Persist jobs when they change, scoped to user
+  useEffect(() => {
+    if (user && jobs.length > 0) {
+      localStorage.setItem(`career_track_jobs_${user.id}`, JSON.stringify(jobs));
+    }
+  }, [jobs, user]);
 
   const handleAddJob = (job: JobApplication) => {
     setJobs([...jobs, job]);
@@ -52,6 +77,18 @@ const App: React.FC = () => {
 
   const t = TRANSLATIONS[language];
   const currentSchedule = getSchedule(language);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginPage language={language} setLanguage={setLanguage} />;
+  }
 
   const NavItem = ({ id, label, icon: Icon }: { id: typeof activeTab, label: string, icon: any }) => (
     <button
@@ -93,7 +130,7 @@ const App: React.FC = () => {
 
       {/* Sidebar Navigation */}
       <aside className={`
-        fixed inset-y-0 left-0 z-10 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:h-screen
+        fixed inset-y-0 left-0 z-10 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:h-screen flex flex-col
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
         <div className="p-6 border-b border-gray-100 flex items-center gap-3">
@@ -104,14 +141,26 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-2 flex-1">
           <NavItem id="schedule" label={t.nav.schedule} icon={Calendar} />
           <NavItem id="board" label={t.nav.board} icon={Layout} />
           <NavItem id="stats" label={t.nav.stats} icon={BarChart2} />
         </nav>
 
-        <div className="absolute bottom-0 w-full p-4 space-y-4 border-t border-gray-100 bg-gray-50">
+        <div className="p-4 space-y-4 border-t border-gray-100 bg-gray-50">
           
+          {/* User Profile Section */}
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-white border border-gray-200 shadow-sm">
+             <img src={user.avatar} alt="User" className="w-8 h-8 rounded-full bg-gray-100" />
+             <div className="flex-1 min-w-0">
+               <p className="text-xs font-bold text-gray-800 truncate">{user.name}</p>
+               <p className="text-[10px] text-gray-500 truncate">{user.email}</p>
+             </div>
+             <button onClick={logout} className="text-gray-400 hover:text-red-500 transition-colors" title={t.nav.logout}>
+               <LogOut className="w-4 h-4" />
+             </button>
+          </div>
+
           {/* Language Switcher */}
           <div className="flex items-center justify-between px-2">
              <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
@@ -186,6 +235,14 @@ const App: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+const App: React.FC = () => {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 };
 

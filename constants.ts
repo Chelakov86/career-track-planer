@@ -1,13 +1,20 @@
-import { ScheduleBlock, ApplicationStatus, Language } from './types';
+import { ScheduleBlock, ApplicationStatus, Language, JobApplication } from './types';
 
 export const TRANSLATIONS = {
   en: {
+    login: {
+      title: "Welcome Back",
+      subtitle: "Sign in to continue your career journey.",
+      googleBtn: "Sign in with Google",
+      footer: "Protected by CareerTrack Security"
+    },
     nav: {
       schedule: "Daily Schedule",
       board: "Application Board",
       stats: "Analytics",
       subtitle: "Job Hunt Planner",
-      focus: "Focus Area"
+      focus: "Focus Area",
+      logout: "Log out"
     },
     schedule: {
       title: "Daily Routine",
@@ -74,12 +81,19 @@ export const TRANSLATIONS = {
     }
   },
   de: {
+    login: {
+      title: "Willkommen zurück",
+      subtitle: "Melde dich an, um deine Karriereplanung fortzusetzen.",
+      googleBtn: "Mit Google anmelden",
+      footer: "Geschützt durch CareerTrack Security"
+    },
     nav: {
       schedule: "Tagesplan",
       board: "Bewerbungen",
       stats: "Statistik",
       subtitle: "Jobsuche Planer",
-      focus: "Fokusbereich"
+      focus: "Fokusbereich",
+      logout: "Abmelden"
     },
     schedule: {
       title: "Tagesablauf",
@@ -240,7 +254,7 @@ const SCHEDULE_DE: ScheduleBlock[] = [
     description: 'LinkedIn Interaktion, Recruiter anschreiben, Bewerbungstracker aktualisieren.',
     category: 'Network',
     isFixed: false
-  }
+  },
 ];
 
 export const getSchedule = (lang: Language): ScheduleBlock[] => lang === 'de' ? SCHEDULE_DE : SCHEDULE_EN;
@@ -254,7 +268,7 @@ export const STATUS_COLORS: Record<ApplicationStatus, string> = {
   [ApplicationStatus.REJECTED]: 'bg-red-50 text-red-700 border-red-200',
 };
 
-export const MOCK_JOBS = [
+export const MOCK_JOBS: JobApplication[] = [
   {
     id: 'j1',
     company: 'TechCorp GmbH',

@@ -20,6 +20,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   
   // Drag and Drop State
   const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
+  const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
 
   const t = TRANSLATIONS[language];
   const columns = Object.values(ApplicationStatus);
@@ -128,9 +129,14 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
   // Drag and Drop Handlers
   const handleDragStart = (e: React.DragEvent, jobId: string) => {
+    setDraggedItemId(jobId);
     e.dataTransfer.setData('jobId', jobId);
     e.dataTransfer.effectAllowed = 'move';
-    // Optional: Set a drag image or specific opacity logic if needed
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItemId(null);
+    setDragOverColumn(null);
   };
 
   const handleDragOver = (e: React.DragEvent, status: ApplicationStatus) => {
@@ -141,14 +147,19 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
-    // Prevent flickering: only clear if we are not entering a child of the column
-    // For simplicity in React, we often just rely on onDrop to clear, 
-    // or we check relatedTarget. Here we'll just let dragOver maintain state.
+    const currentTarget = e.currentTarget;
+    const relatedTarget = e.relatedTarget as Node;
+    
+    // Only clear if we actually left the container, not just entered a child
+    if (currentTarget.contains(relatedTarget)) return;
+
+    setDragOverColumn(null);
   };
 
   const handleDrop = (e: React.DragEvent, status: ApplicationStatus) => {
     e.preventDefault();
     setDragOverColumn(null);
+    setDraggedItemId(null);
     const jobId = e.dataTransfer.getData('jobId');
     
     if (jobId) {
@@ -378,10 +389,10 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               onDragOver={(e) => handleDragOver(e, status)}
               onDrop={(e) => handleDrop(e, status)}
               onDragLeave={handleDragLeave}
-              className={`flex-1 flex flex-col rounded-xl border transition-colors min-w-[280px] ${
+              className={`flex-1 flex flex-col rounded-xl border-2 transition-all duration-200 min-w-[280px] ${
                 dragOverColumn === status 
-                  ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200' 
-                  : 'bg-gray-50 border-gray-200'
+                  ? 'bg-indigo-50 border-indigo-400 border-dashed shadow-inner scale-[1.01]' 
+                  : 'bg-gray-50 border-gray-200 border-solid'
               }`}
             >
               <div className={`p-3 border-b border-gray-200 rounded-t-xl font-semibold text-sm flex justify-between items-center transition-colors ${
@@ -401,7 +412,12 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                     key={job.id} 
                     draggable
                     onDragStart={(e) => handleDragStart(e, job.id)}
-                    className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing group relative hover:-translate-y-0.5"
+                    onDragEnd={handleDragEnd}
+                    className={`bg-white p-3 rounded-lg border border-gray-200 shadow-sm transition-all cursor-grab active:cursor-grabbing group relative ${
+                        draggedItemId === job.id 
+                          ? 'opacity-40 ring-2 ring-indigo-400 rotate-2 scale-95 grayscale' 
+                          : 'hover:shadow-md hover:-translate-y-0.5'
+                      }`}
                   >
                     <div className="flex justify-between items-start mb-2">
                       <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${
@@ -456,6 +472,12 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                     </div>
                   </div>
                 ))}
+                {/* Visual Placeholder for drop zone */}
+                {dragOverColumn === status && (
+                  <div className="h-24 rounded-lg border-2 border-dashed border-indigo-200 bg-indigo-50/30 flex items-center justify-center text-indigo-300 text-xs font-medium animate-pulse">
+                    Drop Here
+                  </div>
+                )}
               </div>
             </div>
           ))}
