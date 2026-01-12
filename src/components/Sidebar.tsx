@@ -47,8 +47,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     to="/"
                     onClick={closeMobileMenu}
                     className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all ${isActive
-                            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-                            : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
+                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                        : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
                         }`}
                 >
                     <Calendar className="w-5 h-5" />
@@ -58,8 +58,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     to="/board"
                     onClick={closeMobileMenu}
                     className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all ${isActive
-                            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-                            : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
+                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                        : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
                         }`}
                 >
                     <Layout className="w-5 h-5" />
@@ -69,8 +69,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     to="/stats"
                     onClick={closeMobileMenu}
                     className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all ${isActive
-                            ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-                            : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
+                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                        : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
                         }`}
                 >
                     <BarChart2 className="w-5 h-5" />
@@ -82,7 +82,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
                 {/* User Profile Section */}
                 <div className="flex items-center gap-3 p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <img src={user.avatar} alt="User" className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700" />
                     <div className="flex-1 min-w-0">
                         <p className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">{user.name}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
