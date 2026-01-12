@@ -36,7 +36,8 @@ export const useJobs = (user: User | null) => {
                     dateAdded: job.date_added,
                     lastUpdated: job.last_updated,
                     notes: job.notes,
-                    salary: job.salary
+                    salary: job.salary,
+                    link: job.link
                 }));
                 setJobs(mappedJobs);
             }
@@ -64,7 +65,8 @@ export const useJobs = (user: User | null) => {
             date_added: job.dateAdded,
             last_updated: job.lastUpdated,
             notes: job.notes,
-            salary: job.salary
+            salary: job.salary,
+            link: job.link
         };
 
         const { data, error } = await supabase
@@ -97,7 +99,8 @@ export const useJobs = (user: User | null) => {
             role_type: updatedJob.roleType,
             last_updated: new Date().toISOString().split('T')[0],
             notes: updatedJob.notes,
-            salary: updatedJob.salary
+            salary: updatedJob.salary,
+            link: updatedJob.link
         };
 
         const { error } = await supabase

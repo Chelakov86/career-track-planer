@@ -21,7 +21,12 @@ export const JobModal: React.FC<JobModalProps> = ({
     const columns = Object.values(ApplicationStatus);
 
     useEffect(() => {
-        setFormData(initialData);
+        // When initialData changes, update formData completely
+        // Explicitly include link field to ensure it's preserved (even if undefined/null)
+        setFormData({
+            ...initialData,
+            link: initialData.link !== undefined ? initialData.link : ''
+        });
     }, [initialData]);
 
     const handleSave = () => {

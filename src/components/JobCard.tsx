@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, Trash2, MapPin, Euro, ChevronRight } from 'lucide-react';
+import { Pencil, Trash2, MapPin, Euro, ChevronRight, ExternalLink } from 'lucide-react';
 import { JobApplication, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 
@@ -36,6 +36,12 @@ export const JobCard: React.FC<JobCardProps> = ({
     onTouchEnd
 }) => {
     const t = TRANSLATIONS[language];
+
+    const ensureAbsoluteUrl = (url: string) => {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `https://${url}`;
+    };
 
     return (
         <div
@@ -78,7 +84,28 @@ export const JobCard: React.FC<JobCardProps> = ({
             </div>
 
             <h4 className="font-semibold text-gray-800 dark:text-white text-sm truncate pr-4">{job.position}</h4>
-            <p className="text-gray-500 dark:text-gray-400 text-xs mb-2 font-medium">{job.company}</p>
+            <div className="flex items-center gap-2 mb-2">
+                <p className="text-gray-500 dark:text-gray-400 text-xs font-medium">{job.company}</p>
+                {job.link && (
+                    <a
+                        href={ensureAbsoluteUrl(job.link)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        draggable={false}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            window.open(ensureAbsoluteUrl(job.link!), '_blank', 'noopener,noreferrer');
+                        }}
+                        onMouseDown={(e) => e.stopPropagation()}
+                        onDragStart={(e) => e.preventDefault()}
+                        title={t.board.openLink}
+                    >
+                        <ExternalLink className="w-3 h-3" />
+                    </a>
+                )}
+            </div>
 
             <div className="flex flex-col gap-1 mb-3">
                 <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs">
