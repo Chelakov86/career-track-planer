@@ -17,6 +17,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<Partial<JobApplication>>({});
+  
+  // Drag and Drop State
+  const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
 
   const t = TRANSLATIONS[language];
   const columns = Object.values(ApplicationStatus);
@@ -121,6 +124,40 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  // Drag and Drop Handlers
+  const handleDragStart = (e: React.DragEvent, jobId: string) => {
+    e.dataTransfer.setData('jobId', jobId);
+    e.dataTransfer.effectAllowed = 'move';
+    // Optional: Set a drag image or specific opacity logic if needed
+  };
+
+  const handleDragOver = (e: React.DragEvent, status: ApplicationStatus) => {
+    e.preventDefault(); // Necessary to allow dropping
+    if (dragOverColumn !== status) {
+      setDragOverColumn(status);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    // Prevent flickering: only clear if we are not entering a child of the column
+    // For simplicity in React, we often just rely on onDrop to clear, 
+    // or we check relatedTarget. Here we'll just let dragOver maintain state.
+  };
+
+  const handleDrop = (e: React.DragEvent, status: ApplicationStatus) => {
+    e.preventDefault();
+    setDragOverColumn(null);
+    const jobId = e.dataTransfer.getData('jobId');
+    
+    if (jobId) {
+      const job = jobs.find(j => j.id === jobId);
+      // Only update if status actually changed
+      if (job && job.status !== status) {
+        onUpdateStatus(jobId, status);
+      }
+    }
   };
 
   const getNextStatus = (current: ApplicationStatus): ApplicationStatus | null => {
@@ -336,8 +373,19 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       <div className="flex-1 overflow-x-auto overflow-y-hidden pb-2">
         <div className="flex gap-4 min-w-[1200px] h-full">
           {columns.map(status => (
-            <div key={status} className="flex-1 flex flex-col bg-gray-50 rounded-xl border border-gray-200 min-w-[280px]">
-              <div className={`p-3 border-b border-gray-200 rounded-t-xl font-semibold text-sm flex justify-between items-center ${
+            <div 
+              key={status} 
+              onDragOver={(e) => handleDragOver(e, status)}
+              onDrop={(e) => handleDrop(e, status)}
+              onDragLeave={handleDragLeave}
+              className={`flex-1 flex flex-col rounded-xl border transition-colors min-w-[280px] ${
+                dragOverColumn === status 
+                  ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200' 
+                  : 'bg-gray-50 border-gray-200'
+              }`}
+            >
+              <div className={`p-3 border-b border-gray-200 rounded-t-xl font-semibold text-sm flex justify-between items-center transition-colors ${
+                dragOverColumn === status ? 'bg-indigo-100/50' : 
                 status === ApplicationStatus.REJECTED ? 'bg-red-50 text-red-700' : 
                 status === ApplicationStatus.OFFER ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-700'
               }`}>
@@ -349,7 +397,12 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               
               <div className="p-2 space-y-3 overflow-y-auto flex-1 custom-scrollbar">
                 {filteredJobs.filter(j => j.status === status).map(job => (
-                  <div key={job.id} className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow group relative">
+                  <div 
+                    key={job.id} 
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, job.id)}
+                    className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all cursor-grab active:cursor-grabbing group relative hover:-translate-y-0.5"
+                  >
                     <div className="flex justify-between items-start mb-2">
                       <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${
                         job.roleType === 'PM' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-purple-50 text-purple-700 border-purple-100'
