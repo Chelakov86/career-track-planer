@@ -22,6 +22,10 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
   
+  // Auto-scroll Refs
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const pointerRef = useRef<{ x: number, y: number } | null>(null);
+
   // Touch specific state
   const [isTouchDragging, setIsTouchDragging] = useState(false);
   const [touchPos, setTouchPos] = useState<{x: number, y: number} | null>(null);
@@ -29,6 +33,54 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
   const t = TRANSLATIONS[language];
   const columns = Object.values(ApplicationStatus);
+
+  // Auto-scroll logic for drag & drop
+  useEffect(() => {
+    if (!draggedItemId) {
+      pointerRef.current = null;
+      return;
+    }
+
+    let animationFrameId: number;
+    const container = scrollContainerRef.current;
+
+    const scrollLoop = () => {
+      if (!container || !pointerRef.current) {
+        animationFrameId = requestAnimationFrame(scrollLoop);
+        return;
+      }
+
+      const { left, right } = container.getBoundingClientRect();
+      const { x } = pointerRef.current;
+      const zone = 100; // Activation zone in pixels from edge
+      const maxSpeed = 15; // Max pixels per frame
+      
+      let change = 0;
+      
+      // Calculate scroll speed based on distance from edge
+      if (x < left + zone) {
+        // Scroll Left
+        const intensity = Math.max(0, (left + zone - x) / zone);
+        change = -Math.pow(intensity, 2) * maxSpeed;
+      } else if (x > right - zone) {
+        // Scroll Right
+        const intensity = Math.max(0, (x - (right - zone)) / zone);
+        change = Math.pow(intensity, 2) * maxSpeed;
+      }
+
+      if (change !== 0) {
+        container.scrollLeft += change;
+      }
+
+      animationFrameId = requestAnimationFrame(scrollLoop);
+    };
+
+    animationFrameId = requestAnimationFrame(scrollLoop);
+
+    return () => {
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [draggedItemId]);
 
   const openAddModal = () => {
     setFormData({
@@ -135,18 +187,31 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     setDraggedItemId(jobId);
     e.dataTransfer.setData('jobId', jobId);
     e.dataTransfer.effectAllowed = 'move';
+    // Set transparent image to avoid default ghost blocking view
+    const img = new Image();
+    img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+    e.dataTransfer.setDragImage(img, 0, 0);
   };
 
   const handleDragEnd = () => {
     setDraggedItemId(null);
     setDragOverColumn(null);
+    pointerRef.current = null;
   };
 
   const handleDragOver = (e: React.DragEvent, status: ApplicationStatus) => {
     e.preventDefault(); 
+    // Update pointer position for auto-scroll
+    pointerRef.current = { x: e.clientX, y: e.clientY };
+    
     if (dragOverColumn !== status) {
       setDragOverColumn(status);
     }
+  };
+
+  const handleContainerDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    pointerRef.current = { x: e.clientX, y: e.clientY };
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
@@ -160,6 +225,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     e.preventDefault();
     setDragOverColumn(null);
     setDraggedItemId(null);
+    pointerRef.current = null;
     const jobId = e.dataTransfer.getData('jobId');
     if (jobId) {
       const job = jobs.find(j => j.id === jobId);
@@ -180,6 +246,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       setDraggedItemId(job.id);
       setIsTouchDragging(true);
       setTouchPos({ x, y });
+      pointerRef.current = { x, y }; // Init pointer ref for scroll
       document.body.style.overflow = 'hidden'; // Lock scroll
       // Try to vibrate for feedback
       if (navigator.vibrate) navigator.vibrate(50);
@@ -201,9 +268,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
     const touch = e.touches[0];
     setTouchPos({ x: touch.clientX, y: touch.clientY });
+    pointerRef.current = { x: touch.clientX, y: touch.clientY }; // Update pointer ref
 
     // Identify which column is under the finger
-    // We must hide the ghost pointer events so we can see through it
     const element = document.elementFromPoint(touch.clientX, touch.clientY);
     const column = element?.closest('[data-column-id]');
     
@@ -232,6 +299,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       setTouchPos(null);
       setDraggedItemId(null);
       setDragOverColumn(null);
+      pointerRef.current = null;
     }
   };
 
@@ -319,7 +387,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   return (
     <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col relative">
       
-      {/* Ghost Element for Touch Drag */}
+      {/* Ghost Element for both Mouse (via state if needed, but using browser default for now) and Touch Drag */}
+      {/* Note: Mouse drag uses HTML5 API, Touch uses this ghost element */}
       {isTouchDragging && touchPos && draggedItemId && (
         <div 
           style={{ 
@@ -538,7 +607,11 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         </div>
       </div>
 
-      <div className="flex-1 overflow-x-auto overflow-y-hidden pb-2">
+      <div 
+        className="flex-1 overflow-x-auto overflow-y-hidden pb-2" 
+        ref={scrollContainerRef}
+        onDragOver={handleContainerDragOver} // Track drag over globally in container
+      >
         <div className="flex gap-4 min-w-[1200px] h-full">
           {columns.map(status => (
             <div 
