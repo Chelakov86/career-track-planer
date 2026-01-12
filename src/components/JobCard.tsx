@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pencil, Trash2, MapPin, DollarSign, ChevronRight } from 'lucide-react';
+import { Pencil, Trash2, MapPin, Euro, ChevronRight } from 'lucide-react';
 import { JobApplication, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 
@@ -40,8 +40,8 @@ export const JobCard: React.FC<JobCardProps> = ({
     return (
         <div
             className={`bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all relative ${isGhost ? 'shadow-2xl ring-2 ring-indigo-500 rotate-3 z-50 opacity-90' :
-                    draggedItemId === job.id && !isGhost ? 'opacity-30 grayscale' :
-                        'hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-200 dark:hover:border-indigo-900'
+                draggedItemId === job.id && !isGhost ? 'opacity-30 grayscale' :
+                    'hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-200 dark:hover:border-indigo-900'
                 } ${!isGhost ? 'cursor-grab active:cursor-grabbing group' : ''}`}
             draggable={!isGhost}
             onDragStart={(e) => !isGhost && onDragStart(e, job.id)}
@@ -86,7 +86,7 @@ export const JobCard: React.FC<JobCardProps> = ({
                 </div>
                 {job.salary && (
                     <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs">
-                        <DollarSign className="w-3 h-3" /> {job.salary}
+                        <Euro className="w-3 h-3" /> {job.salary}
                     </div>
                 )}
             </div>
