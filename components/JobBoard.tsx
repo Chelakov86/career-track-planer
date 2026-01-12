@@ -246,10 +246,10 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   // Reusable Card Component
   const JobCardItem = ({ job, isGhost = false }: { job: JobApplication, isGhost?: boolean }) => (
     <div 
-      className={`bg-white p-3 rounded-lg border border-gray-200 shadow-sm transition-all relative ${
+      className={`bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all relative ${
           isGhost ? 'shadow-2xl ring-2 ring-indigo-500 rotate-3 z-50 opacity-90' : 
           draggedItemId === job.id && !isGhost ? 'opacity-30 grayscale' : 
-          'hover:shadow-md hover:-translate-y-0.5'
+          'hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-200 dark:hover:border-indigo-900'
         } ${!isGhost ? 'cursor-grab active:cursor-grabbing group' : ''}`}
       draggable={!isGhost}
       onDragStart={(e) => !isGhost && handleDragStart(e, job.id)}
@@ -262,7 +262,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     >
       <div className="flex justify-between items-start mb-2">
         <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${
-          job.roleType === 'PM' ? 'bg-blue-50 text-blue-700 border-blue-100' : 'bg-purple-50 text-purple-700 border-purple-100'
+          job.roleType === 'PM' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-100 dark:border-blue-900' : 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-100 dark:border-purple-900'
         }`}>
           {job.roleType}
         </span>
@@ -270,14 +270,14 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button 
               onClick={() => openEditModal(job)}
-              className="text-gray-400 hover:text-indigo-600 p-1 hover:bg-gray-50 rounded"
+              className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
               title={t.board.editJob}
             >
               <Pencil className="w-3.5 h-3.5" />
             </button>
             <button 
               onClick={() => setDeleteId(job.id)}
-              className="text-gray-400 hover:text-red-500 p-1 hover:bg-gray-50 rounded"
+              className="text-gray-400 hover:text-red-500 p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
               title="Delete"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -286,27 +286,27 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         )}
       </div>
       
-      <h4 className="font-semibold text-gray-800 text-sm truncate pr-4">{job.position}</h4>
-      <p className="text-gray-500 text-xs mb-2 font-medium">{job.company}</p>
+      <h4 className="font-semibold text-gray-800 dark:text-white text-sm truncate pr-4">{job.position}</h4>
+      <p className="text-gray-500 dark:text-gray-400 text-xs mb-2 font-medium">{job.company}</p>
       
       <div className="flex flex-col gap-1 mb-3">
-         <div className="flex items-center gap-1 text-gray-400 text-xs">
+         <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs">
            <MapPin className="w-3 h-3" /> {job.location}
          </div>
          {job.salary && (
-           <div className="flex items-center gap-1 text-gray-400 text-xs">
+           <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs">
              <DollarSign className="w-3 h-3" /> {job.salary}
            </div>
          )}
       </div>
 
-      <div className="flex justify-between items-center pt-2 border-t border-gray-50">
-        <span className="text-[10px] text-gray-400">{job.lastUpdated}</span>
+      <div className="flex justify-between items-center pt-2 border-t border-gray-50 dark:border-gray-700">
+        <span className="text-[10px] text-gray-400 dark:text-gray-500">{job.lastUpdated}</span>
         
         {!isGhost && getNextStatus(job.status) && (
           <button 
             onClick={() => onUpdateStatus(job.id, getNextStatus(job.status)!)}
-            className="p-1 rounded-full hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 transition-colors"
+            className="p-1 rounded-full hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
             title={`-> ${t.board.status[getNextStatus(job.status)!]}`}
           >
             <ChevronRight className="w-4 h-4" />
@@ -341,30 +341,30 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
       {/* Delete Confirmation Modal */}
       {deleteId && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-xl shadow-xl border border-gray-100 max-w-sm w-full p-6" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 max-w-sm w-full p-6" onClick={e => e.stopPropagation()}>
              <div className="flex flex-col items-center text-center gap-4">
-               <div className="p-3 bg-red-50 rounded-full">
-                 <Trash2 className="w-8 h-8 text-red-500" />
+               <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-full">
+                 <Trash2 className="w-8 h-8 text-red-500 dark:text-red-400" />
                </div>
                <div>
-                 <h3 className="text-lg font-bold text-gray-900">
+                 <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                    {t.board.deleteTitle}
                  </h3>
-                 <p className="text-gray-500 text-sm mt-1 leading-relaxed">
+                 <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 leading-relaxed">
                    {t.board.deleteMessage}
                  </p>
                </div>
                <div className="flex gap-3 w-full mt-2">
                  <button 
                    onClick={() => setDeleteId(null)}
-                   className="flex-1 px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+                   className="flex-1 px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                  >
                    {t.board.cancel}
                  </button>
                  <button 
                    onClick={confirmDelete}
-                   className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors shadow-sm"
+                   className="flex-1 px-4 py-2 bg-red-600 dark:bg-red-500 text-white rounded-lg text-sm font-medium hover:bg-red-700 dark:hover:bg-red-600 transition-colors shadow-sm"
                  >
                    {t.board.confirmDelete}
                  </button>
@@ -376,13 +376,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
       {/* Add/Edit Job Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-          <div className="bg-white rounded-xl shadow-xl border border-gray-100 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
-             <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-               <h3 className="font-bold text-gray-800">
+        <div className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+             <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-850">
+               <h3 className="font-bold text-gray-800 dark:text-white">
                  {formData.id ? t.board.editJob : t.board.newOpp}
                </h3>
-               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
+               <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                  <X className="w-5 h-5" />
                </button>
              </div>
@@ -390,28 +390,28 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
              <div className="p-6 overflow-y-auto custom-scrollbar">
                <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">{t.board.placeholders.company}*</label>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t.board.placeholders.company}*</label>
                     <input
                       placeholder={t.board.placeholders.company}
-                      className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                       value={formData.company}
                       onChange={e => setFormData({...formData, company: e.target.value})}
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">{t.board.placeholders.position}*</label>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t.board.placeholders.position}*</label>
                     <input
                       placeholder={t.board.placeholders.position}
-                      className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                       value={formData.position}
                       onChange={e => setFormData({...formData, position: e.target.value})}
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">{t.board.labels.status}</label>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t.board.labels.status}</label>
                     <select
-                      className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white"
+                      className="w-full p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                       value={formData.status}
                       onChange={e => setFormData({...formData, status: e.target.value as ApplicationStatus})}
                     >
@@ -421,9 +421,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                     </select>
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">{t.board.labels.role}</label>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t.board.labels.role}</label>
                     <select
-                      className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none bg-white"
+                      className="w-full p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
                       value={formData.roleType}
                       onChange={e => setFormData({...formData, roleType: e.target.value as RoleFocus})}
                     >
@@ -433,35 +433,35 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">{t.board.labels.location}</label>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t.board.labels.location}</label>
                     <input
                       placeholder={t.board.placeholders.location}
-                      className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                       value={formData.location}
                       onChange={e => setFormData({...formData, location: e.target.value})}
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">{t.board.labels.salary}</label>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t.board.labels.salary}</label>
                     <input
                       placeholder={t.board.placeholders.salary}
-                      className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                      className="w-full p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                       value={formData.salary || ''}
                       onChange={e => setFormData({...formData, salary: e.target.value})}
                     />
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">{t.board.labels.link}</label>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t.board.labels.link}</label>
                     <div className="flex gap-2">
                       <input
                         placeholder={t.board.placeholders.link}
-                        className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+                        className="w-full p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
                         value={formData.link || ''}
                         onChange={e => setFormData({...formData, link: e.target.value})}
                       />
                       {formData.link && (
-                        <a href={formData.link} target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-100 rounded-lg text-gray-600 hover:text-indigo-600 hover:bg-indigo-50 border border-gray-200">
+                        <a href={formData.link} target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 border border-gray-200 dark:border-gray-600">
                           <ExternalLink className="w-5 h-5" />
                         </a>
                       )}
@@ -469,10 +469,10 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   </div>
 
                   <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-gray-500 mb-1">{t.board.labels.notes}</label>
+                    <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t.board.labels.notes}</label>
                     <textarea
                       placeholder={t.board.placeholders.notes}
-                      className="w-full p-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all min-h-[80px]"
+                      className="w-full p-2 border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all min-h-[80px]"
                       value={formData.notes || ''}
                       onChange={e => setFormData({...formData, notes: e.target.value})}
                     />
@@ -480,17 +480,17 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                </div>
              </div>
 
-             <div className="p-4 border-t border-gray-100 bg-gray-50 flex justify-end gap-3">
+             <div className="p-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-850 flex justify-end gap-3">
                <button 
                  onClick={() => setShowModal(false)}
-                 className="px-4 py-2 border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-white hover:border-gray-300 transition-colors"
+                 className="px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-white dark:hover:bg-gray-700 hover:border-gray-300 transition-colors"
                >
                  {t.board.cancel}
                </button>
                <button 
                  onClick={handleSave}
                  disabled={!formData.company || !formData.position}
-                 className="px-6 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                 className="px-6 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                >
                  {t.board.save}
                </button>
@@ -499,29 +499,29 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 shrink-0">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 shrink-0 transition-colors">
         <div>
-           <h2 className="text-2xl font-bold text-gray-800">{t.board.title}</h2>
-           <p className="text-gray-500 text-sm">{t.board.subtitle}</p>
+           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{t.board.title}</h2>
+           <p className="text-gray-500 dark:text-gray-400 text-sm">{t.board.subtitle}</p>
         </div>
         
         <div className="flex gap-2">
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium shadow-sm"
+            className="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm font-medium shadow-sm"
             title={t.board.exportCSV}
           >
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">{t.board.exportCSV}</span>
           </button>
 
-          <div className="flex items-center bg-gray-50 rounded-lg p-1 border border-gray-200">
+          <div className="flex items-center bg-gray-50 dark:bg-gray-700 rounded-lg p-1 border border-gray-200 dark:border-gray-600">
             {['All', 'PM', 'QA'].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f as any)}
                 className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
-                  filter === f ? 'bg-white text-indigo-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+                  filter === f ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                 }`}
               >
                 {f}
@@ -530,7 +530,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           </div>
           <button
             onClick={openAddModal}
-            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium shadow-sm"
+            className="flex items-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm font-medium shadow-sm"
           >
             <Plus className="w-4 h-4" />
             {t.board.addJob}
@@ -549,17 +549,17 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               onDragLeave={handleDragLeave}
               className={`flex-1 flex flex-col rounded-xl border-2 transition-all duration-200 min-w-[280px] ${
                 dragOverColumn === status 
-                  ? 'bg-indigo-50 border-indigo-400 border-dashed shadow-inner scale-[1.01]' 
-                  : 'bg-gray-50 border-gray-200 border-solid'
+                  ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-400 border-dashed shadow-inner scale-[1.01]' 
+                  : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-800 border-solid'
               }`}
             >
-              <div className={`p-3 border-b border-gray-200 rounded-t-xl font-semibold text-sm flex justify-between items-center transition-colors ${
-                dragOverColumn === status ? 'bg-indigo-100/50' : 
-                status === ApplicationStatus.REJECTED ? 'bg-red-50 text-red-700' : 
-                status === ApplicationStatus.OFFER ? 'bg-green-50 text-green-700' : 'bg-gray-100 text-gray-700'
+              <div className={`p-3 border-b border-gray-200 dark:border-gray-700 rounded-t-xl font-semibold text-sm flex justify-between items-center transition-colors ${
+                dragOverColumn === status ? 'bg-indigo-100/50 dark:bg-indigo-900/50' : 
+                status === ApplicationStatus.REJECTED ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300' : 
+                status === ApplicationStatus.OFFER ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
               }`}>
                 {t.board.status[status]}
-                <span className="bg-white px-2 py-0.5 rounded-full text-xs border shadow-sm">
+                <span className="bg-white dark:bg-gray-700 px-2 py-0.5 rounded-full text-xs border dark:border-gray-600 shadow-sm">
                   {filteredJobs.filter(j => j.status === status).length}
                 </span>
               </div>
@@ -570,7 +570,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 ))}
                 {/* Visual Placeholder for drop zone */}
                 {dragOverColumn === status && (
-                  <div className="h-24 rounded-lg border-2 border-dashed border-indigo-200 bg-indigo-50/30 flex items-center justify-center text-indigo-300 text-xs font-medium animate-pulse">
+                  <div className="h-24 rounded-lg border-2 border-dashed border-indigo-200 dark:border-indigo-700 bg-indigo-50/30 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-300 dark:text-indigo-400 text-xs font-medium animate-pulse">
                     Drop Here
                   </div>
                 )}

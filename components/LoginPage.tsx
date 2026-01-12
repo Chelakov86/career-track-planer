@@ -23,14 +23,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ language, setLanguage }) =
   }, [isRealAuthAvailable, language]);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 border border-gray-100 animate-fadeIn">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 p-4 transition-colors">
+      <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-100 dark:border-gray-700 animate-fadeIn transition-colors">
         <div className="flex flex-col items-center text-center mb-8">
           <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-lg mb-4">
             CT
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">{t.login.title}</h1>
-          <p className="text-gray-500">{t.login.subtitle}</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t.login.title}</h1>
+          <p className="text-gray-500 dark:text-gray-400">{t.login.subtitle}</p>
         </div>
 
         {isRealAuthAvailable ? (
@@ -42,10 +42,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ language, setLanguage }) =
           <button 
             onClick={login}
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-50 hover:border-gray-400 transition-all shadow-sm font-medium group relative overflow-hidden"
+            className="w-full flex items-center justify-center gap-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-white px-6 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 hover:border-gray-400 transition-all shadow-sm font-medium group relative overflow-hidden"
           >
             {isLoading ? (
-              <div className="w-5 h-5 border-2 border-gray-300 border-t-indigo-600 rounded-full animate-spin"></div>
+              <div className="w-5 h-5 border-2 border-gray-300 dark:border-gray-500 border-t-indigo-600 rounded-full animate-spin"></div>
             ) : (
               <>
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -79,25 +79,25 @@ export const LoginPage: React.FC<LoginPageProps> = ({ language, setLanguage }) =
         )}
 
         <div className="mt-8 flex items-center justify-center gap-2">
-            <div className="text-xs text-gray-400 font-medium">LANGUAGE</div>
-            <div className="flex bg-gray-100 rounded-lg p-0.5">
+            <div className="text-xs text-gray-400 dark:text-gray-500 font-medium">LANGUAGE</div>
+            <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-0.5">
                <button 
                  onClick={() => setLanguage('en')}
-                 className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${language === 'en' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                 className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${language === 'en' ? 'bg-white dark:bg-gray-600 text-indigo-700 dark:text-indigo-300 shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
                >
                  EN
                </button>
                <button 
                  onClick={() => setLanguage('de')}
-                 className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${language === 'de' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                 className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${language === 'de' ? 'bg-white dark:bg-gray-600 text-indigo-700 dark:text-indigo-300 shadow-sm' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
                >
                  DE
                </button>
             </div>
         </div>
 
-        <div className="mt-8 text-center border-t border-gray-100 pt-6">
-          <p className="text-xs text-gray-400">
+        <div className="mt-8 text-center border-t border-gray-100 dark:border-gray-700 pt-6">
+          <p className="text-xs text-gray-400 dark:text-gray-500">
             {t.login.footer}
           </p>
         </div>

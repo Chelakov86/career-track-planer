@@ -4,12 +4,14 @@ import { JobBoard } from './components/JobBoard';
 import { Dashboard } from './components/Dashboard';
 import { LoginPage } from './components/LoginPage';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { MOCK_JOBS, getSchedule, TRANSLATIONS } from './constants';
 import { ScheduleBlock, JobApplication, RoleFocus, ApplicationStatus, Language } from './types';
-import { Calendar, Layout, BarChart2, Briefcase, Menu, X, Settings, Globe, LogOut } from 'lucide-react';
+import { Calendar, Layout, BarChart2, Menu, X, Settings, Globe, LogOut, Moon, Sun } from 'lucide-react';
 
 const AppContent: React.FC = () => {
   const { user, logout, isLoading } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [activeTab, setActiveTab] = useState<'schedule' | 'board' | 'stats'>('schedule');
   const [language, setLanguage] = useState<Language>('de');
   const [userFocus, setUserFocus] = useState<RoleFocus>('PM');
@@ -35,14 +37,11 @@ const AppContent: React.FC = () => {
         setJobs(MOCK_JOBS);
       }
     } else {
-      // Data Migration: Check if there is "legacy" data (from before user management was added)
-      // If yes, copy it to the new user. If no, use Mock data.
       const legacy = localStorage.getItem('career_track_jobs');
       if (legacy) {
         try {
           const parsed = JSON.parse(legacy);
           setJobs(parsed);
-          // Optional: clear legacy, or keep it as backup. Keeping it is safer.
         } catch (e) {
           setJobs(MOCK_JOBS);
         }
@@ -80,8 +79,8 @@ const AppContent: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <div className="w-10 h-10 border-4 border-indigo-200 dark:border-indigo-900 border-t-indigo-600 rounded-full animate-spin"></div>
       </div>
     );
   }
@@ -98,31 +97,37 @@ const AppContent: React.FC = () => {
       }}
       className={`flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all ${
         activeTab === id 
-          ? 'bg-indigo-50 text-indigo-700' 
-          : 'text-gray-600 hover:bg-gray-50'
+          ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300' 
+          : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
       }`}
     >
-      <Icon className={`w-5 h-5 ${activeTab === id ? 'text-indigo-600' : 'text-gray-400'}`} />
+      <Icon className={`w-5 h-5 ${activeTab === id ? 'text-indigo-600 dark:text-indigo-400' : 'text-gray-400 dark:text-gray-500'}`} />
       {label}
     </button>
   );
 
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-[#f8fafc]">
+    <div className="min-h-screen flex flex-col md:flex-row bg-[#f8fafc] dark:bg-gray-950 transition-colors duration-200">
       {/* Mobile Header */}
-      <div className="md:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center sticky top-0 z-20">
+      <div className="md:hidden bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 p-4 flex justify-between items-center sticky top-0 z-20">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">CT</div>
-          <span className="font-bold text-gray-800">CareerTrack</span>
+          <span className="font-bold text-gray-800 dark:text-white">CareerTrack</span>
         </div>
         <div className="flex items-center gap-2">
            <button 
+             onClick={toggleTheme}
+             className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+           >
+             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+           </button>
+           <button 
              onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}
-             className="text-xs font-semibold bg-gray-100 px-2 py-1 rounded text-gray-600 uppercase"
+             className="text-xs font-semibold bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded text-gray-600 dark:text-gray-300 uppercase"
            >
              {language}
            </button>
-          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-600">
+          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-600 dark:text-gray-400">
             {mobileMenuOpen ? <X /> : <Menu />}
           </button>
         </div>
@@ -130,14 +135,14 @@ const AppContent: React.FC = () => {
 
       {/* Sidebar Navigation */}
       <aside className={`
-        fixed inset-y-0 left-0 z-10 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:h-screen flex flex-col
+        fixed inset-y-0 left-0 z-10 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:h-screen flex flex-col
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
       `}>
-        <div className="p-6 border-b border-gray-100 flex items-center gap-3">
+        <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold shadow-sm">CT</div>
           <div>
-            <h1 className="font-bold text-gray-900 text-lg">CareerTrack</h1>
-            <p className="text-xs text-gray-500">{t.nav.subtitle}</p>
+            <h1 className="font-bold text-gray-900 dark:text-white text-lg">CareerTrack</h1>
+            <p className="text-xs text-gray-500 dark:text-gray-400">{t.nav.subtitle}</p>
           </div>
         </div>
 
@@ -147,56 +152,62 @@ const AppContent: React.FC = () => {
           <NavItem id="stats" label={t.nav.stats} icon={BarChart2} />
         </nav>
 
-        <div className="p-4 space-y-4 border-t border-gray-100 bg-gray-50">
+        <div className="p-4 space-y-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/50">
           
           {/* User Profile Section */}
-          <div className="flex items-center gap-3 p-2 rounded-lg bg-white border border-gray-200 shadow-sm">
-             <img src={user.avatar} alt="User" className="w-8 h-8 rounded-full bg-gray-100" />
+          <div className="flex items-center gap-3 p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm">
+             <img src={user.avatar} alt="User" className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700" />
              <div className="flex-1 min-w-0">
-               <p className="text-xs font-bold text-gray-800 truncate">{user.name}</p>
-               <p className="text-[10px] text-gray-500 truncate">{user.email}</p>
+               <p className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">{user.name}</p>
+               <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
              </div>
              <button onClick={logout} className="text-gray-400 hover:text-red-500 transition-colors" title={t.nav.logout}>
                <LogOut className="w-4 h-4" />
              </button>
           </div>
 
-          {/* Language Switcher */}
-          <div className="flex items-center justify-between px-2">
-             <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
-               <Globe className="w-4 h-4" />
-               Language
-             </div>
-             <div className="flex bg-white border border-gray-200 rounded-md p-0.5">
+          {/* Settings & Controls */}
+          <div className="flex items-center justify-between gap-2">
+             {/* Theme Toggle */}
+             <button 
+               onClick={toggleTheme}
+               className="flex items-center justify-center p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
+               title="Toggle Dark Mode"
+             >
+               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+             </button>
+
+             {/* Language Switcher */}
+             <div className="flex flex-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md p-0.5 shadow-sm">
                <button 
                  onClick={() => setLanguage('en')}
-                 className={`px-2 py-0.5 text-xs font-medium rounded transition-colors ${language === 'en' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400 hover:text-gray-600'}`}
+                 className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors ${language === 'en' ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
                >
                  EN
                </button>
                <button 
                  onClick={() => setLanguage('de')}
-                 className={`px-2 py-0.5 text-xs font-medium rounded transition-colors ${language === 'de' ? 'bg-indigo-100 text-indigo-700' : 'text-gray-400 hover:text-gray-600'}`}
+                 className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors ${language === 'de' ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
                >
                  DE
                </button>
              </div>
           </div>
 
-          <div className="bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
-            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+            <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2 flex items-center gap-2">
               <Settings className="w-3 h-3" /> {t.nav.focus}
             </h4>
-            <div className="flex bg-gray-100 p-1 rounded-md">
+            <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-md">
               <button 
                 onClick={() => setUserFocus('PM')}
-                className={`flex-1 text-xs py-1.5 rounded font-medium transition-colors ${userFocus === 'PM' ? 'bg-white shadow text-indigo-700' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 text-xs py-1.5 rounded font-medium transition-colors ${userFocus === 'PM' ? 'bg-white dark:bg-gray-600 shadow text-indigo-700 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
               >
                 PM
               </button>
               <button 
                 onClick={() => setUserFocus('QA')}
-                className={`flex-1 text-xs py-1.5 rounded font-medium transition-colors ${userFocus === 'QA' ? 'bg-white shadow text-purple-700' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 text-xs py-1.5 rounded font-medium transition-colors ${userFocus === 'QA' ? 'bg-white dark:bg-gray-600 shadow text-purple-700 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
               >
                 QA
               </button>
@@ -230,7 +241,7 @@ const AppContent: React.FC = () => {
       {/* Overlay for mobile menu */}
       {mobileMenuOpen && (
         <div 
-          className="fixed inset-0 bg-black/20 z-0 md:hidden"
+          className="fixed inset-0 bg-black/20 dark:bg-black/50 z-0 md:hidden"
           onClick={() => setMobileMenuOpen(false)}
         />
       )}
@@ -241,7 +252,9 @@ const AppContent: React.FC = () => {
 const App: React.FC = () => {
   return (
     <AuthProvider>
-      <AppContent />
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
     </AuthProvider>
   );
 };

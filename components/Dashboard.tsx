@@ -35,51 +35,54 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
   return (
     <div className="space-y-6 animate-fadeIn">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-          <div className="p-3 bg-blue-50 rounded-lg text-blue-600">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4 transition-colors">
+          <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
             <Target className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm text-gray-500 font-medium">{t.dashboard.total}</p>
-            <h3 className="text-2xl font-bold text-gray-800">{totalApps}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{t.dashboard.total}</p>
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{totalApps}</h3>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-          <div className="p-3 bg-green-50 rounded-lg text-green-600">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4 transition-colors">
+          <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
             <Activity className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm text-gray-500 font-medium">{t.dashboard.active}</p>
-            <h3 className="text-2xl font-bold text-gray-800">{active}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{t.dashboard.active}</p>
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{active}</h3>
           </div>
         </div>
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
-          <div className="p-3 bg-purple-50 rounded-lg text-purple-600">
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4 transition-colors">
+          <div className="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
             <TrendingUp className="w-6 h-6" />
           </div>
           <div>
-            <p className="text-sm text-gray-500 font-medium">{t.dashboard.interviews}</p>
-            <h3 className="text-2xl font-bold text-gray-800">{interviews}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{t.dashboard.interviews}</p>
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{interviews}</h3>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-[350px]">
-          <h3 className="text-lg font-bold text-gray-800 mb-6">{t.dashboard.funnel}</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-[350px] transition-colors">
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-6">{t.dashboard.funnel}</h3>
           <ResponsiveContainer width="100%" height="80%">
             <BarChart data={funnelData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" className="dark:stroke-gray-700" />
               <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 12}} />
-              <Tooltip cursor={{fill: 'transparent'}} />
+              <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 12, fill: '#6b7280'}} className="dark:fill-gray-400" />
+              <Tooltip 
+                cursor={{fill: 'transparent'}} 
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+              />
               <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={20} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 h-[350px]">
-          <h3 className="text-lg font-bold text-gray-800 mb-6">{t.dashboard.distribution}</h3>
+        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-[350px] transition-colors">
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-6">{t.dashboard.distribution}</h3>
           <ResponsiveContainer width="100%" height="80%">
             <PieChart>
               <Pie
@@ -90,15 +93,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
                 outerRadius={100}
                 paddingAngle={5}
                 dataKey="value"
+                stroke="none"
               >
                 {roleData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={ROLE_COLORS[index % ROLE_COLORS.length]} />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
             </PieChart>
           </ResponsiveContainer>
-          <div className="flex justify-center gap-6 text-sm text-gray-600 mt-[-20px]">
+          <div className="flex justify-center gap-6 text-sm text-gray-600 dark:text-gray-400 mt-[-20px]">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-indigo-500"></div> PM
             </div>
