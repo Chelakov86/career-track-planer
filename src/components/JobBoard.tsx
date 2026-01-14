@@ -1,5 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { JobApplication, ApplicationStatus, RoleFocus, Language } from '../types';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { Plus, Download } from 'lucide-react';
 import { JobCard } from './JobCard';
@@ -16,7 +16,15 @@ interface JobBoardProps {
 }
 
 export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, onUpdateStatus, onDeleteJob, language }) => {
-  const [filter, setFilter] = useState<RoleFocus | 'All'>('All');
+  // Filters & sorting
+  const [statusFilter, setStatusFilter] = useState<ApplicationStatus[] | 'ALL'>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [dateAddedFrom, setDateAddedFrom] = useState<string>('');
+  const [dateAddedTo, setDateAddedTo] = useState<string>('');
+  const [lastUpdatedFrom, setLastUpdatedFrom] = useState<string>('');
+  const [lastUpdatedTo, setLastUpdatedTo] = useState<string>('');
+  const [sortField, setSortField] = useState<'dateAdded' | 'lastUpdated' | 'company' | 'position' | 'status'>('dateAdded');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<Partial<JobApplication>>({});
@@ -327,8 +335,99 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     if (idx < columns.length - 1) return columns[idx + 1];
     return null;
   };
+  const visibleJobs = useMemo(() => {
+    let result = [...jobs];
 
-  const filteredJobs = jobs.filter(j => filter === 'All' || j.roleType === filter);
+    // Status filter
+    if (statusFilter !== 'ALL') {
+      result = result.filter(j => statusFilter.includes(j.status));
+    }
+
+    // Text search (company, position, notes, location)
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      result = result.filter(j => {
+        return (
+          j.company.toLowerCase().includes(q) ||
+          j.position.toLowerCase().includes(q) ||
+          (j.location && j.location.toLowerCase().includes(q)) ||
+          (j.notes && j.notes.toLowerCase().includes(q))
+        );
+      });
+    }
+
+    // Date range filters (dateAdded)
+    if (dateAddedFrom) {
+      result = result.filter(j => j.dateAdded >= dateAddedFrom);
+    }
+    if (dateAddedTo) {
+      result = result.filter(j => j.dateAdded <= dateAddedTo);
+    }
+
+    // Date range filters (lastUpdated)
+    if (lastUpdatedFrom) {
+      result = result.filter(j => j.lastUpdated >= lastUpdatedFrom);
+    }
+    if (lastUpdatedTo) {
+      result = result.filter(j => j.lastUpdated <= lastUpdatedTo);
+    }
+
+    // Sorting
+    const statusOrder = columns;
+    result.sort((a, b) => {
+      const dir = sortDirection === 'asc' ? 1 : -1;
+      let cmp = 0;
+
+      switch (sortField) {
+        case 'company':
+          cmp = a.company.localeCompare(b.company);
+          break;
+        case 'position':
+          cmp = a.position.localeCompare(b.position);
+          break;
+        case 'status':
+          cmp = statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status);
+          break;
+        case 'lastUpdated':
+          if (a.lastUpdated === b.lastUpdated) cmp = 0;
+          else cmp = a.lastUpdated < b.lastUpdated ? -1 : 1;
+          break;
+        case 'dateAdded':
+        default:
+          if (a.dateAdded === b.dateAdded) cmp = 0;
+          else cmp = a.dateAdded < b.dateAdded ? -1 : 1;
+          break;
+      }
+
+      return cmp * dir;
+    });
+
+    return result;
+  }, [jobs, statusFilter, searchQuery, dateAddedFrom, dateAddedTo, lastUpdatedFrom, lastUpdatedTo, sortField, sortDirection, columns]);
+
+  const toggleStatusInFilter = (status: ApplicationStatus) => {
+    if (statusFilter === 'ALL') {
+      setStatusFilter([status]);
+      return;
+    }
+    if (statusFilter.includes(status)) {
+      const next = statusFilter.filter(s => s !== status);
+      setStatusFilter(next.length === 0 ? 'ALL' : next);
+    } else {
+      setStatusFilter([...statusFilter, status]);
+    }
+  };
+
+  const resetFilters = () => {
+    setStatusFilter('ALL');
+    setSearchQuery('');
+    setDateAddedFrom('');
+    setDateAddedTo('');
+    setLastUpdatedFrom('');
+    setLastUpdatedTo('');
+    setSortField('dateAdded');
+    setSortDirection('desc');
+  };
 
   return (
     <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col relative">
@@ -404,25 +503,149 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <Download className="w-4 h-4" />
             <span className="hidden sm:inline">{t.board.exportCSV}</span>
           </button>
-
-          <div className="flex items-center bg-gray-50 dark:bg-gray-700 rounded-lg p-1 border border-gray-200 dark:border-gray-600">
-            {['All', 'PM', 'QA'].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f as any)}
-                className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${filter === f ? 'bg-white dark:bg-gray-600 text-indigo-600 dark:text-white shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                  }`}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
           <button
             onClick={openAddModal}
             className="flex items-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm font-medium shadow-sm"
           >
             <Plus className="w-4 h-4" />
             {t.board.addJob}
+          </button>
+        </div>
+      </div>
+
+      {/* Filters & sorting bar */}
+      <div className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-3 shrink-0">
+        <div className="flex flex-col lg:flex-row gap-3">
+          {/* Status filters */}
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                {t.board.filters?.status || t.board.labels.status}
+              </span>
+              <button
+                type="button"
+                onClick={() => setStatusFilter('ALL')}
+                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                {t.board.filters?.allStatuses || 'All'}
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {columns.map(status => {
+                const active = statusFilter === 'ALL' || statusFilter.includes(status);
+                return (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => toggleStatusInFilter(status)}
+                    className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${active
+                      ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border-indigo-300 dark:border-indigo-700'
+                      : 'bg-gray-50 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:text-gray-700 dark:hover:text-gray-200'
+                      }`}
+                  >
+                    {t.board.status[status]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Search & sort */}
+          <div className="flex-1 flex flex-col gap-2">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+                  {t.board.filters?.search || 'Search'}
+                </label>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t.board.filters?.searchPlaceholder || 'Search by company, position, notes...'}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
+                />
+              </div>
+              <div className="w-40">
+                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+                  {t.board.filters?.sortBy || 'Sort by'}
+                </label>
+                <select
+                  value={`${sortField}_${sortDirection}`}
+                  onChange={(e) => {
+                    const [field, dir] = e.target.value.split('_') as [typeof sortField, typeof sortDirection];
+                    setSortField(field);
+                    setSortDirection(dir);
+                  }}
+                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
+                >
+                  <option value="dateAdded_desc">{t.board.filters?.sortOptions?.dateAddedDesc || 'Date added (newest)'}</option>
+                  <option value="dateAdded_asc">{t.board.filters?.sortOptions?.dateAddedAsc || 'Date added (oldest)'}</option>
+                  <option value="lastUpdated_desc">{t.board.filters?.sortOptions?.lastUpdatedDesc || 'Last updated (newest)'}</option>
+                  <option value="lastUpdated_asc">{t.board.filters?.sortOptions?.lastUpdatedAsc || 'Last updated (oldest)'}</option>
+                  <option value="company_asc">{t.board.filters?.sortOptions?.companyAsc || 'Company (A–Z)'}</option>
+                  <option value="company_desc">{t.board.filters?.sortOptions?.companyDesc || 'Company (Z–A)'}</option>
+                  <option value="position_asc">{t.board.filters?.sortOptions?.positionAsc || 'Position (A–Z)'}</option>
+                  <option value="position_desc">{t.board.filters?.sortOptions?.positionDesc || 'Position (Z–A)'}</option>
+                  <option value="status_asc">{t.board.filters?.sortOptions?.statusAsc || 'Status'}</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Date filters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+                    {t.board.labels.dateAdded}
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      value={dateAddedFrom}
+                      onChange={(e) => setDateAddedFrom(e.target.value)}
+                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
+                    />
+                    <input
+                      type="date"
+                      value={dateAddedTo}
+                      onChange={(e) => setDateAddedTo(e.target.value)}
+                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
+                    {t.board.labels.lastUpdated}
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      value={lastUpdatedFrom}
+                      onChange={(e) => setLastUpdatedFrom(e.target.value)}
+                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
+                    />
+                    <input
+                      type="date"
+                      value={lastUpdatedTo}
+                      onChange={(e) => setLastUpdatedTo(e.target.value)}
+                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:underline"
+          >
+            {t.board.filters?.reset || 'Reset filters'}
           </button>
         </div>
       </div>
@@ -451,12 +674,12 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 }`}>
                 {t.board.status[status]}
                 <span className="bg-white dark:bg-gray-700 px-2 py-0.5 rounded-full text-xs border dark:border-gray-600 shadow-sm">
-                  {filteredJobs.filter(j => j.status === status).length}
+                  {visibleJobs.filter(j => j.status === status).length}
                 </span>
               </div>
 
               <div className="p-2 space-y-3 overflow-y-auto flex-1 custom-scrollbar">
-                {filteredJobs.filter(j => j.status === status).map(job => (
+                {visibleJobs.filter(j => j.status === status).map(job => (
                   <JobCard
                     key={job.id}
                     job={job}

@@ -66,6 +66,25 @@ export const TRANSLATIONS = {
         [ApplicationStatus.INTERVIEW]: 'Interview',
         [ApplicationStatus.OFFER]: 'Offer',
         [ApplicationStatus.REJECTED]: 'Rejected'
+      },
+      filters: {
+        status: 'Status filter',
+        allStatuses: 'All',
+        search: 'Search',
+        searchPlaceholder: 'Search by company, position, notes...',
+        sortBy: 'Sort by',
+        sortOptions: {
+          dateAddedDesc: 'Date added (newest)',
+          dateAddedAsc: 'Date added (oldest)',
+          lastUpdatedDesc: 'Last updated (newest)',
+          lastUpdatedAsc: 'Last updated (oldest)',
+          companyAsc: 'Company (A–Z)',
+          companyDesc: 'Company (Z–A)',
+          positionAsc: 'Position (A–Z)',
+          positionDesc: 'Position (Z–A)',
+          statusAsc: 'Status'
+        },
+        reset: 'Reset filters'
       }
     },
     dashboard: {
@@ -149,6 +168,25 @@ export const TRANSLATIONS = {
         [ApplicationStatus.INTERVIEW]: 'Interview',
         [ApplicationStatus.OFFER]: 'Angebot',
         [ApplicationStatus.REJECTED]: 'Abgelehnt'
+      },
+      filters: {
+        status: 'Statusfilter',
+        allStatuses: 'Alle',
+        search: 'Suche',
+        searchPlaceholder: 'Suche nach Firma, Position, Notizen...',
+        sortBy: 'Sortieren nach',
+        sortOptions: {
+          dateAddedDesc: 'Hinzugefügt (neueste)',
+          dateAddedAsc: 'Hinzugefügt (älteste)',
+          lastUpdatedDesc: 'Aktualisiert (neueste)',
+          lastUpdatedAsc: 'Aktualisiert (älteste)',
+          companyAsc: 'Firma (A–Z)',
+          companyDesc: 'Firma (Z–A)',
+          positionAsc: 'Position (A–Z)',
+          positionDesc: 'Position (Z–A)',
+          statusAsc: 'Status'
+        },
+        reset: 'Filter zurücksetzen'
       }
     },
     dashboard: {
