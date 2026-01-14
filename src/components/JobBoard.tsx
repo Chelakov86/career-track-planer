@@ -20,6 +20,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<Partial<JobApplication>>({});
+  const [viewJobId, setViewJobId] = useState<string | null>(null);
+  const [modalMode, setModalMode] = useState<'view' | 'edit'>('edit');
 
   // Drag and Drop State (Mouse & Touch)
   const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
@@ -96,12 +98,25 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       status: ApplicationStatus.RESEARCH,
       roleType: 'PM'
     });
+    setModalMode('edit');
+    setShowModal(true);
+  };
+
+  const openViewModal = (job: JobApplication) => {
+    setFormData({ ...job });
+    setViewJobId(job.id);
+    setModalMode('view');
     setShowModal(true);
   };
 
   const openEditModal = (job: JobApplication) => {
     setFormData({ ...job });
+    setModalMode('edit');
     setShowModal(true);
+  };
+
+  const switchToEditMode = () => {
+    setModalMode('edit');
   };
 
   const handleSaveJob = (data: Partial<JobApplication>) => {
@@ -358,14 +373,19 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         />
       )}
 
-      {/* Add/Edit Job Modal */}
+      {/* Add/Edit/View Job Modal */}
       {showModal && (
         <JobModal
           key={formData.id || 'new'} // Force remount when editing different job
           initialData={formData}
           language={language}
+          mode={modalMode}
           onSave={handleSaveJob}
-          onCancel={() => setShowModal(false)}
+          onCancel={() => {
+            setShowModal(false);
+            setViewJobId(null);
+          }}
+          onEdit={modalMode === 'view' ? switchToEditMode : undefined}
         />
       )}
 
@@ -442,6 +462,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                     job={job}
                     language={language}
                     draggedItemId={draggedItemId}
+                    onView={openViewModal}
                     onEdit={openEditModal}
                     onDelete={setDeleteId}
                     onNextStatus={(() => {

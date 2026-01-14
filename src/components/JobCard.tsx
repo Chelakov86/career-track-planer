@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Pencil, Trash2, MapPin, Euro, ChevronRight } from 'lucide-react';
 import { JobApplication, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
@@ -9,6 +9,7 @@ interface JobCardProps {
     isGhost?: boolean;
     draggedItemId?: string | null;
 
+    onView?: (job: JobApplication) => void;
     onEdit: (job: JobApplication) => void;
     onDelete: (id: string) => void;
     onNextStatus?: () => void;
@@ -26,6 +27,7 @@ export const JobCard: React.FC<JobCardProps> = ({
     language,
     isGhost = false,
     draggedItemId,
+    onView,
     onEdit,
     onDelete,
     onNextStatus,
@@ -36,11 +38,61 @@ export const JobCard: React.FC<JobCardProps> = ({
     onTouchEnd
 }) => {
     const t = TRANSLATIONS[language];
+    const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
+    const hasDragged = useRef(false);
 
     const ensureAbsoluteUrl = (url: string) => {
         if (!url) return '';
         if (url.startsWith('http://') || url.startsWith('https://')) return url;
         return `https://${url}`;
+    };
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+        if (isGhost) return;
+        mouseDownPos.current = { x: e.clientX, y: e.clientY };
+        hasDragged.current = false;
+    };
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        if (isGhost || !mouseDownPos.current) return;
+        const deltaX = Math.abs(e.clientX - mouseDownPos.current.x);
+        const deltaY = Math.abs(e.clientY - mouseDownPos.current.y);
+        const threshold = 5; // pixels
+        if (deltaX > threshold || deltaY > threshold) {
+            hasDragged.current = true;
+        }
+    };
+
+    const handleClick = (e: React.MouseEvent) => {
+        if (isGhost || !onView) return;
+        // Don't trigger view if clicking on buttons, links, or if drag occurred
+        const target = e.target as HTMLElement;
+        if (
+            target.closest('button') ||
+            target.closest('a') ||
+            hasDragged.current
+        ) {
+            return;
+        }
+        onView(job);
+    };
+
+    const handleDragStart = (e: React.DragEvent) => {
+        if (!isGhost) {
+            hasDragged.current = true;
+            onDragStart(e, job.id);
+        }
+    };
+
+    const handleDragEnd = () => {
+        if (!isGhost) {
+            onDragEnd();
+        }
+        // Reset after a short delay to allow click event to check
+        setTimeout(() => {
+            hasDragged.current = false;
+            mouseDownPos.current = null;
+        }, 100);
     };
 
     return (
@@ -50,8 +102,11 @@ export const JobCard: React.FC<JobCardProps> = ({
                     'hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-200 dark:hover:border-indigo-900'
                 } ${!isGhost ? 'cursor-grab active:cursor-grabbing group' : ''}`}
             draggable={!isGhost}
-            onDragStart={(e) => !isGhost && onDragStart(e, job.id)}
-            onDragEnd={!isGhost ? onDragEnd : undefined}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onClick={handleClick}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
 
             // Touch Events
             onTouchStart={(e) => !isGhost && onTouchStart(e, job)}
@@ -66,14 +121,20 @@ export const JobCard: React.FC<JobCardProps> = ({
                 {!isGhost && (
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                            onClick={() => onEdit(job)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onEdit(job);
+                            }}
                             className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
                             title={t.board.editJob}
                         >
                             <Pencil className="w-3.5 h-3.5" />
                         </button>
                         <button
-                            onClick={() => onDelete(job.id)}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete(job.id);
+                            }}
                             className="text-gray-400 hover:text-red-500 p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
                             title="Delete"
                         >
@@ -124,7 +185,10 @@ export const JobCard: React.FC<JobCardProps> = ({
 
                 {!isGhost && onNextStatus && (
                     <button
-                        onClick={onNextStatus}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onNextStatus();
+                        }}
                         className="p-1 rounded-full hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                     >
                         <ChevronRight className="w-4 h-4" />
