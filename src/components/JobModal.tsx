@@ -51,6 +51,20 @@ export const JobModal: React.FC<JobModalProps> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialData.id]);
 
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                onCancel();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [onCancel]);
+
     const handleSave = () => {
         if (!formData.company || !formData.position) return;
         onSave(formData);
@@ -229,7 +243,7 @@ export const JobModal: React.FC<JobModalProps> = ({
                                 onClick={onCancel}
                                 className="px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-white dark:hover:bg-gray-700 hover:border-gray-300 transition-colors"
                             >
-                                {t.board.cancel}
+                                {t.board.close}
                             </button>
                             {onEdit && (
                                 <button
