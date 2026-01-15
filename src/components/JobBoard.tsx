@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
-import { Plus, Download } from 'lucide-react';
+import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search } from 'lucide-react';
 import { JobCard } from './JobCard';
 import { JobModal } from './JobModal';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
@@ -30,6 +30,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [formData, setFormData] = useState<Partial<JobApplication>>({});
   const [viewJobId, setViewJobId] = useState<string | null>(null);
   const [modalMode, setModalMode] = useState<'view' | 'edit'>('edit');
+  const [showFilters, setShowFilters] = useState(false);
+  const [showSort, setShowSort] = useState(false);
 
   // Drag and Drop State (Mouse & Touch)
   const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
@@ -43,6 +45,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [isTouchDragging, setIsTouchDragging] = useState(false);
   const [touchPos, setTouchPos] = useState<{ x: number, y: number } | null>(null);
   const dragItemTimer = useRef<any>(null);
+  const sortRef = useRef<HTMLDivElement>(null);
 
   const t = TRANSLATIONS[language];
   const columns = Object.values(ApplicationStatus);
@@ -68,32 +71,37 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       const zone = 100; // Activation zone in pixels from edge
       const maxSpeed = 15; // Max pixels per frame
 
-      let change = 0;
+      const rect = container.getBoundingClientRect();
+      const speed = 15;
+      const threshold = 100;
 
-      // Calculate scroll speed based on distance from edge
-      if (x < left + zone) {
-        // Scroll Left
-        const intensity = Math.max(0, (left + zone - x) / zone);
-        change = -Math.pow(intensity, 2) * maxSpeed;
-      } else if (x > right - zone) {
-        // Scroll Right
-        const intensity = Math.max(0, (x - (right - zone)) / zone);
-        change = Math.pow(intensity, 2) * maxSpeed;
-      }
-
-      if (change !== 0) {
-        container.scrollLeft += change;
+      if (x < rect.left + threshold) {
+        container.scrollLeft -= speed;
+      } else if (x > rect.right - threshold) {
+        container.scrollLeft += speed;
       }
 
       animationFrameId = requestAnimationFrame(scrollLoop);
     };
 
     animationFrameId = requestAnimationFrame(scrollLoop);
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-    };
+    return () => cancelAnimationFrame(animationFrameId);
   }, [draggedItemId]);
+
+  // Handle outside clicks for sort dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (sortRef.current && !sortRef.current.contains(event.target as Node)) {
+        setShowSort(false);
+      }
+    };
+    if (showSort) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSort]);
 
   const openAddModal = () => {
     setFormData({
@@ -494,168 +502,214 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           <p className="text-gray-500 dark:text-gray-400 text-sm">{t.board.subtitle}</p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <button
+            onClick={() => {
+              setShowFilters(!showFilters);
+              if (!showFilters) setShowSort(false);
+            }}
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm font-medium shadow-sm border ${showFilters
+              ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800'
+              : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+              }`}
+            title={t.board.filters?.status || 'Filters'}
+          >
+            <Filter className="w-4 h-4" />
+            <span className="hidden sm:inline">{t.board.filters?.status || 'Filters'}</span>
+            {showFilters ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+          </button>
+
+          <div className="relative" ref={sortRef}>
+            <button
+              onClick={() => {
+                setShowSort(!showSort);
+                if (!showSort) setShowFilters(false);
+              }}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm font-medium shadow-sm border ${showSort
+                ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800'
+                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                }`}
+              title={t.board.filters?.sortBy || 'Sort'}
+            >
+              <ArrowUpDown className="w-4 h-4" />
+              <span className="hidden sm:inline">{t.board.filters?.sortBy || 'Sort'}</span>
+              {showSort ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            </button>
+
+            {showSort && (
+              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 py-2 animate-in fade-in zoom-in duration-200">
+                {[
+                  { value: 'dateAdded_desc', label: t.board.filters?.sortOptions?.dateAddedDesc || 'Date added (newest)' },
+                  { value: 'dateAdded_asc', label: t.board.filters?.sortOptions?.dateAddedAsc || 'Date added (oldest)' },
+                  { value: 'lastUpdated_desc', label: t.board.filters?.sortOptions?.lastUpdatedDesc || 'Last updated (newest)' },
+                  { value: 'lastUpdated_asc', label: t.board.filters?.sortOptions?.lastUpdatedAsc || 'Last updated (oldest)' },
+                  { value: 'company_asc', label: t.board.filters?.sortOptions?.companyAsc || 'Company (A–Z)' },
+                  { value: 'company_desc', label: t.board.filters?.sortOptions?.companyDesc || 'Company (Z–A)' },
+                  { value: 'position_asc', label: t.board.filters?.sortOptions?.positionAsc || 'Position (A–Z)' },
+                  { value: 'position_desc', label: t.board.filters?.sortOptions?.positionDesc || 'Position (Z–A)' },
+                  { value: 'status_asc', label: t.board.filters?.sortOptions?.statusAsc || 'Status' }
+                ].map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => {
+                      const [field, dir] = opt.value.split('_') as [typeof sortField, typeof sortDirection];
+                      setSortField(field);
+                      setSortDirection(dir);
+                      setShowSort(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${`${sortField}_${sortDirection}` === opt.value
+                        ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 font-medium'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                      }`}
+                  >
+                    {opt.label}
+                    {`${sortField}_${sortDirection}` === opt.value && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
           <button
             onClick={handleExportCSV}
             className="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm font-medium shadow-sm"
             title={t.board.exportCSV}
           >
             <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">{t.board.exportCSV}</span>
+            <span className="hidden lg:inline">{t.board.exportCSV}</span>
           </button>
           <button
             onClick={openAddModal}
             className="flex items-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm font-medium shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            {t.board.addJob}
+            <span className="hidden sm:inline">{t.board.addJob}</span>
+            <span className="sm:hidden">{t.board.addJob.split(' ')[0]}</span>
           </button>
         </div>
       </div>
 
-      {/* Filters & sorting bar */}
-      <div className="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-3 shrink-0">
-        <div className="flex flex-col lg:flex-row gap-3">
-          {/* Status filters */}
-          <div className="flex-1">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                {t.board.filters?.status || t.board.labels.status}
-              </span>
-              <button
-                type="button"
-                onClick={() => setStatusFilter('ALL')}
-                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-              >
-                {t.board.filters?.allStatuses || 'All'}
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-1">
-              {columns.map(status => {
-                const active = statusFilter === 'ALL' || statusFilter.includes(status);
-                return (
-                  <button
-                    key={status}
-                    type="button"
-                    onClick={() => toggleStatusInFilter(status)}
-                    className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${active
-                      ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border-indigo-300 dark:border-indigo-700'
-                      : 'bg-gray-50 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:text-gray-700 dark:hover:text-gray-200'
-                      }`}
-                  >
-                    {t.board.status[status]}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Search & sort */}
-          <div className="flex-1 flex flex-col gap-2">
-            <div className="flex gap-2">
+      {/* Collapsible Panels */}
+      <div className="flex flex-col gap-3 shrink-0">
+        {/* Filters bar */}
+        <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden transition-all duration-300 ${showFilters ? 'p-3 opacity-100' : 'h-0 p-0 opacity-0 border-none'
+          }`}>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search */}
               <div className="flex-1">
-                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
-                  {t.board.filters?.search || 'Search'}
-                </label>
+                <div className="flex items-center gap-2 mb-2">
+                  <Search className="w-3.5 h-3.5 text-gray-400" />
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    {t.board.filters?.search || 'Search'}
+                  </span>
+                </div>
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t.board.filters?.searchPlaceholder || 'Search by company, position, notes...'}
+                  placeholder={t.board.filters?.searchPlaceholder || 'Search...'}
                   className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
                 />
               </div>
-              <div className="w-40">
-                <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
-                  {t.board.filters?.sortBy || 'Sort by'}
-                </label>
-                <select
-                  value={`${sortField}_${sortDirection}`}
-                  onChange={(e) => {
-                    const [field, dir] = e.target.value.split('_') as [typeof sortField, typeof sortDirection];
-                    setSortField(field);
-                    setSortDirection(dir);
-                  }}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
-                >
-                  <option value="dateAdded_desc">{t.board.filters?.sortOptions?.dateAddedDesc || 'Date added (newest)'}</option>
-                  <option value="dateAdded_asc">{t.board.filters?.sortOptions?.dateAddedAsc || 'Date added (oldest)'}</option>
-                  <option value="lastUpdated_desc">{t.board.filters?.sortOptions?.lastUpdatedDesc || 'Last updated (newest)'}</option>
-                  <option value="lastUpdated_asc">{t.board.filters?.sortOptions?.lastUpdatedAsc || 'Last updated (oldest)'}</option>
-                  <option value="company_asc">{t.board.filters?.sortOptions?.companyAsc || 'Company (A–Z)'}</option>
-                  <option value="company_desc">{t.board.filters?.sortOptions?.companyDesc || 'Company (Z–A)'}</option>
-                  <option value="position_asc">{t.board.filters?.sortOptions?.positionAsc || 'Position (A–Z)'}</option>
-                  <option value="position_desc">{t.board.filters?.sortOptions?.positionDesc || 'Position (Z–A)'}</option>
-                  <option value="status_asc">{t.board.filters?.sortOptions?.statusAsc || 'Status'}</option>
-                </select>
+
+              {/* Status filters */}
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                    {t.board.labels.status}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setStatusFilter('ALL')}
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                  >
+                    {t.board.filters?.allStatuses || 'All'}
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-1">
+                  {columns.map(status => {
+                    const active = statusFilter === 'ALL' || statusFilter.includes(status);
+                    return (
+                      <button
+                        key={status}
+                        type="button"
+                        onClick={() => toggleStatusInFilter(status)}
+                        className={`px-2 py-1 text-[10px] rounded-full border transition-colors ${active
+                          ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border-indigo-300 dark:border-indigo-700'
+                          : 'bg-gray-50 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:text-gray-700 dark:hover:text-gray-200'
+                          }`}
+                      >
+                        {t.board.status[status]}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
             {/* Date filters */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <div className="flex gap-2 items-end">
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
-                    {t.board.labels.dateAdded}
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="date"
-                      value={dateAddedFrom}
-                      onChange={(e) => setDateAddedFrom(e.target.value)}
-                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
-                    />
-                    <input
-                      type="date"
-                      value={dateAddedTo}
-                      onChange={(e) => setDateAddedTo(e.target.value)}
-                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
-                    />
-                  </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  {t.board.labels.dateAdded}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={dateAddedFrom}
+                    onChange={(e) => setDateAddedFrom(e.target.value)}
+                    className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+                  />
+                  <input
+                    type="date"
+                    value={dateAddedTo}
+                    onChange={(e) => setDateAddedTo(e.target.value)}
+                    className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+                  />
                 </div>
               </div>
-              <div className="flex gap-2 items-end">
-                <div className="flex-1">
-                  <label className="block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1">
-                    {t.board.labels.lastUpdated}
-                  </label>
-                  <div className="flex gap-2">
-                    <input
-                      type="date"
-                      value={lastUpdatedFrom}
-                      onChange={(e) => setLastUpdatedFrom(e.target.value)}
-                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
-                    />
-                    <input
-                      type="date"
-                      value={lastUpdatedTo}
-                      onChange={(e) => setLastUpdatedTo(e.target.value)}
-                      className="w-full px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
-                    />
-                  </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                  {t.board.labels.lastUpdated}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="date"
+                    value={lastUpdatedFrom}
+                    onChange={(e) => setLastUpdatedFrom(e.target.value)}
+                    className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+                  />
+                  <input
+                    type="date"
+                    value={lastUpdatedTo}
+                    onChange={(e) => setLastUpdatedTo(e.target.value)}
+                    className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100"
+                  />
                 </div>
               </div>
             </div>
-          </div>
-        </div>
 
-        <div className="flex justify-end">
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:underline"
-          >
-            {t.board.filters?.reset || 'Reset filters'}
-          </button>
+            <div className="flex justify-end pt-1 border-t border-gray-50 dark:border-gray-700">
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:underline"
+              >
+                {t.board.filters?.reset || 'Reset filters'}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
       <div
-        className="flex-1 overflow-x-auto overflow-y-hidden pb-2"
+        className="flex-1 overflow-x-auto overflow-y-hidden pb-4 -mx-4 px-4 sm:mx-0 sm:px-0"
         ref={scrollContainerRef}
         onDragOver={handleContainerDragOver} // Track drag over globally in container
       >
-        <div className="flex gap-4 min-w-[1200px] h-full">
+        <div className="flex gap-4 min-w-max h-full pb-2">
           {columns.map(status => (
             <div
               key={status}
@@ -664,13 +718,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               onDrop={(e) => handleDrop(e, status)}
               onDragLeave={handleDragLeave}
               className={`flex-1 flex flex-col rounded-xl border-2 transition-all duration-200 min-w-[280px] ${dragOverColumn === status
-                  ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-400 border-dashed shadow-inner scale-[1.01]'
-                  : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-800 border-solid'
+                ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-400 border-dashed shadow-inner scale-[1.01]'
+                : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-800 border-solid'
                 }`}
             >
               <div className={`p-3 border-b border-gray-200 dark:border-gray-700 rounded-t-xl font-semibold text-sm flex justify-between items-center transition-colors ${dragOverColumn === status ? 'bg-indigo-100/50 dark:bg-indigo-900/50' :
-                  status === ApplicationStatus.REJECTED ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300' :
-                    status === ApplicationStatus.OFFER ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
+                status === ApplicationStatus.REJECTED ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300' :
+                  status === ApplicationStatus.OFFER ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
                 }`}>
                 {t.board.status[status]}
                 <span className="bg-white dark:bg-gray-700 px-2 py-0.5 rounded-full text-xs border dark:border-gray-600 shadow-sm">
@@ -710,6 +764,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           ))}
         </div>
       </div>
-    </div>
+    </div >
   );
 };

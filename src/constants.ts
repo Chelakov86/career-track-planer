@@ -68,7 +68,7 @@ export const TRANSLATIONS = {
         [ApplicationStatus.REJECTED]: 'Rejected'
       },
       filters: {
-        status: 'Status filter',
+        status: 'Filter',
         allStatuses: 'All',
         search: 'Search',
         searchPlaceholder: 'Search by company, position, notes...',
@@ -170,7 +170,7 @@ export const TRANSLATIONS = {
         [ApplicationStatus.REJECTED]: 'Abgelehnt'
       },
       filters: {
-        status: 'Statusfilter',
+        status: 'Filter',
         allStatuses: 'Alle',
         search: 'Suche',
         searchPlaceholder: 'Suche nach Firma, Position, Notizen...',
