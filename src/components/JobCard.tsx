@@ -113,11 +113,7 @@ export const JobCard: React.FC<JobCardProps> = ({
             onTouchMove={!isGhost ? onTouchMove : undefined}
             onTouchEnd={!isGhost ? onTouchEnd : undefined}
         >
-            <div className="flex justify-between items-start mb-2">
-                <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border ${job.roleType === 'PM' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-100 dark:border-blue-900' : 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-100 dark:border-purple-900'
-                    }`}>
-                    {job.roleType}
-                </span>
+            <div className="flex justify-end items-start mb-2">
                 {!isGhost && (
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 2xl:opacity-100 transition-opacity">
                         <button

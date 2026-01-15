@@ -1,4 +1,4 @@
-import { ScheduleBlock, RoleFocus, Language } from "../types";
+import { ScheduleBlock, Language } from "../types";
 
 /**
  * Helper function to call the Gemini API via serverless function
@@ -31,12 +31,12 @@ const callGeminiAPI = async (prompt: string, config?: any): Promise<string> => {
   }
 };
 
-export const generateTaskAdvice = async (block: ScheduleBlock, roleFocus: RoleFocus, lang: Language): Promise<string> => {
+export const generateTaskAdvice = async (block: ScheduleBlock, lang: Language): Promise<string> => {
   const errorMsg = lang === 'de' ? "KI-Dienst nicht verfügbar." : "AI service unavailable.";
 
   try {
     const prompt = `
-      You are an expert Career Coach for someone looking for a job in ${roleFocus} (Project Management or QA).
+      You are an expert Career Coach for someone looking for a job.
 
       The user is currently in this time block:
       Title: ${block.title}
@@ -56,10 +56,10 @@ export const generateTaskAdvice = async (block: ScheduleBlock, roleFocus: RoleFo
   }
 };
 
-export const analyzeJobDescription = async (description: string, myRole: RoleFocus, lang: Language): Promise<string> => {
+export const analyzeJobDescription = async (description: string, lang: Language): Promise<string> => {
   try {
     const prompt = `
-      Analyze the following job description for a ${myRole} role.
+      Analyze the following job description.
 
       Job Description:
       ${description.substring(0, 2000)}... (truncated)

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ExternalLink } from 'lucide-react';
-import { JobApplication, ApplicationStatus, RoleFocus, Language } from '../types';
+import { JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 
 interface JobModalProps {
@@ -172,7 +172,6 @@ export const JobModal: React.FC<JobModalProps> = ({
                                 {renderField(t.board.placeholders.company, formData.company)}
                                 {renderField(t.board.placeholders.position, formData.position)}
                                 {renderSelect(t.board.labels.status, formData.status || ApplicationStatus.RESEARCH, () => {}, columns.map(status => ({ value: status, label: t.board.status[status] })))}
-                                {renderSelect(t.board.labels.role, formData.roleType || 'PM', () => {}, [{ value: 'PM', label: 'PM' }, { value: 'QA', label: 'QA' }])}
                                 {renderField(t.board.labels.location, formData.location)}
                                 {renderField(t.board.labels.salary, formData.salary)}
                                 <div className="col-span-2">
@@ -211,7 +210,6 @@ export const JobModal: React.FC<JobModalProps> = ({
                                 {renderInput(t.board.placeholders.company, formData.company || '', (val) => setFormData({ ...formData, company: val }), t.board.placeholders.company, true, true)}
                                 {renderInput(t.board.placeholders.position, formData.position || '', (val) => setFormData({ ...formData, position: val }), t.board.placeholders.position, true, true)}
                                 {renderSelect(t.board.labels.status, formData.status || ApplicationStatus.RESEARCH, (val) => setFormData({ ...formData, status: val as ApplicationStatus }), columns.map(status => ({ value: status, label: t.board.status[status] })))}
-                                {renderSelect(t.board.labels.role, formData.roleType || 'PM', (val) => setFormData({ ...formData, roleType: val as RoleFocus }), [{ value: 'PM', label: 'PM' }, { value: 'QA', label: 'QA' }])}
                                 {renderInput(t.board.labels.location, formData.location || '', (val) => setFormData({ ...formData, location: val }), t.board.placeholders.location)}
                                 {renderInput(t.board.labels.salary, formData.salary || '', (val) => setFormData({ ...formData, salary: val }), t.board.placeholders.salary)}
                                 <div className="col-span-2">

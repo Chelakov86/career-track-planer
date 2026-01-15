@@ -9,12 +9,11 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useJobs } from './hooks/useJobs';
 import { getSchedule } from './constants';
-import { RoleFocus, Language } from './types';
+import { Language } from './types';
 
 const AppContent: React.FC = () => {
   const { user, isLoading } = useAuth();
   const [language, setLanguage] = useState<Language>('de');
-  const [userFocus, setUserFocus] = useState<RoleFocus>('PM');
 
   const { jobs, addJob, editJob, updateStatus, deleteJob } = useJobs(user);
 
@@ -39,8 +38,6 @@ const AppContent: React.FC = () => {
           <Layout
             language={language}
             setLanguage={setLanguage}
-            userFocus={userFocus}
-            setUserFocus={setUserFocus}
           />
         }
       >
@@ -49,7 +46,6 @@ const AppContent: React.FC = () => {
           element={
             <ScheduleView
               schedule={currentSchedule}
-              userFocus={userFocus}
               language={language}
             />
           }

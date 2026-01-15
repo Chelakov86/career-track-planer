@@ -1,6 +1,3 @@
-
-export type RoleFocus = 'PM' | 'QA' | 'General';
-
 export type Language = 'en' | 'de';
 
 export enum ApplicationStatus {
@@ -25,7 +22,6 @@ export interface JobApplication {
   position: string;
   location: string;
   status: ApplicationStatus;
-  roleType: RoleFocus;
   dateAdded: string;
   lastUpdated: string;
   notes: string;

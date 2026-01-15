@@ -1,7 +1,7 @@
 import React from 'react';
 import { JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Target, TrendingUp } from 'lucide-react';
 
 interface DashboardProps {
@@ -22,15 +22,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
     name: t.board.status[status],
     count: jobs.filter(j => j.status === status).length
   })).filter(d => d.count > 0);
-
-  // Data for Role Split
-  const pmCount = jobs.filter(j => j.roleType === 'PM').length;
-  const qaCount = jobs.filter(j => j.roleType === 'QA').length;
-  const roleData = [
-    { name: 'PM', value: pmCount },
-    { name: 'QA', value: qaCount }
-  ];
-  const ROLE_COLORS = ['#6366f1', '#a855f7'];
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -64,53 +55,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-[350px] transition-colors">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-6">{t.dashboard.funnel}</h3>
-          <ResponsiveContainer width="100%" height="80%">
-            <BarChart data={funnelData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" className="dark:stroke-gray-700" />
-              <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 12, fill: '#6b7280'}} className="dark:fill-gray-400" />
-              <Tooltip 
-                cursor={{fill: 'transparent'}} 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-              />
-              <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={20} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-[350px] transition-colors">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-6">{t.dashboard.distribution}</h3>
-          <ResponsiveContainer width="100%" height="80%">
-            <PieChart>
-              <Pie
-                data={roleData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={100}
-                paddingAngle={5}
-                dataKey="value"
-                stroke="none"
-              >
-                {roleData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={ROLE_COLORS[index % ROLE_COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="flex justify-center gap-6 text-sm text-gray-600 dark:text-gray-400 mt-[-20px]">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-indigo-500"></div> PM
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-purple-500"></div> QA
-            </div>
-          </div>
-        </div>
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-[350px] transition-colors">
+        <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-6">{t.dashboard.funnel}</h3>
+        <ResponsiveContainer width="100%" height="80%">
+          <BarChart data={funnelData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" className="dark:stroke-gray-700" />
+            <XAxis type="number" hide />
+            <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 12, fill: '#6b7280'}} className="dark:fill-gray-400" />
+            <Tooltip
+              cursor={{fill: 'transparent'}}
+              contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+            />
+            <Bar dataKey="count" fill="#6366f1" radius={[0, 4, 4, 0]} barSize={20} />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     </div>
   );

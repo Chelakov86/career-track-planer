@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { ScheduleBlock, RoleFocus, Language } from '../types';
+import { ScheduleBlock, Language } from '../types';
 import { generateTaskAdvice } from '../services/geminiService';
 import { TRANSLATIONS } from '../constants';
 import { Calendar, Clock, Briefcase, Zap, Coffee, BookOpen, Share2, Sparkles, Download, CalendarPlus } from 'lucide-react';
 
 interface ScheduleViewProps {
   schedule: ScheduleBlock[];
-  userFocus: RoleFocus;
   language: Language;
 }
 
@@ -21,14 +20,14 @@ const CategoryIcon = ({ category }: { category: string }) => {
   }
 };
 
-export const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, userFocus, language }) => {
+export const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, language }) => {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [advice, setAdvice] = useState<Record<string, string>>({});
   const t = TRANSLATIONS[language];
 
   const handleGetAdvice = async (block: ScheduleBlock) => {
     setLoadingId(block.id);
-    const result = await generateTaskAdvice(block, userFocus, language);
+    const result = await generateTaskAdvice(block, language);
     setAdvice(prev => ({ ...prev, [block.id]: result }));
     setLoadingId(null);
   };
