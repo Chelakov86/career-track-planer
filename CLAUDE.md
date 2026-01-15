@@ -184,12 +184,12 @@ CareerTrack Planer is a **React-based web application** designed to help job see
    VITE_SUPABASE_URL=your_supabase_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    VITE_SITE_URL=http://localhost:3000
-   GEMINI_API_KEY=your_gemini_api_key
+   VITE_GEMINI_API_KEY=your_gemini_api_key
    ```
 
    **Important Notes:**
-   - `VITE_` prefix required for client-side access (Vite convention)
-   - `GEMINI_API_KEY` is injected via `vite.config.ts` (no prefix needed)
+   - `VITE_` prefix required for all client-side environment variables (Vite convention)
+   - All variables with `VITE_` prefix are automatically injected at build time
    - See `.env.example` for template
 
 4. **Set up Supabase database**
@@ -1186,8 +1186,10 @@ This ensures all routes are handled by the SPA (React Router).
    VITE_SUPABASE_URL=<your_url>
    VITE_SUPABASE_ANON_KEY=<your_key>
    VITE_SITE_URL=<your_vercel_url>
-   GEMINI_API_KEY=<your_api_key>
+   VITE_GEMINI_API_KEY=<your_api_key>
    ```
+
+   **Important:** All variables must use the `VITE_` prefix to be accessible in the client-side application.
 
 3. **Deploy:**
    - Vercel auto-deploys on every push to main branch
@@ -1314,7 +1316,7 @@ npm run build
 ### Security Checklist
 
 When adding new features, verify:
-- [ ] Environment variables use `VITE_` prefix (client-side) or injected via Vite config
+- [ ] Environment variables use `VITE_` prefix for client-side access
 - [ ] User input is sanitized (React auto-escapes JSX)
 - [ ] External links use `rel="noopener noreferrer"`
 - [ ] Supabase RLS policies isolate user data
@@ -1404,13 +1406,11 @@ JobBoard.tsx (main)
 ### Environment Variables
 
 ```bash
-# Required for client-side (VITE_ prefix)
+# All environment variables require VITE_ prefix for client-side access
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
 VITE_SITE_URL=http://localhost:3000
-
-# Required for server-side (injected via vite.config.ts)
-GEMINI_API_KEY=your-gemini-key
+VITE_GEMINI_API_KEY=your-gemini-key
 ```
 
 ### Key Commands
@@ -1467,6 +1467,9 @@ if (error) {
 - Comprehensive codebase analysis
 - Documented all patterns and conventions
 - Added common tasks and troubleshooting guides
+- Fixed Gemini API configuration to use standard Vite environment variables (VITE_GEMINI_API_KEY)
+- Updated vite.config.ts to remove custom define block (now uses standard Vite env injection)
+- Corrected all documentation to reflect proper VITE_ prefix usage
 
 ---
 
