@@ -709,7 +709,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         ref={scrollContainerRef}
         onDragOver={handleContainerDragOver} // Track drag over globally in container
       >
-        <div className="flex gap-4 min-w-max h-full pb-2">
+        <div className="flex gap-4 min-w-max 2xl:min-w-0 h-full pb-2">
           {columns.map(status => (
             <div
               key={status}
@@ -717,7 +717,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               onDragOver={(e) => handleDragOver(e, status)}
               onDrop={(e) => handleDrop(e, status)}
               onDragLeave={handleDragLeave}
-              className={`flex-1 flex flex-col rounded-xl border-2 transition-all duration-200 min-w-[280px] ${dragOverColumn === status
+              className={`flex-1 flex flex-col rounded-xl border-2 transition-all duration-200 min-w-[280px] 2xl:min-w-0 ${dragOverColumn === status
                 ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-400 border-dashed shadow-inner scale-[1.01]'
                 : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-800 border-solid'
                 }`}

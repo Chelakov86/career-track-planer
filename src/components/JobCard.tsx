@@ -97,7 +97,7 @@ export const JobCard: React.FC<JobCardProps> = ({
 
     return (
         <div
-            className={`bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all relative ${isGhost ? 'shadow-2xl ring-2 ring-indigo-500 rotate-3 z-50 opacity-90' :
+            className={`bg-white dark:bg-gray-800 p-3 2xl:p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all relative ${isGhost ? 'shadow-2xl ring-2 ring-indigo-500 rotate-3 z-50 opacity-90' :
                 draggedItemId === job.id && !isGhost ? 'opacity-30 grayscale' :
                     'hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-200 dark:hover:border-indigo-900'
                 } ${!isGhost ? 'cursor-grab active:cursor-grabbing group' : ''}`}
@@ -119,7 +119,7 @@ export const JobCard: React.FC<JobCardProps> = ({
                     {job.roleType}
                 </span>
                 {!isGhost && (
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 2xl:opacity-100 transition-opacity">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -149,7 +149,7 @@ export const JobCard: React.FC<JobCardProps> = ({
                     href={ensureAbsoluteUrl(job.link)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-semibold text-gray-800 dark:text-white text-sm truncate pr-4 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors block"
+                    className="font-semibold text-gray-800 dark:text-white text-sm 2xl:text-base truncate 2xl:whitespace-normal 2xl:line-clamp-2 pr-4 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors block"
                     draggable={false}
                     onClick={(e) => {
                         e.stopPropagation();
@@ -163,10 +163,10 @@ export const JobCard: React.FC<JobCardProps> = ({
                     {job.position}
                 </a>
             ) : (
-                <h4 className="font-semibold text-gray-800 dark:text-white text-sm truncate pr-4">{job.position}</h4>
+                <h4 className="font-semibold text-gray-800 dark:text-white text-sm 2xl:text-base truncate 2xl:whitespace-normal 2xl:line-clamp-2 pr-4">{job.position}</h4>
             )}
             <div className="flex items-center gap-2 mb-2">
-                <p className="text-gray-500 dark:text-gray-400 text-xs font-medium">{job.company}</p>
+                <p className="text-gray-500 dark:text-gray-400 text-xs 2xl:text-sm font-medium">{job.company}</p>
             </div>
 
             <div className="flex flex-col gap-1 mb-3">
@@ -179,6 +179,15 @@ export const JobCard: React.FC<JobCardProps> = ({
                     </div>
                 )}
             </div>
+
+            {/* Notes preview - visible on large screens */}
+            {job.notes && (
+                <div className="hidden 2xl:block mb-3">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 italic">
+                        {job.notes}
+                    </p>
+                </div>
+            )}
 
             <div className="flex justify-between items-center pt-2 border-t border-gray-50 dark:border-gray-700">
                 <span className="text-[10px] text-gray-400 dark:text-gray-500">{job.lastUpdated}</span>
