@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { ScheduleBlock, RoleFocus, Language } from "../types";
 
 const getAIClient = () => {
-  const apiKey = process.env.API_KEY;
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) {
     console.warn("API Key not found in environment variables.");
     return null;
