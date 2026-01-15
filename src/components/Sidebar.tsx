@@ -4,13 +4,11 @@ import { Calendar, Layout, BarChart2, LogOut, Moon, Sun, Settings } from 'lucide
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { TRANSLATIONS } from '../constants';
-import { Language, RoleFocus } from '../types';
+import { Language } from '../types';
 
 interface SidebarProps {
     language: Language;
     setLanguage: (lang: Language) => void;
-    userFocus: RoleFocus;
-    setUserFocus: (focus: RoleFocus) => void;
     mobileMenuOpen: boolean;
     closeMobileMenu: () => void;
 }
@@ -18,8 +16,6 @@ interface SidebarProps {
 export const Sidebar: React.FC<SidebarProps> = ({
     language,
     setLanguage,
-    userFocus,
-    setUserFocus,
     mobileMenuOpen,
     closeMobileMenu
 }) => {
@@ -115,26 +111,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                             className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors ${language === 'de' ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
                         >
                             DE
-                        </button>
-                    </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <h4 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2 flex items-center gap-2">
-                        <Settings className="w-3 h-3" /> {t.nav.focus}
-                    </h4>
-                    <div className="flex bg-gray-100 dark:bg-gray-700 p-1 rounded-md">
-                        <button
-                            onClick={() => setUserFocus('PM')}
-                            className={`flex-1 text-xs py-1.5 rounded font-medium transition-colors ${userFocus === 'PM' ? 'bg-white dark:bg-gray-600 shadow text-indigo-700 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-                        >
-                            PM
-                        </button>
-                        <button
-                            onClick={() => setUserFocus('QA')}
-                            className={`flex-1 text-xs py-1.5 rounded font-medium transition-colors ${userFocus === 'QA' ? 'bg-white dark:bg-gray-600 shadow text-purple-700 dark:text-white' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-                        >
-                            QA
                         </button>
                     </div>
                 </div>

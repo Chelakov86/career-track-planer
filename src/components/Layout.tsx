@@ -2,20 +2,16 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
-import { Language, RoleFocus } from '../types';
+import { Language } from '../types';
 
 interface LayoutProps {
     language: Language;
     setLanguage: (lang: Language) => void;
-    userFocus: RoleFocus;
-    setUserFocus: (focus: RoleFocus) => void;
 }
 
 export const Layout: React.FC<LayoutProps> = ({
     language,
-    setLanguage,
-    userFocus,
-    setUserFocus
+    setLanguage
 }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -31,8 +27,6 @@ export const Layout: React.FC<LayoutProps> = ({
             <Sidebar
                 language={language}
                 setLanguage={setLanguage}
-                userFocus={userFocus}
-                setUserFocus={setUserFocus}
                 mobileMenuOpen={mobileMenuOpen}
                 closeMobileMenu={() => setMobileMenuOpen(false)}
             />

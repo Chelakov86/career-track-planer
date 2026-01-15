@@ -13,7 +13,6 @@ export const TRANSLATIONS = {
       board: "Application Board",
       stats: "Analytics",
       subtitle: "Job Hunt Planner",
-      focus: "Focus Area",
       logout: "Log out"
     },
     schedule: {
@@ -51,7 +50,6 @@ export const TRANSLATIONS = {
       },
       labels: {
         status: "Status",
-        role: "Role",
         location: "Location",
         salary: "Salary",
         link: "Link",
@@ -91,8 +89,7 @@ export const TRANSLATIONS = {
       total: "Total Applications",
       active: "Active Pipeline",
       interviews: "Interviews",
-      funnel: "Application Funnel",
-      distribution: "Role Focus Distribution"
+      funnel: "Application Funnel"
     },
     categories: {
       'Research': 'Research',
@@ -115,7 +112,6 @@ export const TRANSLATIONS = {
       board: "Bewerbungen",
       stats: "Statistik",
       subtitle: "Jobsuche Planer",
-      focus: "Fokusbereich",
       logout: "Abmelden"
     },
     schedule: {
@@ -153,7 +149,6 @@ export const TRANSLATIONS = {
       },
       labels: {
         status: "Status",
-        role: "Rolle",
         location: "Ort",
         salary: "Gehalt",
         link: "Link",
@@ -193,8 +188,7 @@ export const TRANSLATIONS = {
       total: "Bewerbungen Gesamt",
       active: "Aktive Pipeline",
       interviews: "Interviews",
-      funnel: "Bewerbungstrichter",
-      distribution: "Verteilung Rollenfokus"
+      funnel: "Bewerbungstrichter"
     },
     categories: {
       'Research': 'Recherche',
@@ -213,7 +207,7 @@ const SCHEDULE_EN: ScheduleBlock[] = [
     startTime: '09:00',
     endTime: '10:00',
     title: 'Research & Screening',
-    description: 'Scan job boards (LinkedIn, Stepstone). Analyze PM vs QA fit. Read descriptions thoroughly.',
+    description: 'Scan job boards (LinkedIn, Stepstone). Analyze job fit and requirements. Read descriptions thoroughly.',
     category: 'Research',
     isFixed: false
   },
@@ -222,7 +216,7 @@ const SCHEDULE_EN: ScheduleBlock[] = [
     startTime: '10:00',
     endTime: '12:00',
     title: 'Deep Work: Applications',
-    description: 'Tailor CV/Resume. Write specific cover letters highlighting Agile or Testing tools.',
+    description: 'Tailor CV/Resume. Write specific cover letters highlighting relevant skills and experience.',
     category: 'Deep Work',
     isFixed: false
   },
@@ -240,7 +234,7 @@ const SCHEDULE_EN: ScheduleBlock[] = [
     startTime: '13:00',
     endTime: '14:00',
     title: 'Upskilling (Hard Skills)',
-    description: 'Online courses, certificates (PMP, ISTQB), or tool training (Jira, Cypress).',
+    description: 'Online courses, professional certificates, or tool training relevant to your target roles.',
     category: 'Learning',
     isFixed: false
   },
@@ -261,7 +255,7 @@ const SCHEDULE_DE: ScheduleBlock[] = [
     startTime: '09:00',
     endTime: '10:00',
     title: 'Recherche & Screening',
-    description: 'Jobbörsen scannen (LinkedIn, Stepstone). Passgenauigkeit für PM vs QA prüfen. Beschreibungen gründlich lesen.',
+    description: 'Jobbörsen scannen (LinkedIn, Stepstone). Passgenauigkeit und Anforderungen prüfen. Beschreibungen gründlich lesen.',
     category: 'Research',
     isFixed: false
   },
@@ -270,7 +264,7 @@ const SCHEDULE_DE: ScheduleBlock[] = [
     startTime: '10:00',
     endTime: '12:00',
     title: 'Fokusarbeit: Bewerbungen',
-    description: 'Lebenslauf anpassen. Spezifische Anschreiben verfassen, die Agile- oder Testing-Tools hervorheben.',
+    description: 'Lebenslauf anpassen. Spezifische Anschreiben verfassen, die relevante Fähigkeiten und Erfahrungen hervorheben.',
     category: 'Deep Work',
     isFixed: false
   },
@@ -288,7 +282,7 @@ const SCHEDULE_DE: ScheduleBlock[] = [
     startTime: '13:00',
     endTime: '14:00',
     title: 'Weiterbildung (Hard Skills)',
-    description: 'Online-Kurse, Zertifikate (PMP, ISTQB) oder Tool-Training (Jira, Cypress).',
+    description: 'Online-Kurse, professionelle Zertifikate oder Tool-Training relevant für Ihre Zielrollen.',
     category: 'Learning',
     isFixed: false
   },
@@ -321,7 +315,6 @@ export const MOCK_JOBS: JobApplication[] = [
     position: 'Junior Project Manager',
     location: 'Berlin (Remote)',
     status: ApplicationStatus.APPLIED,
-    roleType: 'PM',
     dateAdded: '2023-10-25',
     lastUpdated: '2023-10-26',
     notes: 'Requires Jira expertise.',
@@ -333,7 +326,6 @@ export const MOCK_JOBS: JobApplication[] = [
     position: 'QA Engineer',
     location: 'Munich',
     status: ApplicationStatus.INTERVIEW,
-    roleType: 'QA',
     dateAdded: '2023-10-20',
     lastUpdated: '2023-10-27',
     notes: 'Technical interview on Tuesday.',
@@ -345,7 +337,6 @@ export const MOCK_JOBS: JobApplication[] = [
     position: 'Product Owner',
     location: 'Hamburg',
     status: ApplicationStatus.RESEARCH,
-    roleType: 'PM',
     dateAdded: '2023-10-28',
     lastUpdated: '2023-10-28',
     notes: 'Looks interesting, need to check funding.',
