@@ -1,10 +1,27 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { JobApplication, ApplicationStatus, Language } from '../types';
-import { TRANSLATIONS } from '../constants';
-import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search } from 'lucide-react';
+import { TRANSLATIONS, STATUS_COLORS } from '../constants';
+import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search, X, Calendar, SearchX } from 'lucide-react';
 import { JobCard } from './JobCard';
 import { JobModal } from './JobModal';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
+
+// Debounce hook for search
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 interface JobBoardProps {
   jobs: JobApplication[];
@@ -19,6 +36,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   // Filters & sorting
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus[] | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [dateAddedFrom, setDateAddedFrom] = useState<string>('');
   const [dateAddedTo, setDateAddedTo] = useState<string>('');
   const [lastUpdatedFrom, setLastUpdatedFrom] = useState<string>('');
@@ -351,8 +369,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       result = result.filter(j => statusFilter.includes(j.status));
     }
 
-    // Text search (company, position, notes, location)
-    const q = searchQuery.trim().toLowerCase();
+    // Text search (company, position, notes, location) - using debounced value
+    const q = debouncedSearchQuery.trim().toLowerCase();
     if (q) {
       result = result.filter(j => {
         return (
@@ -411,7 +429,20 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     });
 
     return result;
-  }, [jobs, statusFilter, searchQuery, dateAddedFrom, dateAddedTo, lastUpdatedFrom, lastUpdatedTo, sortField, sortDirection, columns]);
+  }, [jobs, statusFilter, debouncedSearchQuery, dateAddedFrom, dateAddedTo, lastUpdatedFrom, lastUpdatedTo, sortField, sortDirection, columns]);
+
+  // Calculate active filter count
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (statusFilter !== 'ALL') count++;
+    if (debouncedSearchQuery.trim()) count++;
+    if (dateAddedFrom || dateAddedTo) count++;
+    if (lastUpdatedFrom || lastUpdatedTo) count++;
+    return count;
+  }, [statusFilter, debouncedSearchQuery, dateAddedFrom, dateAddedTo, lastUpdatedFrom, lastUpdatedTo]);
+
+  // Check if any filters are active
+  const hasActiveFilters = activeFilterCount > 0;
 
   const toggleStatusInFilter = (status: ApplicationStatus) => {
     if (statusFilter === 'ALL') {
@@ -426,6 +457,47 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     }
   };
 
+  // Date preset helpers
+  const setDatePreset = useCallback((preset: 'last7' | 'last30' | 'thisMonth', field: 'dateAdded' | 'lastUpdated') => {
+    const today = new Date();
+    let fromDate: Date;
+
+    switch (preset) {
+      case 'last7':
+        fromDate = new Date(today);
+        fromDate.setDate(today.getDate() - 7);
+        break;
+      case 'last30':
+        fromDate = new Date(today);
+        fromDate.setDate(today.getDate() - 30);
+        break;
+      case 'thisMonth':
+        fromDate = new Date(today.getFullYear(), today.getMonth(), 1);
+        break;
+    }
+
+    const fromStr = fromDate.toISOString().split('T')[0];
+    const toStr = today.toISOString().split('T')[0];
+
+    if (field === 'dateAdded') {
+      setDateAddedFrom(fromStr);
+      setDateAddedTo(toStr);
+    } else {
+      setLastUpdatedFrom(fromStr);
+      setLastUpdatedTo(toStr);
+    }
+  }, []);
+
+  const clearDateFilter = useCallback((field: 'dateAdded' | 'lastUpdated') => {
+    if (field === 'dateAdded') {
+      setDateAddedFrom('');
+      setDateAddedTo('');
+    } else {
+      setLastUpdatedFrom('');
+      setLastUpdatedTo('');
+    }
+  }, []);
+
   const resetFilters = () => {
     setStatusFilter('ALL');
     setSearchQuery('');
@@ -436,6 +508,26 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     setSortField('dateAdded');
     setSortDirection('desc');
   };
+
+  // Remove individual filter chip
+  const removeFilter = useCallback((filterType: string) => {
+    switch (filterType) {
+      case 'status':
+        setStatusFilter('ALL');
+        break;
+      case 'search':
+        setSearchQuery('');
+        break;
+      case 'dateAdded':
+        setDateAddedFrom('');
+        setDateAddedTo('');
+        break;
+      case 'lastUpdated':
+        setLastUpdatedFrom('');
+        setLastUpdatedTo('');
+        break;
+    }
+  }, []);
 
   return (
     <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col relative">
@@ -508,7 +600,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               setShowFilters(!showFilters);
               if (!showFilters) setShowSort(false);
             }}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm font-medium shadow-sm border ${showFilters
+            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm font-medium shadow-sm border ${showFilters || hasActiveFilters
               ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800'
               : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
               }`}
@@ -516,6 +608,11 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           >
             <Filter className="w-4 h-4" />
             <span className="hidden sm:inline">{t.board.filters?.status || 'Filters'}</span>
+            {activeFilterCount > 0 && (
+              <span className="bg-indigo-600 dark:bg-indigo-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                {activeFilterCount}
+              </span>
+            )}
             {showFilters ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
 
@@ -590,10 +687,72 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         </div>
       </div>
 
+      {/* Active Filter Chips */}
+      {hasActiveFilters && !showFilters && (
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <span className="text-xs text-gray-500 dark:text-gray-400">
+            {t.board.filters?.activeFilters || 'Active filters:'}
+          </span>
+          {statusFilter !== 'ALL' && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700">
+              {t.board.labels.status}: {statusFilter.map(s => t.board.status[s]).join(', ')}
+              <button onClick={() => removeFilter('status')} className="hover:text-indigo-900 dark:hover:text-white">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {debouncedSearchQuery.trim() && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700">
+              {t.board.filters?.search || 'Search'}: "{debouncedSearchQuery}"
+              <button onClick={() => removeFilter('search')} className="hover:text-blue-900 dark:hover:text-white">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {(dateAddedFrom || dateAddedTo) && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700">
+              {t.board.labels.dateAdded}: {dateAddedFrom || '...'} - {dateAddedTo || '...'}
+              <button onClick={() => removeFilter('dateAdded')} className="hover:text-green-900 dark:hover:text-white">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          {(lastUpdatedFrom || lastUpdatedTo) && (
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-yellow-50 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700">
+              {t.board.labels.lastUpdated}: {lastUpdatedFrom || '...'} - {lastUpdatedTo || '...'}
+              <button onClick={() => removeFilter('lastUpdated')} className="hover:text-yellow-900 dark:hover:text-white">
+                <X className="w-3 h-3" />
+              </button>
+            </span>
+          )}
+          <button
+            onClick={resetFilters}
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:underline"
+          >
+            {t.board.filters?.clearAll || 'Clear all'}
+          </button>
+        </div>
+      )}
+
+      {/* Results count */}
+      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 shrink-0">
+        <span>
+          {t.board.filters?.showing || 'Showing'} <span className="font-semibold text-gray-700 dark:text-gray-200">{visibleJobs.length}</span> {t.board.filters?.of || 'of'} <span className="font-semibold text-gray-700 dark:text-gray-200">{jobs.length}</span> {t.board.filters?.applications || 'applications'}
+        </span>
+        {hasActiveFilters && (
+          <button
+            onClick={resetFilters}
+            className="text-indigo-600 dark:text-indigo-400 hover:underline text-xs"
+          >
+            {t.board.filters?.clearAll || 'Clear all filters'}
+          </button>
+        )}
+      </div>
+
       {/* Collapsible Panels */}
       <div className="flex flex-col gap-3 shrink-0">
         {/* Filters bar */}
-        <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden transition-all duration-300 ${showFilters ? 'p-3 opacity-100' : 'h-0 p-0 opacity-0 border-none'
+        <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden transition-all duration-300 ${showFilters ? 'p-4 opacity-100' : 'h-0 p-0 opacity-0 border-none'
           }`}>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col lg:flex-row gap-4">
@@ -605,16 +764,26 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                     {t.board.filters?.search || 'Search'}
                   </span>
                 </div>
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder={t.board.filters?.searchPlaceholder || 'Search...'}
-                  className="w-full px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder={t.board.filters?.searchPlaceholder || 'Search company, position, location, notes...'}
+                    className="w-full px-3 py-2 pr-8 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
 
-              {/* Status filters */}
+              {/* Status filters with colored chips */}
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
@@ -630,16 +799,17 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {columns.map(status => {
-                    const active = statusFilter === 'ALL' || statusFilter.includes(status);
+                    const isSelected = statusFilter === 'ALL' || statusFilter.includes(status);
                     return (
                       <button
                         key={status}
                         type="button"
                         onClick={() => toggleStatusInFilter(status)}
-                        className={`px-2 py-1 text-[10px] rounded-full border transition-colors ${active
-                          ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border-indigo-300 dark:border-indigo-700'
-                          : 'bg-gray-50 dark:bg-gray-900/50 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-gray-800 hover:text-gray-700 dark:hover:text-gray-200'
-                          }`}
+                        className={`px-2 py-1 text-[10px] rounded-full border transition-colors ${
+                          isSelected
+                            ? STATUS_COLORS[status]
+                            : 'bg-gray-50 dark:bg-gray-900/50 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-800 hover:text-gray-600 dark:hover:text-gray-300'
+                        }`}
                       >
                         {t.board.status[status]}
                       </button>
@@ -649,19 +819,31 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               </div>
             </div>
 
-            {/* Date filters */}
+            {/* Date filters with presets */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                  {t.board.labels.dateAdded}
-                </label>
-                <div className="flex gap-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {t.board.labels.dateAdded}
+                  </label>
+                  {(dateAddedFrom || dateAddedTo) && (
+                    <button
+                      onClick={() => clearDateFilter('dateAdded')}
+                      className="text-xs text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex gap-2 items-center">
                   <input
                     type="date"
                     value={dateAddedFrom}
                     onChange={(e) => setDateAddedFrom(e.target.value)}
                     className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100"
                   />
+                  <span className="text-gray-400 text-xs">→</span>
                   <input
                     type="date"
                     value={dateAddedTo}
@@ -669,18 +851,53 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                     className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100"
                   />
                 </div>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setDatePreset('last7', 'dateAdded')}
+                    className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    {t.board.filters?.last7Days || 'Last 7 days'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDatePreset('last30', 'dateAdded')}
+                    className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    {t.board.filters?.last30Days || 'Last 30 days'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDatePreset('thisMonth', 'dateAdded')}
+                    className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    {t.board.filters?.thisMonth || 'This month'}
+                  </button>
+                </div>
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                  {t.board.labels.lastUpdated}
-                </label>
-                <div className="flex gap-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                    <Calendar className="w-3 h-3" />
+                    {t.board.labels.lastUpdated}
+                  </label>
+                  {(lastUpdatedFrom || lastUpdatedTo) && (
+                    <button
+                      onClick={() => clearDateFilter('lastUpdated')}
+                      className="text-xs text-gray-400 hover:text-red-500 dark:hover:text-red-400"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+                <div className="flex gap-2 items-center">
                   <input
                     type="date"
                     value={lastUpdatedFrom}
                     onChange={(e) => setLastUpdatedFrom(e.target.value)}
                     className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100"
                   />
+                  <span className="text-gray-400 text-xs">→</span>
                   <input
                     type="date"
                     value={lastUpdatedTo}
@@ -688,24 +905,69 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                     className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100"
                   />
                 </div>
+                <div className="flex gap-1">
+                  <button
+                    type="button"
+                    onClick={() => setDatePreset('last7', 'lastUpdated')}
+                    className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    {t.board.filters?.last7Days || 'Last 7 days'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDatePreset('last30', 'lastUpdated')}
+                    className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    {t.board.filters?.last30Days || 'Last 30 days'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDatePreset('thisMonth', 'lastUpdated')}
+                    className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  >
+                    {t.board.filters?.thisMonth || 'This month'}
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="flex justify-end pt-1 border-t border-gray-50 dark:border-gray-700">
+            <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-700">
               <button
                 type="button"
                 onClick={resetFilters}
-                className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:underline"
+                className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:underline"
               >
-                {t.board.filters?.reset || 'Reset filters'}
+                {t.board.filters?.reset || 'Reset all filters'}
               </button>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Empty state when filters return no results */}
+      {visibleJobs.length === 0 && hasActiveFilters && (
+        <div className="flex-1 flex flex-col items-center justify-center py-16 px-4">
+          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-8 text-center max-w-md">
+            <SearchX className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+              {t.board.filters?.noResults || 'No applications found'}
+            </h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              {t.board.filters?.noResultsMessage || 'Try adjusting your filters or search terms to find what you\'re looking for.'}
+            </p>
+            <button
+              onClick={resetFilters}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm font-medium"
+            >
+              <X className="w-4 h-4" />
+              {t.board.filters?.clearAll || 'Clear all filters'}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div
-        className="flex-1 overflow-x-auto overflow-y-hidden pb-4 -mx-4 px-4 sm:mx-0 sm:px-0"
+        className={`flex-1 overflow-x-auto overflow-y-hidden pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
         ref={scrollContainerRef}
         onDragOver={handleContainerDragOver} // Track drag over globally in container
       >
