@@ -71,7 +71,7 @@ export const TRANSLATIONS = {
         status: 'Filter',
         allStatuses: 'All',
         search: 'Search',
-        searchPlaceholder: 'Search by company, position, notes...',
+        searchPlaceholder: 'Search company, position, location, notes...',
         sortBy: 'Sort by',
         sortOptions: {
           dateAddedDesc: 'Date added (newest)',
@@ -84,7 +84,17 @@ export const TRANSLATIONS = {
           positionDesc: 'Position (Z–A)',
           statusAsc: 'Status'
         },
-        reset: 'Reset filters'
+        reset: 'Reset all filters',
+        clearAll: 'Clear all filters',
+        activeFilters: 'Active filters:',
+        showing: 'Showing',
+        of: 'of',
+        applications: 'applications',
+        last7Days: 'Last 7 days',
+        last30Days: 'Last 30 days',
+        thisMonth: 'This month',
+        noResults: 'No applications found',
+        noResultsMessage: 'Try adjusting your filters or search terms to find what you\'re looking for.'
       }
     },
     dashboard: {
@@ -173,7 +183,7 @@ export const TRANSLATIONS = {
         status: 'Filter',
         allStatuses: 'Alle',
         search: 'Suche',
-        searchPlaceholder: 'Suche nach Firma, Position, Notizen...',
+        searchPlaceholder: 'Suche nach Firma, Position, Ort, Notizen...',
         sortBy: 'Sortieren nach',
         sortOptions: {
           dateAddedDesc: 'Hinzugefügt (neueste)',
@@ -186,7 +196,17 @@ export const TRANSLATIONS = {
           positionDesc: 'Position (Z–A)',
           statusAsc: 'Status'
         },
-        reset: 'Filter zurücksetzen'
+        reset: 'Alle Filter zurücksetzen',
+        clearAll: 'Alle Filter löschen',
+        activeFilters: 'Aktive Filter:',
+        showing: 'Zeige',
+        of: 'von',
+        applications: 'Bewerbungen',
+        last7Days: 'Letzte 7 Tage',
+        last30Days: 'Letzte 30 Tage',
+        thisMonth: 'Dieser Monat',
+        noResults: 'Keine Bewerbungen gefunden',
+        noResultsMessage: 'Versuche, deine Filter oder Suchbegriffe anzupassen, um zu finden, wonach du suchst.'
       }
     },
     dashboard: {
