@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { JobApplication, ApplicationStatus, Language, RoleFocus } from '../types';
+import { JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS, STATUS_COLORS } from '../constants';
 import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search, X, Calendar, SearchX } from 'lucide-react';
 import { JobCard } from './JobCard';
@@ -35,7 +35,6 @@ interface JobBoardProps {
 export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, onUpdateStatus, onDeleteJob, language }) => {
   // Filters & sorting
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus[] | 'ALL'>('ALL');
-  const [roleFilter, setRoleFilter] = useState<RoleFocus[] | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [dateAddedFrom, setDateAddedFrom] = useState<string>('');
@@ -51,9 +50,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [modalMode, setModalMode] = useState<'view' | 'edit'>('edit');
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
-
-  // Role types for filter
-  const roleTypes: RoleFocus[] = ['PM', 'QA', 'General'];
 
   // Drag and Drop State (Mouse & Touch)
   const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
@@ -373,11 +369,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       result = result.filter(j => statusFilter.includes(j.status));
     }
 
-    // Role type filter
-    if (roleFilter !== 'ALL') {
-      result = result.filter(j => roleFilter.includes(j.roleType));
-    }
-
     // Text search (company, position, notes, location) - using debounced value
     const q = debouncedSearchQuery.trim().toLowerCase();
     if (q) {
@@ -438,18 +429,17 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     });
 
     return result;
-  }, [jobs, statusFilter, roleFilter, debouncedSearchQuery, dateAddedFrom, dateAddedTo, lastUpdatedFrom, lastUpdatedTo, sortField, sortDirection, columns]);
+  }, [jobs, statusFilter, debouncedSearchQuery, dateAddedFrom, dateAddedTo, lastUpdatedFrom, lastUpdatedTo, sortField, sortDirection, columns]);
 
   // Calculate active filter count
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (statusFilter !== 'ALL') count++;
-    if (roleFilter !== 'ALL') count++;
     if (debouncedSearchQuery.trim()) count++;
     if (dateAddedFrom || dateAddedTo) count++;
     if (lastUpdatedFrom || lastUpdatedTo) count++;
     return count;
-  }, [statusFilter, roleFilter, debouncedSearchQuery, dateAddedFrom, dateAddedTo, lastUpdatedFrom, lastUpdatedTo]);
+  }, [statusFilter, debouncedSearchQuery, dateAddedFrom, dateAddedTo, lastUpdatedFrom, lastUpdatedTo]);
 
   // Check if any filters are active
   const hasActiveFilters = activeFilterCount > 0;
@@ -464,19 +454,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       setStatusFilter(next.length === 0 ? 'ALL' : next);
     } else {
       setStatusFilter([...statusFilter, status]);
-    }
-  };
-
-  const toggleRoleInFilter = (role: RoleFocus) => {
-    if (roleFilter === 'ALL') {
-      setRoleFilter([role]);
-      return;
-    }
-    if (roleFilter.includes(role)) {
-      const next = roleFilter.filter(r => r !== role);
-      setRoleFilter(next.length === 0 ? 'ALL' : next);
-    } else {
-      setRoleFilter([...roleFilter, role]);
     }
   };
 
@@ -523,7 +500,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
   const resetFilters = () => {
     setStatusFilter('ALL');
-    setRoleFilter('ALL');
     setSearchQuery('');
     setDateAddedFrom('');
     setDateAddedTo('');
@@ -538,9 +514,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     switch (filterType) {
       case 'status':
         setStatusFilter('ALL');
-        break;
-      case 'role':
-        setRoleFilter('ALL');
         break;
       case 'search':
         setSearchQuery('');
@@ -728,14 +701,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               </button>
             </span>
           )}
-          {roleFilter !== 'ALL' && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-purple-50 dark:bg-purple-900/40 text-purple-700 dark:text-purple-200 border border-purple-200 dark:border-purple-700">
-              {t.board.labels.role}: {roleFilter.join(', ')}
-              <button onClick={() => removeFilter('role')} className="hover:text-purple-900 dark:hover:text-white">
-                <X className="w-3 h-3" />
-              </button>
-            </span>
-          )}
           {debouncedSearchQuery.trim() && (
             <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700">
               {t.board.filters?.search || 'Search'}: "{debouncedSearchQuery}"
@@ -847,46 +812,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                         }`}
                       >
                         {t.board.status[status]}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Role type filter */}
-              <div className="flex-shrink-0">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-                    {t.board.labels.role}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setRoleFilter('ALL')}
-                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
-                  >
-                    {t.board.filters?.allStatuses || 'All'}
-                  </button>
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {roleTypes.map(role => {
-                    const isSelected = roleFilter === 'ALL' || roleFilter.includes(role);
-                    const roleColor = role === 'PM'
-                      ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-900'
-                      : role === 'QA'
-                        ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-900'
-                        : 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700';
-                    return (
-                      <button
-                        key={role}
-                        type="button"
-                        onClick={() => toggleRoleInFilter(role)}
-                        className={`px-2 py-1 text-[10px] rounded-full border transition-colors ${
-                          isSelected
-                            ? roleColor
-                            : 'bg-gray-50 dark:bg-gray-900/50 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-800 hover:text-gray-600 dark:hover:text-gray-300'
-                        }`}
-                      >
-                        {role}
                       </button>
                     );
                   })}
