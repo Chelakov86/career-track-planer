@@ -539,7 +539,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             position: 'fixed',
             left: touchPos.x,
             top: touchPos.y,
-            width: '280px',
+            width: '240px',
             pointerEvents: 'none',
             zIndex: 9999,
             transform: 'translate(-50%, -50%)'
@@ -979,7 +979,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               onDragOver={(e) => handleDragOver(e, status)}
               onDrop={(e) => handleDrop(e, status)}
               onDragLeave={handleDragLeave}
-              className={`flex-1 flex flex-col rounded-xl border-2 transition-all duration-200 min-w-[280px] 2xl:min-w-0 ${dragOverColumn === status
+              className={`flex-1 flex flex-col rounded-xl border-2 transition-all duration-200 min-w-[220px] 2xl:min-w-0 ${dragOverColumn === status
                 ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-400 border-dashed shadow-inner scale-[1.01]'
                 : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-800 border-solid'
                 }`}
@@ -994,7 +994,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 </span>
               </div>
 
-              <div className="p-2 space-y-3 overflow-y-auto flex-1 custom-scrollbar">
+              <div className="p-2 space-y-2 overflow-y-auto flex-1 custom-scrollbar">
                 {visibleJobs.filter(j => j.status === status).map(job => (
                   <JobCard
                     key={job.id}
@@ -1017,7 +1017,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 ))}
                 {/* Visual Placeholder for drop zone */}
                 {dragOverColumn === status && (
-                  <div className="h-24 rounded-lg border-2 border-dashed border-indigo-200 dark:border-indigo-700 bg-indigo-50/30 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-300 dark:text-indigo-400 text-xs font-medium animate-pulse">
+                  <div className="h-16 rounded-lg border-2 border-dashed border-indigo-200 dark:border-indigo-700 bg-indigo-50/30 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-300 dark:text-indigo-400 text-[10px] font-medium animate-pulse">
                     Drop Here
                   </div>
                 )}
