@@ -5,12 +5,14 @@ import { TRANSLATIONS } from '../constants';
 
 interface DeleteConfirmModalProps {
     language: Language;
+    jobName: { company: string; position: string };
     onConfirm: () => void;
     onCancel: () => void;
 }
 
 export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
     language,
+    jobName,
     onConfirm,
     onCancel
 }) => {
@@ -31,7 +33,11 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
                             {t.board.deleteTitle}
                         </h3>
                         <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 leading-relaxed">
-                            {t.board.deleteMessage}
+                            {t.board.deleteMessage.split('{position}')[0]}
+                            <strong className="text-gray-700 dark:text-gray-300">{jobName.position}</strong>
+                            {t.board.deleteMessage.split('{position}')[1].split('{company}')[0]}
+                            <strong className="text-gray-700 dark:text-gray-300">{jobName.company}</strong>
+                            {t.board.deleteMessage.split('{company}')[1]}
                         </p>
                     </div>
                     <div className="flex gap-3 w-full mt-2">

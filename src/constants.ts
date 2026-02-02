@@ -38,7 +38,7 @@ export const TRANSLATIONS = {
       close: "Close",
       edit: "Edit",
       deleteTitle: "Delete Job?",
-      deleteMessage: "Are you sure you want to permanently delete this application?",
+      deleteMessage: "Are you sure you want to permanently delete the application for {position} at {company}?",
       confirmDelete: "Delete",
       placeholders: {
         company: "Company",
@@ -147,7 +147,7 @@ export const TRANSLATIONS = {
       close: "Schließen",
       edit: "Bearbeiten",
       deleteTitle: "Job löschen?",
-      deleteMessage: "Möchtest du diese Bewerbung wirklich unwiderruflich löschen?",
+      deleteMessage: "Möchtest du die Bewerbung für {position} bei {company} wirklich unwiderruflich löschen?",
       confirmDelete: "Löschen",
       placeholders: {
         company: "Firma",

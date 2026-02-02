@@ -43,7 +43,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [lastUpdatedTo, setLastUpdatedTo] = useState<string>('');
   const [sortField, setSortField] = useState<'dateAdded' | 'lastUpdated' | 'company' | 'position' | 'status'>('dateAdded');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [jobToDelete, setJobToDelete] = useState<JobApplication | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<Partial<JobApplication>>({});
   const [viewJobId, setViewJobId] = useState<string | null>(null);
@@ -184,9 +184,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   };
 
   const confirmDelete = () => {
-    if (deleteId) {
-      onDeleteJob(deleteId);
-      setDeleteId(null);
+    if (jobToDelete) {
+      onDeleteJob(jobToDelete.id);
+      setJobToDelete(null);
     }
   };
 
@@ -564,11 +564,12 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       )}
 
       {/* Delete Confirmation Modal */}
-      {deleteId && (
+      {jobToDelete && (
         <DeleteConfirmModal
           language={language}
+          jobName={{ company: jobToDelete.company, position: jobToDelete.position }}
           onConfirm={confirmDelete}
-          onCancel={() => setDeleteId(null)}
+          onCancel={() => setJobToDelete(null)}
         />
       )}
 
@@ -1003,7 +1004,10 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                     draggedItemId={draggedItemId}
                     onView={openViewModal}
                     onEdit={openEditModal}
-                    onDelete={setDeleteId}
+                    onDelete={(id) => {
+                      const job = jobs.find(j => j.id === id);
+                      if (job) setJobToDelete(job);
+                    }}
                     onNextStatus={(() => {
                       const next = getNextStatus(job.status);
                       return next ? () => onUpdateStatus(job.id, next) : undefined;
