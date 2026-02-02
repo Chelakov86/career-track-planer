@@ -79,8 +79,17 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
       filtered = filtered.filter(event => selectedEventTypes.includes(event.eventType));
     }
 
-    // Sort by date (newest first)
-    return filtered.sort((a, b) => b.eventDate.localeCompare(a.eventDate));
+    // Sort by date (newest first), then by time (earliest first within same day)
+    return filtered.sort((a, b) => {
+      // First sort by date (newest first)
+      const dateCompare = b.eventDate.localeCompare(a.eventDate);
+      if (dateCompare !== 0) return dateCompare;
+
+      // If same date, sort by start time (earliest first)
+      const aTime = a.metadata?.interviewRound?.startTime || '99:99';
+      const bTime = b.metadata?.interviewRound?.startTime || '99:99';
+      return aTime.localeCompare(bTime);
+    });
   }, [timelineEvents, searchQuery, selectedEventTypes]);
 
   // Group events by date
@@ -255,6 +264,12 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
                             {event.eventType === 'interview_completed' ? t.timeline.eventTypes.interviewCompleted : ''}
                             {event.eventType === 'interview_feedback' ? t.timeline.eventTypes.awaitingFeedback : ''}
                           </p>
+                          {event.metadata?.interviewRound?.startTime && event.metadata?.interviewRound?.endTime && (
+                            <p className="text-xs mt-1 opacity-75 flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {event.metadata.interviewRound.startTime} - {event.metadata.interviewRound.endTime}
+                            </p>
+                          )}
                           {event.metadata?.interviewRound?.notes && (
                             <p className="text-xs mt-2 opacity-75 italic">
                               {event.metadata.interviewRound.notes}
