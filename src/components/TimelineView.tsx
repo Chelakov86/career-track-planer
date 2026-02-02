@@ -79,8 +79,17 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
       filtered = filtered.filter(event => selectedEventTypes.includes(event.eventType));
     }
 
-    // Sort by date (newest first)
-    return filtered.sort((a, b) => b.eventDate.localeCompare(a.eventDate));
+    // Sort by date (newest first), then by time (earliest first within same day)
+    return filtered.sort((a, b) => {
+      // First sort by date (newest first)
+      const dateCompare = b.eventDate.localeCompare(a.eventDate);
+      if (dateCompare !== 0) return dateCompare;
+
+      // If same date, sort by start time (earliest first)
+      const aTime = a.metadata?.interviewRound?.startTime || '99:99';
+      const bTime = b.metadata?.interviewRound?.startTime || '99:99';
+      return aTime.localeCompare(bTime);
+    });
   }, [timelineEvents, searchQuery, selectedEventTypes]);
 
   // Group events by date
