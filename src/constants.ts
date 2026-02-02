@@ -160,7 +160,7 @@ export const TRANSLATIONS = {
     nav: {
       schedule: "Tagesplan",
       board: "Bewerbungen",
-      timeline: "Zeitstrahl",
+      timeline: "Timeline",
       stats: "Statistik",
       subtitle: "Jobsuche Planer",
       logout: "Abmelden"
