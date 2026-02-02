@@ -25,6 +25,8 @@ export interface InterviewRound {
   jobId: string;
   roundName: string;
   interviewDate: string;  // ISO YYYY-MM-DD
+  startTime?: string;     // HH:MM
+  endTime?: string;       // HH:MM
   status: InterviewRoundStatus;
   notes?: string;
   createdAt: string;

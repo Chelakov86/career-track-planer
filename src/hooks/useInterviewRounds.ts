@@ -8,6 +8,8 @@ interface DbInterviewRound {
   user_id: string;
   round_name: string;
   interview_date: string;
+  start_time?: string;
+  end_time?: string;
   status: InterviewRoundStatus;
   notes?: string;
   created_at: string;
@@ -19,6 +21,8 @@ const mapDbToUi = (dbRound: DbInterviewRound): InterviewRound => ({
   jobId: dbRound.job_id,
   roundName: dbRound.round_name,
   interviewDate: dbRound.interview_date,
+  startTime: dbRound.start_time,
+  endTime: dbRound.end_time,
   status: dbRound.status,
   notes: dbRound.notes,
   createdAt: dbRound.created_at,
@@ -32,6 +36,8 @@ const mapUiToDb = (uiRound: Partial<InterviewRound>, userId: string, jobId?: str
   if (userId) dbRound.user_id = userId;
   if (uiRound.roundName !== undefined) dbRound.round_name = uiRound.roundName;
   if (uiRound.interviewDate !== undefined) dbRound.interview_date = uiRound.interviewDate;
+  if (uiRound.startTime !== undefined) dbRound.start_time = uiRound.startTime;
+  if (uiRound.endTime !== undefined) dbRound.end_time = uiRound.endTime;
   if (uiRound.status !== undefined) dbRound.status = uiRound.status;
   if (uiRound.notes !== undefined) dbRound.notes = uiRound.notes;
 

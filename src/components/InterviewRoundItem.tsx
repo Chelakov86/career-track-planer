@@ -70,6 +70,33 @@ export const InterviewRoundItem = ({ round, language, onUpdate, onDelete }: Inte
           </div>
         </div>
 
+        {/* Time Row */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t.interviewRound.startTime}
+            </label>
+            <input
+              type="time"
+              value={round.startTime || ''}
+              onChange={(e) => onUpdate(round.id, { startTime: e.target.value })}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              {t.interviewRound.endTime}
+            </label>
+            <input
+              type="time"
+              value={round.endTime || ''}
+              onChange={(e) => onUpdate(round.id, { endTime: e.target.value })}
+              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 focus:border-transparent"
+            />
+          </div>
+        </div>
+
         {/* Notes Toggle */}
         <button
           type="button"

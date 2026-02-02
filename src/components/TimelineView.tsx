@@ -255,6 +255,12 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
                             {event.eventType === 'interview_completed' ? t.timeline.eventTypes.interviewCompleted : ''}
                             {event.eventType === 'interview_feedback' ? t.timeline.eventTypes.awaitingFeedback : ''}
                           </p>
+                          {event.metadata?.interviewRound?.startTime && event.metadata?.interviewRound?.endTime && (
+                            <p className="text-xs mt-1 opacity-75 flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {event.metadata.interviewRound.startTime} - {event.metadata.interviewRound.endTime}
+                            </p>
+                          )}
                           {event.metadata?.interviewRound?.notes && (
                             <p className="text-xs mt-2 opacity-75 italic">
                               {event.metadata.interviewRound.notes}

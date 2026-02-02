@@ -126,6 +126,8 @@ export const TRANSLATIONS = {
       roundName: "Round Name",
       roundNamePlaceholder: "e.g., Phone Screen, Technical Interview",
       interviewDate: "Interview Date",
+      startTime: "Start Time",
+      endTime: "End Time",
       status: "Status",
       notes: "Notes",
       statuses: {
@@ -275,6 +277,8 @@ export const TRANSLATIONS = {
       roundName: "Runden-Name",
       roundNamePlaceholder: "z.B. Telefoninterview, Technisches Interview",
       interviewDate: "Interview-Datum",
+      startTime: "Startzeit",
+      endTime: "Endzeit",
       status: "Status",
       notes: "Notizen",
       statuses: {
