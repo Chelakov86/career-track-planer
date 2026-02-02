@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { Pencil, Trash2, MapPin, Euro, ChevronRight } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { Pencil, Trash2, MapPin, Euro, ChevronRight, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { JobApplication, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 
@@ -40,6 +40,7 @@ export const JobCard: React.FC<JobCardProps> = ({
     const t = TRANSLATIONS[language];
     const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
     const hasDragged = useRef(false);
+    const [showInterviews, setShowInterviews] = useState(false);
 
     const ensureAbsoluteUrl = (url: string) => {
         if (!url) return '';
@@ -182,6 +183,51 @@ export const JobCard: React.FC<JobCardProps> = ({
                     <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 italic">
                         {job.notes}
                     </p>
+                </div>
+            )}
+
+            {/* Interview Rounds Section */}
+            {job.interviewRounds && job.interviewRounds.length > 0 && !isGhost && (
+                <div className="mb-2">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setShowInterviews(!showInterviews);
+                        }}
+                        className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-full"
+                    >
+                        <Calendar className="w-3 h-3" />
+                        <span>
+                            {job.interviewRounds.length} {job.interviewRounds.length === 1 ? t.board.interview : t.board.interviews}
+                        </span>
+                        {showInterviews ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                    </button>
+
+                    {showInterviews && (
+                        <div className="mt-2 space-y-1 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                            {job.interviewRounds.map(round => {
+                                const statusColors = {
+                                    scheduled: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+                                    completed: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+                                    awaiting_feedback: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
+                                };
+
+                                return (
+                                    <div key={round.id} className="text-xs py-1">
+                                        <div className="flex items-center justify-between gap-2">
+                                            <span className="text-gray-700 dark:text-gray-300 font-medium truncate">{round.roundName}</span>
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-medium whitespace-nowrap ${statusColors[round.status]}`}>
+                                                {t.interviewRound.statuses[round.status]}
+                                            </span>
+                                        </div>
+                                        <div className="text-gray-500 dark:text-gray-500 text-[10px] mt-0.5">
+                                            {round.interviewDate}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
             )}
 

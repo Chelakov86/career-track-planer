@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Calendar, Layout, BarChart2, LogOut, Moon, Sun, Settings } from 'lucide-react';
+import { Calendar, Layout, Clock, BarChart2, LogOut, Moon, Sun, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { TRANSLATIONS } from '../constants';
@@ -60,6 +60,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                     <Layout className="w-5 h-5" />
                     {t.nav.board}
+                </NavLink>
+                <NavLink
+                    to="/timeline"
+                    onClick={closeMobileMenu}
+                    className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all ${isActive
+                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                        : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
+                        }`}
+                >
+                    <Clock className="w-5 h-5" />
+                    {t.nav.timeline}
                 </NavLink>
                 <NavLink
                     to="/stats"

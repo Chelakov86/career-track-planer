@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ScheduleView } from './components/ScheduleView';
 import { JobBoard } from './components/JobBoard';
 import { Dashboard } from './components/Dashboard';
+import { TimelineView } from './components/TimelineView';
 import { LoginPage } from './components/LoginPage';
 import { Layout } from './components/Layout';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -59,6 +60,15 @@ const AppContent: React.FC = () => {
               onEditJob={editJob}
               onUpdateStatus={updateStatus}
               onDeleteJob={deleteJob}
+              language={language}
+            />
+          }
+        />
+        <Route
+          path="/timeline"
+          element={
+            <TimelineView
+              jobs={jobs}
               language={language}
             />
           }

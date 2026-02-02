@@ -11,6 +11,7 @@ export const TRANSLATIONS = {
     nav: {
       schedule: "Daily Schedule",
       board: "Application Board",
+      timeline: "Timeline",
       stats: "Analytics",
       subtitle: "Job Hunt Planner",
       logout: "Log out"
@@ -40,6 +41,8 @@ export const TRANSLATIONS = {
       deleteTitle: "Delete Job?",
       deleteMessage: "Are you sure you want to permanently delete the application for {position} at {company}?",
       confirmDelete: "Delete",
+      interview: "interview",
+      interviews: "interviews",
       placeholders: {
         company: "Company",
         position: "Position",
@@ -101,6 +104,43 @@ export const TRANSLATIONS = {
       interviews: "Interviews",
       funnel: "Application Funnel"
     },
+    modal: {
+      interviews: "Interview Rounds",
+      addInterview: "Add Interview Round"
+    },
+    timeline: {
+      title: "Application Timeline",
+      filters: "Filters",
+      allEvents: "All Events",
+      eventTypes: {
+        jobAdded: "Job Added",
+        statusChanged: "Status Changed",
+        interviewScheduled: "Interview Scheduled",
+        interviewCompleted: "Interview Completed",
+        awaitingFeedback: "Awaiting Feedback"
+      },
+      noEvents: "No events to display",
+      viewOnBoard: "View on Board"
+    },
+    interviewRound: {
+      roundName: "Round Name",
+      roundNamePlaceholder: "e.g., Phone Screen, Technical Interview",
+      interviewDate: "Interview Date",
+      status: "Status",
+      notes: "Notes",
+      statuses: {
+        scheduled: "Scheduled",
+        completed: "Completed",
+        awaiting_feedback: "Awaiting Feedback"
+      },
+      delete: "Delete Round",
+      deleteConfirm: "Delete this interview round?"
+    },
+    errors: {
+      addInterviewFailed: "Failed to add interview round. Please try again.",
+      updateInterviewFailed: "Failed to update interview round. Please try again.",
+      deleteInterviewFailed: "Failed to delete interview round. Please try again."
+    },
     categories: {
       'Research': 'Research',
       'Deep Work': 'Deep Work',
@@ -120,6 +160,7 @@ export const TRANSLATIONS = {
     nav: {
       schedule: "Tagesplan",
       board: "Bewerbungen",
+      timeline: "Zeitstrahl",
       stats: "Statistik",
       subtitle: "Jobsuche Planer",
       logout: "Abmelden"
@@ -149,6 +190,8 @@ export const TRANSLATIONS = {
       deleteTitle: "Job löschen?",
       deleteMessage: "Möchtest du die Bewerbung für {position} bei {company} wirklich unwiderruflich löschen?",
       confirmDelete: "Löschen",
+      interview: "Interview",
+      interviews: "Interviews",
       placeholders: {
         company: "Firma",
         position: "Position",
@@ -209,6 +252,43 @@ export const TRANSLATIONS = {
       active: "Aktive Pipeline",
       interviews: "Interviews",
       funnel: "Bewerbungstrichter"
+    },
+    modal: {
+      interviews: "Interview-Runden",
+      addInterview: "Interview-Runde hinzufügen"
+    },
+    timeline: {
+      title: "Bewerbungs-Zeitstrahl",
+      filters: "Filter",
+      allEvents: "Alle Ereignisse",
+      eventTypes: {
+        jobAdded: "Job hinzugefügt",
+        statusChanged: "Status geändert",
+        interviewScheduled: "Interview geplant",
+        interviewCompleted: "Interview abgeschlossen",
+        awaitingFeedback: "Warte auf Rückmeldung"
+      },
+      noEvents: "Keine Ereignisse anzuzeigen",
+      viewOnBoard: "Auf Board anzeigen"
+    },
+    interviewRound: {
+      roundName: "Runden-Name",
+      roundNamePlaceholder: "z.B. Telefoninterview, Technisches Interview",
+      interviewDate: "Interview-Datum",
+      status: "Status",
+      notes: "Notizen",
+      statuses: {
+        scheduled: "Geplant",
+        completed: "Abgeschlossen",
+        awaiting_feedback: "Warte auf Rückmeldung"
+      },
+      delete: "Runde löschen",
+      deleteConfirm: "Diese Interview-Runde löschen?"
+    },
+    errors: {
+      addInterviewFailed: "Interview-Runde konnte nicht hinzugefügt werden. Bitte erneut versuchen.",
+      updateInterviewFailed: "Interview-Runde konnte nicht aktualisiert werden. Bitte erneut versuchen.",
+      deleteInterviewFailed: "Interview-Runde konnte nicht gelöscht werden. Bitte erneut versuchen."
     },
     categories: {
       'Research': 'Recherche',

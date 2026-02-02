@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ExternalLink } from 'lucide-react';
-import { JobApplication, ApplicationStatus, Language } from '../types';
+import { X, ExternalLink, ChevronDown, ChevronRight } from 'lucide-react';
+import { JobApplication, ApplicationStatus, Language, InterviewRound } from '../types';
 import { TRANSLATIONS } from '../constants';
+import { useInterviewRounds } from '../hooks/useInterviewRounds';
+import { InterviewRoundItem } from './InterviewRoundItem';
+import { useAuth } from '../contexts/AuthContext';
 
 interface JobModalProps {
     initialData: Partial<JobApplication>;
@@ -20,6 +23,9 @@ export const JobModal: React.FC<JobModalProps> = ({
     onCancel,
     onEdit
 }) => {
+    const { user } = useAuth();
+    const [showInterviews, setShowInterviews] = useState(false);
+
     // Initialize formData with proper handling of null/undefined link
     const initializeFormData = (data: Partial<JobApplication>) => ({
         ...data,
@@ -31,6 +37,12 @@ export const JobModal: React.FC<JobModalProps> = ({
     const isInitialMount = useRef(true);
     const t = TRANSLATIONS[language];
     const columns = Object.values(ApplicationStatus);
+
+    // Interview rounds hook (only active for existing jobs)
+    const { rounds, addRound, updateRound, deleteRound } = useInterviewRounds(
+        formData.id || null,
+        user?.id || null
+    );
 
     // Update formData when initialData changes, but only on initial mount or when job ID changes
     // This ensures fresh data is loaded after page reload while preventing resets during editing
@@ -229,6 +241,46 @@ export const JobModal: React.FC<JobModalProps> = ({
                                     </div>
                                 </div>
                                 {renderTextarea(t.board.labels.notes, formData.notes || '', (val) => setFormData({ ...formData, notes: val }), t.board.placeholders.notes)}
+
+                                {/* Interview Rounds Section - Only in edit mode for existing jobs */}
+                                {formData.id && mode === 'edit' && (
+                                    <div className="col-span-2 mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowInterviews(!showInterviews)}
+                                            className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 mb-3"
+                                        >
+                                            {showInterviews ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                            {t.modal.interviews} ({rounds.length})
+                                        </button>
+
+                                        {showInterviews && (
+                                            <div className="space-y-3">
+                                                {rounds.map(round => (
+                                                    <InterviewRoundItem
+                                                        key={round.id}
+                                                        round={round}
+                                                        language={language}
+                                                        onUpdate={updateRound}
+                                                        onDelete={deleteRound}
+                                                    />
+                                                ))}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => addRound({
+                                                        jobId: formData.id!,
+                                                        roundName: '',
+                                                        interviewDate: new Date().toISOString().split('T')[0],
+                                                        status: 'scheduled'
+                                                    })}
+                                                    className="w-full px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:border-indigo-500 dark:hover:border-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                >
+                                                    + {t.modal.addInterview}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </>
                         )}
                     </div>

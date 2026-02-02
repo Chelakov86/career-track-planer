@@ -1,5 +1,9 @@
 export type Language = 'en' | 'de';
 
+export type RoleFocus = 'PM' | 'QA' | 'General';
+
+export type InterviewRoundStatus = 'scheduled' | 'completed' | 'awaiting_feedback';
+
 export enum ApplicationStatus {
   RESEARCH = 'RESEARCH',
   TO_APPLY = 'TO_APPLY',
@@ -16,6 +20,17 @@ export interface User {
   avatar: string;
 }
 
+export interface InterviewRound {
+  id: string;
+  jobId: string;
+  roundName: string;
+  interviewDate: string;  // ISO YYYY-MM-DD
+  status: InterviewRoundStatus;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface JobApplication {
   id: string;
   company: string;
@@ -27,6 +42,25 @@ export interface JobApplication {
   notes: string;
   salary?: string;
   link?: string;
+  roleType?: RoleFocus;
+  interviewRounds?: InterviewRound[];
+}
+
+export type TimelineEventType = 'job_added' | 'status_changed' | 'interview_scheduled' | 'interview_completed' | 'interview_feedback';
+
+export interface TimelineEvent {
+  id: string;
+  jobId: string;
+  company: string;
+  position: string;
+  eventType: TimelineEventType;
+  eventDate: string;
+  description: string;
+  metadata?: {
+    oldStatus?: ApplicationStatus;
+    newStatus?: ApplicationStatus;
+    interviewRound?: InterviewRound;
+  };
 }
 
 export interface ScheduleBlock {
