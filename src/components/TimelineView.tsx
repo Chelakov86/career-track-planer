@@ -156,6 +156,11 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
     });
   };
 
+  const formatTime = (timeStr: string) => {
+    // Remove seconds from time (e.g., "11:30:00" -> "11:30")
+    return timeStr.substring(0, 5);
+  };
+
   return (
     <div className="flex-1 p-4 md:p-6 overflow-y-auto bg-gray-50 dark:bg-gray-900">
       <div className="max-w-4xl mx-auto">
@@ -250,28 +255,35 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
                       className={`relative p-4 rounded-lg border-2 ${getEventColor(event.eventType)}`}
                     >
                       {/* Timeline dot */}
-                      <div className="absolute -left-[33px] top-4 w-4 h-4 rounded-full bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600" />
+                      <div className="absolute -left-[33px] top-5 w-4 h-4 rounded-full bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600" />
 
                       <div className="flex items-start gap-3">
-                        <div className="flex-shrink-0 mt-1">
+                        <div className="flex-shrink-0 mt-1.5">
                           {getEventIcon(event.eventType)}
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-semibold text-sm mb-1">{event.description}</p>
-                          <p className="text-xs opacity-90">
+                        <div className="flex-1 min-w-0 space-y-2">
+                          {/* Title */}
+                          <p className="font-bold text-base leading-tight">{event.description}</p>
+
+                          {/* Event Type Badge */}
+                          <p className="text-xs opacity-80 font-medium">
                             {event.eventType === 'job_added' ? t.timeline.eventTypes.jobAdded : ''}
                             {event.eventType === 'interview_scheduled' ? t.timeline.eventTypes.interviewScheduled : ''}
                             {event.eventType === 'interview_completed' ? t.timeline.eventTypes.interviewCompleted : ''}
                             {event.eventType === 'interview_feedback' ? t.timeline.eventTypes.awaitingFeedback : ''}
                           </p>
+
+                          {/* Time Range */}
                           {event.metadata?.interviewRound?.startTime && event.metadata?.interviewRound?.endTime && (
-                            <p className="text-xs mt-1 opacity-75 flex items-center gap-1">
-                              <Clock className="w-3 h-3" />
-                              {event.metadata.interviewRound.startTime} - {event.metadata.interviewRound.endTime}
+                            <p className="text-sm font-semibold opacity-90 flex items-center gap-1.5">
+                              <Clock className="w-4 h-4" />
+                              {formatTime(event.metadata.interviewRound.startTime)} - {formatTime(event.metadata.interviewRound.endTime)}
                             </p>
                           )}
+
+                          {/* Notes */}
                           {event.metadata?.interviewRound?.notes && (
-                            <p className="text-xs mt-2 opacity-75 italic">
+                            <p className="text-sm mt-2 opacity-75 italic border-t border-current pt-2">
                               {event.metadata.interviewRound.notes}
                             </p>
                           )}

@@ -52,6 +52,8 @@ export const useJobs = (user: User | null) => {
                             jobId: round.job_id,
                             roundName: round.round_name,
                             interviewDate: round.interview_date,
+                            startTime: round.start_time,
+                            endTime: round.end_time,
                             status: round.status,
                             notes: round.notes,
                             createdAt: round.created_at,
