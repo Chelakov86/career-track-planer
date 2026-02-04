@@ -130,6 +130,8 @@ export const TRANSLATIONS = {
       endTime: "End Time",
       status: "Status",
       notes: "Notes",
+      meetingLink: "Meeting Link",
+      addToCalendar: "Add to Google Calendar",
       statuses: {
         scheduled: "Scheduled",
         completed: "Completed",
@@ -281,6 +283,8 @@ export const TRANSLATIONS = {
       endTime: "Endzeit",
       status: "Status",
       notes: "Notizen",
+      meetingLink: "Meeting-Link",
+      addToCalendar: "In Google Kalender eintragen",
       statuses: {
         scheduled: "Geplant",
         completed: "Abgeschlossen",

@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Clock, Briefcase, Calendar, CheckCircle, MessageCircle, Filter, Search } from 'lucide-react';
 import { JobApplication, Language, TimelineEvent, TimelineEventType } from '../types';
 import { TRANSLATIONS } from '../constants';
+import { getGoogleCalendarUrl } from '../lib/calendar';
 
 interface TimelineViewProps {
   jobs: JobApplication[];
@@ -209,11 +210,10 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
                 <button
                   key={option.type}
                   onClick={() => toggleEventType(option.type)}
-                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                    selectedEventTypes.includes(option.type)
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                  }`}
+                  className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${selectedEventTypes.includes(option.type)
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    }`}
                 >
                   {option.label}
                 </button>
@@ -279,6 +279,21 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
                               <Clock className="w-4 h-4" />
                               {formatTime(event.metadata.interviewRound.startTime)} - {formatTime(event.metadata.interviewRound.endTime)}
                             </p>
+                          )}
+
+                          {/* Add to Calendar button for scheduled interviews */}
+                          {event.eventType === 'interview_scheduled' && event.metadata?.interviewRound && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const url = getGoogleCalendarUrl(event.metadata!.interviewRound!);
+                                window.open(url, '_blank');
+                              }}
+                              className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 rounded-lg border-2 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/40 transition-colors shadow-sm mt-1"
+                            >
+                              <Calendar className="w-3.5 h-3.5" />
+                              {t.interviewRound.addToCalendar}
+                            </button>
                           )}
 
                           {/* Notes */}

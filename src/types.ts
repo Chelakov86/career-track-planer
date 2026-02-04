@@ -29,6 +29,7 @@ export interface InterviewRound {
   endTime?: string;       // HH:MM
   status: InterviewRoundStatus;
   notes?: string;
+  meetingLink?: string;
   createdAt: string;
   updatedAt: string;
 }
