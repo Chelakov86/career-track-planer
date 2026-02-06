@@ -29,10 +29,11 @@ interface JobBoardProps {
   onEditJob: (job: JobApplication) => void;
   onUpdateStatus: (id: string, status: ApplicationStatus) => void;
   onDeleteJob: (id: string) => void;
+  onRefetchJobs?: () => void;
   language: Language;
 }
 
-export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, onUpdateStatus, onDeleteJob, language }) => {
+export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, onUpdateStatus, onDeleteJob, onRefetchJobs, language }) => {
   // Filters & sorting
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus[] | 'ALL'>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -181,6 +182,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       onAddJob(job);
     }
     setShowModal(false);
+    onRefetchJobs?.();
   };
 
   const confirmDelete = () => {
@@ -584,6 +586,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           onCancel={() => {
             setShowModal(false);
             setViewJobId(null);
+            onRefetchJobs?.();
           }}
           onEdit={modalMode === 'view' ? switchToEditMode : undefined}
         />

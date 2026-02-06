@@ -7,6 +7,72 @@ export const useJobs = (user: User | null) => {
     const [jobs, setJobs] = useState<JobApplication[]>([]);
     const [loading, setLoading] = useState(false);
 
+    const fetchJobs = async (currentUser: User) => {
+        setLoading(true);
+
+        // Fetch jobs
+        const { data: jobsData, error: jobsError } = await supabase
+            .from('jobs')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('date_added', { ascending: false });
+
+        if (jobsError) {
+            console.error('Error fetching jobs:', jobsError);
+            setLoading(false);
+            return;
+        }
+
+        // Fetch all interview rounds for this user
+        const { data: roundsData, error: roundsError } = await supabase
+            .from('interview_rounds')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .order('interview_date', { ascending: true });
+
+        if (roundsError) {
+            console.error('Error fetching interview rounds:', roundsError);
+        }
+
+        if (jobsData) {
+            // Map DB snake_case to JS camelCase
+            const mappedJobs: JobApplication[] = jobsData.map((job: any) => {
+                // Find interview rounds for this job
+                const jobRounds = roundsData
+                    ?.filter((round: any) => round.job_id === job.id)
+                    .map((round: any) => ({
+                        id: round.id,
+                        jobId: round.job_id,
+                        roundName: round.round_name,
+                        interviewDate: round.interview_date,
+                        startTime: round.start_time,
+                        endTime: round.end_time,
+                        status: round.status,
+                        notes: round.notes,
+                        createdAt: round.created_at,
+                        updatedAt: round.updated_at
+                    })) || [];
+
+                return {
+                    id: job.id,
+                    company: job.company,
+                    position: job.position,
+                    location: job.location,
+                    status: job.status as ApplicationStatus,
+                    dateAdded: job.date_added,
+                    lastUpdated: job.last_updated,
+                    notes: job.notes,
+                    salary: job.salary,
+                    // Preserve link value - keep strings, convert null to undefined for consistency
+                    link: job.link != null ? job.link : undefined,
+                    interviewRounds: jobRounds
+                };
+            });
+            setJobs(mappedJobs);
+        }
+        setLoading(false);
+    };
+
     // Fetch jobs from Supabase with interview rounds
     useEffect(() => {
         if (!user) {
@@ -14,74 +80,14 @@ export const useJobs = (user: User | null) => {
             return;
         }
 
-        const fetchJobs = async () => {
-            setLoading(true);
-
-            // Fetch jobs
-            const { data: jobsData, error: jobsError } = await supabase
-                .from('jobs')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('date_added', { ascending: false });
-
-            if (jobsError) {
-                console.error('Error fetching jobs:', jobsError);
-                setLoading(false);
-                return;
-            }
-
-            // Fetch all interview rounds for this user
-            const { data: roundsData, error: roundsError } = await supabase
-                .from('interview_rounds')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('interview_date', { ascending: true });
-
-            if (roundsError) {
-                console.error('Error fetching interview rounds:', roundsError);
-            }
-
-            if (jobsData) {
-                // Map DB snake_case to JS camelCase
-                const mappedJobs: JobApplication[] = jobsData.map((job: any) => {
-                    // Find interview rounds for this job
-                    const jobRounds = roundsData
-                        ?.filter((round: any) => round.job_id === job.id)
-                        .map((round: any) => ({
-                            id: round.id,
-                            jobId: round.job_id,
-                            roundName: round.round_name,
-                            interviewDate: round.interview_date,
-                            startTime: round.start_time,
-                            endTime: round.end_time,
-                            status: round.status,
-                            notes: round.notes,
-                            createdAt: round.created_at,
-                            updatedAt: round.updated_at
-                        })) || [];
-
-                    return {
-                        id: job.id,
-                        company: job.company,
-                        position: job.position,
-                        location: job.location,
-                        status: job.status as ApplicationStatus,
-                        dateAdded: job.date_added,
-                        lastUpdated: job.last_updated,
-                        notes: job.notes,
-                        salary: job.salary,
-                        // Preserve link value - keep strings, convert null to undefined for consistency
-                        link: job.link != null ? job.link : undefined,
-                        interviewRounds: jobRounds
-                    };
-                });
-                setJobs(mappedJobs);
-            }
-            setLoading(false);
-        };
-
-        fetchJobs();
+        fetchJobs(user);
     }, [user]);
+
+    const refetchJobs = () => {
+        if (user) {
+            fetchJobs(user);
+        }
+    };
 
     const addJob = async (job: JobApplication) => {
         if (!user) return;
@@ -187,6 +193,7 @@ export const useJobs = (user: User | null) => {
         addJob,
         editJob,
         updateStatus,
-        deleteJob
+        deleteJob,
+        refetchJobs
     };
 };

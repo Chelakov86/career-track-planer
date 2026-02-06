@@ -16,7 +16,7 @@ const AppContent: React.FC = () => {
   const { user, isLoading } = useAuth();
   const [language, setLanguage] = useState<Language>('de');
 
-  const { jobs, addJob, editJob, updateStatus, deleteJob } = useJobs(user);
+  const { jobs, addJob, editJob, updateStatus, deleteJob, refetchJobs } = useJobs(user);
 
   const currentSchedule = getSchedule(language);
 
@@ -60,6 +60,7 @@ const AppContent: React.FC = () => {
               onEditJob={editJob}
               onUpdateStatus={updateStatus}
               onDeleteJob={deleteJob}
+              onRefetchJobs={refetchJobs}
               language={language}
             />
           }
