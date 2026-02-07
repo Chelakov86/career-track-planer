@@ -26,6 +26,12 @@ export const JobModal: React.FC<JobModalProps> = ({
     const { user } = useAuth();
     const [showInterviews, setShowInterviews] = useState(false);
 
+    const ensureAbsoluteUrl = (url: string) => {
+        if (!url) return '';
+        if (url.startsWith('http://') || url.startsWith('https://')) return url;
+        return `https://${url}`;
+    };
+
     // Initialize formData with proper handling of null/undefined link
     const initializeFormData = (data: Partial<JobApplication>) => ({
         ...data,
@@ -193,7 +199,7 @@ export const JobModal: React.FC<JobModalProps> = ({
                                             {formData.link || <span className="text-gray-400 dark:text-gray-500 italic">{t.board.placeholders.link}</span>}
                                         </div>
                                         {formData.link && (
-                                            <a href={formData.link} target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 border border-gray-200 dark:border-gray-600">
+                                            <a href={ensureAbsoluteUrl(formData.link)} target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 border border-gray-200 dark:border-gray-600">
                                                 <ExternalLink className="w-5 h-5" />
                                             </a>
                                         )}
@@ -234,7 +240,7 @@ export const JobModal: React.FC<JobModalProps> = ({
                                             onChange={e => setFormData({ ...formData, link: e.target.value })}
                                         />
                                         {formData.link && (
-                                            <a href={formData.link} target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 border border-gray-200 dark:border-gray-600">
+                                            <a href={ensureAbsoluteUrl(formData.link)} target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-gray-600 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900 border border-gray-200 dark:border-gray-600">
                                                 <ExternalLink className="w-5 h-5" />
                                             </a>
                                         )}

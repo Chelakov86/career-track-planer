@@ -49,6 +49,7 @@ export const useJobs = (user: User | null) => {
                         endTime: round.end_time,
                         status: round.status,
                         notes: round.notes,
+                        meetingLink: round.meeting_link,
                         createdAt: round.created_at,
                         updatedAt: round.updated_at
                     })) || [];

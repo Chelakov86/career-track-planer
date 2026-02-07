@@ -131,7 +131,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       link: '',
       notes: '',
       status: ApplicationStatus.RESEARCH,
-      roleType: 'PM'
     });
     setModalMode('edit');
     setShowModal(true);
@@ -171,7 +170,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         position: data.position!,
         location: data.location || 'Remote',
         status: data.status || ApplicationStatus.RESEARCH,
-        roleType: data.roleType || 'PM',
         dateAdded: new Date().toISOString().split('T')[0],
         lastUpdated: new Date().toISOString().split('T')[0],
         notes: data.notes || '',
@@ -198,7 +196,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       t.board.placeholders.company,
       t.board.placeholders.position,
       t.board.labels.status,
-      t.board.labels.role,
       t.board.labels.location,
       t.board.labels.salary,
       t.board.labels.link,
@@ -218,7 +215,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         escapeCsv(job.company),
         escapeCsv(job.position),
         escapeCsv(t.board.status[job.status]),
-        escapeCsv(job.roleType),
         escapeCsv(job.location),
         escapeCsv(job.salary),
         escapeCsv(job.link),

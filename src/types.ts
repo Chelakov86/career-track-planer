@@ -1,6 +1,5 @@
 export type Language = 'en' | 'de';
 
-export type RoleFocus = 'PM' | 'QA' | 'General';
 
 export type InterviewRoundStatus = 'scheduled' | 'completed' | 'awaiting_feedback';
 
@@ -45,7 +44,6 @@ export interface JobApplication {
   notes: string;
   salary?: string;
   link?: string;
-  roleType?: RoleFocus;
   interviewRounds?: InterviewRound[];
 }
 

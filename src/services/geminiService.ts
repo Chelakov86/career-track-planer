@@ -62,7 +62,7 @@ export const analyzeJobDescription = async (description: string, lang: Language)
       Analyze the following job description.
 
       Job Description:
-      ${description.substring(0, 2000)}... (truncated)
+      ${(description || '').substring(0, 2000)}... (truncated)
 
       Output a JSON summary with:
       1. "matchScore" (0-100)
