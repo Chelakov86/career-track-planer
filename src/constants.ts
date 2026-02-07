@@ -53,7 +53,6 @@ export const TRANSLATIONS = {
       },
       labels: {
         status: "Status",
-        role: "Role",
         location: "Location",
         salary: "Salary",
         link: "Link",
@@ -207,7 +206,6 @@ export const TRANSLATIONS = {
       },
       labels: {
         status: "Status",
-        role: "Rolle",
         location: "Ort",
         salary: "Gehalt",
         link: "Link",
