@@ -49,6 +49,7 @@ export const useJobs = (user: User | null) => {
                         endTime: round.end_time,
                         status: round.status,
                         notes: round.notes,
+                        meetingLink: round.meeting_link,
                         createdAt: round.created_at,
                         updatedAt: round.updated_at
                     })) || [];
@@ -59,6 +60,7 @@ export const useJobs = (user: User | null) => {
                     position: job.position,
                     location: job.location,
                     status: job.status as ApplicationStatus,
+                    roleType: job.role_type || undefined,
                     dateAdded: job.date_added,
                     lastUpdated: job.last_updated,
                     notes: job.notes,
@@ -103,6 +105,7 @@ export const useJobs = (user: User | null) => {
             position: job.position,
             location: job.location,
             status: job.status,
+            role_type: job.roleType,
             date_added: job.dateAdded,
             last_updated: job.lastUpdated,
             notes: job.notes,
@@ -137,6 +140,7 @@ export const useJobs = (user: User | null) => {
             position: updatedJob.position,
             location: updatedJob.location,
             status: updatedJob.status,
+            role_type: updatedJob.roleType,
             last_updated: new Date().toISOString().split('T')[0],
             notes: updatedJob.notes,
             salary: updatedJob.salary,
