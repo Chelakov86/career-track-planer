@@ -45,15 +45,6 @@ const AppContent: React.FC = () => {
         <Route
           path="/"
           element={
-            <ScheduleView
-              schedule={currentSchedule}
-              language={language}
-            />
-          }
-        />
-        <Route
-          path="/board"
-          element={
             <JobBoard
               jobs={jobs}
               onAddJob={addJob}
@@ -70,6 +61,15 @@ const AppContent: React.FC = () => {
           element={
             <TimelineView
               jobs={jobs}
+              language={language}
+            />
+          }
+        />
+        <Route
+          path="/schedule"
+          element={
+            <ScheduleView
+              schedule={currentSchedule}
               language={language}
             />
           }

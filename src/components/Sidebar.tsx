@@ -46,17 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
                         : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
                         }`}
-                >
-                    <Calendar className="w-5 h-5" />
-                    {t.nav.schedule}
-                </NavLink>
-                <NavLink
-                    to="/board"
-                    onClick={closeMobileMenu}
-                    className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all ${isActive
-                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
-                        : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
-                        }`}
+                    end
                 >
                     <Layout className="w-5 h-5" />
                     {t.nav.board}
@@ -71,6 +61,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 >
                     <Clock className="w-5 h-5" />
                     {t.nav.timeline}
+                </NavLink>
+                <NavLink
+                    to="/schedule"
+                    onClick={closeMobileMenu}
+                    className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all ${isActive
+                        ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300'
+                        : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-gray-800'
+                        }`}
+                >
+                    <Calendar className="w-5 h-5" />
+                    {t.nav.schedule}
                 </NavLink>
                 <NavLink
                     to="/stats"
