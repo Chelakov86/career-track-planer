@@ -24,6 +24,9 @@ dist-ssr
 *.sw?
 .claude
 
+# Screenshots
+screenshots/
+
 # Environment variables
 .env
 .env.*

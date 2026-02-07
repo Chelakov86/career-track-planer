@@ -27,7 +27,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
     return (
         <aside className={`
-      fixed inset-y-0 left-0 z-10 w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:h-screen flex flex-col
+      fixed inset-y-0 left-0 z-[30] w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:h-screen flex flex-col
       ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
     `}>
             <div className="p-6 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">

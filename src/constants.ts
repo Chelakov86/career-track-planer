@@ -6,7 +6,15 @@ export const TRANSLATIONS = {
       title: "Welcome Back",
       subtitle: "Sign in to continue your career journey.",
       googleBtn: "Sign in with Google",
-      footer: "Protected by CareerTrack Security"
+      footer: "Protected by CareerTrack Security",
+      emailPlaceholder: "Enter your email",
+      sendMagicLink: "Send Magic Link",
+      sending: "Sending...",
+      securedBy: "Secured by Supabase Auth",
+      checkEmail: "Check your email!",
+      checkEmailMessage: "We sent a magic link to",
+      checkEmailAction: "Click it to log in.",
+      errorSendingLink: "Error sending magic link"
     },
     nav: {
       schedule: "Daily Schedule",
@@ -159,7 +167,15 @@ export const TRANSLATIONS = {
       title: "Willkommen zurück",
       subtitle: "Melde dich an, um deine Karriereplanung fortzusetzen.",
       googleBtn: "Mit Google anmelden",
-      footer: "Geschützt durch CareerTrack Security"
+      footer: "Geschützt durch CareerTrack Security",
+      emailPlaceholder: "E-Mail-Adresse eingeben",
+      sendMagicLink: "Magic Link senden",
+      sending: "Wird gesendet...",
+      securedBy: "Gesichert durch Supabase Auth",
+      checkEmail: "E-Mail prüfen!",
+      checkEmailMessage: "Wir haben einen Magic Link an",
+      checkEmailAction: "gesendet. Klicke darauf, um dich anzumelden.",
+      errorSendingLink: "Fehler beim Senden des Magic Links"
     },
     nav: {
       schedule: "Tagesplan",

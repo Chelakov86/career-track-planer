@@ -21,7 +21,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ language, setLanguage }) =
       await loginWithEmail(email);
       setSent(true);
     } catch (error) {
-      alert('Error sending magic link');
+      alert(t.login.errorSendingLink);
     }
   };
 
@@ -38,9 +38,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ language, setLanguage }) =
 
         {sent ? (
           <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-900">
-            <h3 className="text-green-800 dark:text-green-200 font-semibold mb-2">Check your email!</h3>
+            <h3 className="text-green-800 dark:text-green-200 font-semibold mb-2">{t.login.checkEmail}</h3>
             <p className="text-sm text-green-700 dark:text-green-300">
-              We sent a magic link to <strong>{email}</strong>. Click it to log in.
+              {t.login.checkEmailMessage} <strong>{email}</strong>. {t.login.checkEmailAction}
             </p>
           </div>
         ) : (
@@ -48,7 +48,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ language, setLanguage }) =
             <div>
               <input
                 type="email"
-                placeholder="Enter your email"
+                placeholder={t.login.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
@@ -60,10 +60,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ language, setLanguage }) =
               disabled={isLoading}
               className="w-full flex items-center justify-center gap-3 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl transition-all shadow-md font-medium disabled:opacity-50"
             >
-              {isLoading ? 'Sending...' : 'Send Magic Link'}
+              {isLoading ? t.login.sending : t.login.sendMagicLink}
             </button>
             <p className="text-xs text-center text-gray-400">
-              Secured by Supabase Auth
+              {t.login.securedBy}
             </p>
           </form>
         )}
