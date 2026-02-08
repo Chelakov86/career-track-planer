@@ -222,6 +222,64 @@ export const JobModal: React.FC<JobModalProps> = ({
                                         </div>
                                     </div>
                                 )}
+
+                                {/* Interview Rounds Section - View mode */}
+                                {formData.id && rounds.length > 0 && (
+                                    <div className="col-span-2 mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowInterviews(!showInterviews)}
+                                            className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400 mb-3"
+                                        >
+                                            {showInterviews ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                                            {t.modal.interviews} ({rounds.length})
+                                        </button>
+
+                                        {showInterviews && (
+                                            <div className="space-y-3">
+                                                {rounds.map(round => (
+                                                    <div key={round.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 bg-gray-50 dark:bg-gray-800">
+                                                        <div className="flex items-center justify-between mb-2">
+                                                            <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                                                                {round.roundName || <span className="text-gray-400 dark:text-gray-500 italic">{t.interviewRound.roundNamePlaceholder}</span>}
+                                                            </span>
+                                                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                                                round.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                                                                round.status === 'awaiting_feedback' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
+                                                                'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                                                            }`}>
+                                                                {t.interviewRound.statuses[round.status]}
+                                                            </span>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400">
+                                                            <div>
+                                                                <span className="font-medium">{t.interviewRound.interviewDate}:</span> {round.interviewDate}
+                                                            </div>
+                                                            {(round.startTime || round.endTime) && (
+                                                                <div>
+                                                                    <span className="font-medium">{t.interviewRound.startTime}:</span> {round.startTime || '—'}{round.endTime ? ` – ${round.endTime}` : ''}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        {round.meetingLink && (
+                                                            <div className="mt-2">
+                                                                <a href={round.meetingLink} target="_blank" rel="noopener noreferrer" className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1">
+                                                                    <ExternalLink className="w-3 h-3" />
+                                                                    {t.interviewRound.meetingLink}
+                                                                </a>
+                                                            </div>
+                                                        )}
+                                                        {round.notes && (
+                                                            <div className="mt-2 text-xs text-gray-600 dark:text-gray-400 bg-white dark:bg-gray-700/50 rounded p-2 whitespace-pre-wrap">
+                                                                {round.notes}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
                             </>
                         ) : (
                             <>
