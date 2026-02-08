@@ -27,6 +27,12 @@ dist-ssr
 # Screenshots
 screenshots/
 
+# Playwright
+e2e/.auth/
+playwright-report/
+test-results/
+blob-report/
+
 # Environment variables
 .env
 .env.*
