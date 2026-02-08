@@ -116,7 +116,7 @@ export const JobCard: React.FC<JobCardProps> = ({
         >
             <div className="flex justify-end items-start mb-2">
                 {!isGhost && (
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 2xl:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 2xl:opacity-100 transition-opacity">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -124,6 +124,7 @@ export const JobCard: React.FC<JobCardProps> = ({
                             }}
                             className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
                             title={t.board.editJob}
+                            aria-label={t.board.editJob}
                         >
                             <Pencil className="w-3.5 h-3.5" />
                         </button>
@@ -134,6 +135,7 @@ export const JobCard: React.FC<JobCardProps> = ({
                             }}
                             className="text-gray-400 hover:text-red-500 p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
                             title="Delete"
+                            aria-label={t.board.confirmDelete || 'Delete'}
                         >
                             <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -167,9 +169,11 @@ export const JobCard: React.FC<JobCardProps> = ({
             </div>
 
             <div className="flex flex-col gap-1 mb-3">
-                <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs">
-                    <MapPin className="w-3 h-3" /> {job.location}
-                </div>
+                {job.location && (
+                    <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs">
+                        <MapPin className="w-3 h-3" /> {job.location}
+                    </div>
+                )}
                 {job.salary && (
                     <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs">
                         <Euro className="w-3 h-3" /> {job.salary}
@@ -232,7 +236,9 @@ export const JobCard: React.FC<JobCardProps> = ({
             )}
 
             <div className="flex justify-between items-center pt-2 border-t border-gray-50 dark:border-gray-700">
-                <span className="text-[10px] text-gray-400 dark:text-gray-500">{job.lastUpdated}</span>
+                <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                    {t.board.labels.lastUpdated}: {job.lastUpdated}
+                </span>
 
                 {!isGhost && onNextStatus && (
                     <button
