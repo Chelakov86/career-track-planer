@@ -190,7 +190,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       onAddJob(job);
     }
     setShowModal(false);
-    onRefetchJobs?.();
   };
 
   const confirmDelete = () => {
