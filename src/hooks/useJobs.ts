@@ -131,6 +131,7 @@ export const useJobs = (user: User | null) => {
     const editJob = async (updatedJob: JobApplication) => {
         if (!user) return;
 
+        const previousJobs = [...jobs];
         setJobs(prev => prev.map(j => j.id === updatedJob.id ? updatedJob : j));
 
         const dbUpdate = {
@@ -151,13 +152,15 @@ export const useJobs = (user: User | null) => {
 
         if (error) {
             console.error('Error updating job:', error);
-            // We could revert here, but for now just logging
+            setJobs(previousJobs);
+            alert('Failed to update job. Please try again.');
         }
     };
 
     const updateStatus = async (id: string, status: ApplicationStatus) => {
         if (!user) return;
 
+        const previousJobs = [...jobs];
         const date = new Date().toISOString().split('T')[0];
         setJobs(prev => prev.map(j => j.id === id ? { ...j, status, lastUpdated: date } : j));
 
@@ -168,6 +171,8 @@ export const useJobs = (user: User | null) => {
 
         if (error) {
             console.error('Error updating status:', error);
+            setJobs(previousJobs);
+            alert('Failed to update status. Please try again.');
         }
     };
 
