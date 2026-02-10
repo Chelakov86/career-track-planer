@@ -198,6 +198,7 @@ export const JobCard: React.FC<JobCardProps> = ({
                             e.stopPropagation();
                             setShowInterviews(!showInterviews);
                         }}
+                        aria-expanded={showInterviews}
                         className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-full"
                     >
                         <Calendar className="w-3 h-3" />
@@ -246,6 +247,8 @@ export const JobCard: React.FC<JobCardProps> = ({
                             e.stopPropagation();
                             onNextStatus();
                         }}
+                        title={t.board.moveStage}
+                        aria-label={t.board.moveStage}
                         className="p-1 rounded-full hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                     >
                         <ChevronRight className="w-4 h-4" />
