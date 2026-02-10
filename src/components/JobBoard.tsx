@@ -5,6 +5,7 @@ import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search, X,
 import { JobCard } from './JobCard';
 import { JobModal } from './JobModal';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
+import { generateJobsCSV, downloadFile } from '../lib/csvExport';
 
 // Debounce hook for search
 function useDebounce<T>(value: T, delay: number): T {
@@ -200,46 +201,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   };
 
   const handleExportCSV = () => {
-    const BOM = "\uFEFF";
-    const headers = [
-      t.board.placeholders.company,
-      t.board.placeholders.position,
-      t.board.labels.status,
-      t.board.labels.location,
-      t.board.labels.salary,
-      t.board.labels.link,
-      t.board.labels.dateAdded,
-      t.board.labels.lastUpdated,
-      t.board.labels.notes
-    ];
-
-    const escapeCsv = (str: string | undefined) => {
-      if (!str) return '""';
-      return `"${str.replace(/"/g, '""')}"`;
-    };
-
-    const csvContent = [
-      headers.join(','),
-      ...jobs.map(job => [
-        escapeCsv(job.company),
-        escapeCsv(job.position),
-        escapeCsv(t.board.status[job.status]),
-        escapeCsv(job.location),
-        escapeCsv(job.salary),
-        escapeCsv(job.link),
-        escapeCsv(job.dateAdded),
-        escapeCsv(job.lastUpdated),
-        escapeCsv(job.notes?.replace(/\n/g, ' '))
-      ].join(','))
-    ].join('\n');
-
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', `career_track_jobs_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const csvContent = generateJobsCSV(jobs, language);
+    const filename = `career_track_jobs_${new Date().toISOString().split('T')[0]}.csv`;
+    downloadFile(csvContent, filename, 'text/csv;charset=utf-8;');
   };
 
   // --- Mouse Drag Handlers ---
