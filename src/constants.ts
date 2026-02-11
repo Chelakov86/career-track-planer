@@ -90,8 +90,7 @@ export const TRANSLATIONS = {
           companyAsc: 'Company (A–Z)',
           companyDesc: 'Company (Z–A)',
           positionAsc: 'Position (A–Z)',
-          positionDesc: 'Position (Z–A)',
-          statusAsc: 'Status'
+          positionDesc: 'Position (Z–A)'
         },
         reset: 'Reset all filters',
         clearAll: 'Clear all filters',
@@ -254,8 +253,7 @@ export const TRANSLATIONS = {
           companyAsc: 'Firma (A–Z)',
           companyDesc: 'Firma (Z–A)',
           positionAsc: 'Position (A–Z)',
-          positionDesc: 'Position (Z–A)',
-          statusAsc: 'Status'
+          positionDesc: 'Position (Z–A)'
         },
         reset: 'Alle Filter zurücksetzen',
         clearAll: 'Alle Filter löschen',

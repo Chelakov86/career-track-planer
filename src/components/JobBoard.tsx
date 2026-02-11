@@ -43,7 +43,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [dateAddedTo, setDateAddedTo] = useState<string>('');
   const [lastUpdatedFrom, setLastUpdatedFrom] = useState<string>('');
   const [lastUpdatedTo, setLastUpdatedTo] = useState<string>('');
-  const [sortField, setSortField] = useState<'dateAdded' | 'lastUpdated' | 'company' | 'position' | 'status'>('dateAdded');
+  const [sortField, setSortField] = useState<'dateAdded' | 'lastUpdated' | 'company' | 'position'>('dateAdded');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [jobToDelete, setJobToDelete] = useState<JobApplication | null>(null);
   const [showModal, setShowModal] = useState(false);
@@ -380,7 +380,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     }
 
     // Sorting
-    const statusOrder = columns;
     result.sort((a, b) => {
       const dir = sortDirection === 'asc' ? 1 : -1;
       let cmp = 0;
@@ -391,9 +390,6 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           break;
         case 'position':
           cmp = a.position.localeCompare(b.position);
-          break;
-        case 'status':
-          cmp = statusOrder.indexOf(a.status) - statusOrder.indexOf(b.status);
           break;
         case 'lastUpdated':
           if (a.lastUpdated === b.lastUpdated) cmp = 0;
@@ -846,8 +842,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   { value: 'company_asc', label: t.board.filters?.sortOptions?.companyAsc || 'Company (A–Z)' },
                   { value: 'company_desc', label: t.board.filters?.sortOptions?.companyDesc || 'Company (Z–A)' },
                   { value: 'position_asc', label: t.board.filters?.sortOptions?.positionAsc || 'Position (A–Z)' },
-                  { value: 'position_desc', label: t.board.filters?.sortOptions?.positionDesc || 'Position (Z–A)' },
-                  { value: 'status_asc', label: t.board.filters?.sortOptions?.statusAsc || 'Status' }
+                  { value: 'position_desc', label: t.board.filters?.sortOptions?.positionDesc || 'Position (Z–A)' }
                 ].map((opt) => (
                   <button
                     key={opt.value}

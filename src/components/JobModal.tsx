@@ -123,7 +123,7 @@ export const JobModal: React.FC<JobModalProps> = ({
         if (mode === 'view') {
             const selectedOption = options.find(opt => opt.value === value);
             return (
-                <div>
+                <div className="col-span-2">
                     <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{label}</label>
                     <div className="w-full p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm text-gray-800 dark:text-gray-200 min-h-[36px] flex items-center">
                         {selectedOption?.label || value}
@@ -195,7 +195,7 @@ export const JobModal: React.FC<JobModalProps> = ({
                                 <div className="col-span-2">
                                     <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t.board.labels.link}</label>
                                     <div className="flex gap-2">
-                                        <div className="flex-1 p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm text-gray-800 dark:text-gray-200 min-h-[36px] flex items-center">
+                                        <div className="flex-1 p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg text-sm text-gray-800 dark:text-gray-200 min-h-[36px] flex items-center break-all min-w-0">
                                             {formData.link || <span className="text-gray-400 dark:text-gray-500 italic">{t.board.placeholders.link}</span>}
                                         </div>
                                         {formData.link && (
