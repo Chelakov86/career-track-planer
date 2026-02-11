@@ -71,7 +71,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const didInitMobileOpen = useRef(false);
 
   const t = TRANSLATIONS[language];
-  const columns = Object.values(ApplicationStatus);
+  const columns = useMemo(() => Object.values(ApplicationStatus), []);
 
   // Auto-scroll logic for drag & drop
   useEffect(() => {
@@ -140,18 +140,18 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     setShowModal(true);
   };
 
-  const openViewModal = (job: JobApplication) => {
+  const openViewModal = useCallback((job: JobApplication) => {
     setFormData({ ...job });
     setViewJobId(job.id);
     setModalMode('view');
     setShowModal(true);
-  };
+  }, []);
 
-  const openEditModal = (job: JobApplication) => {
+  const openEditModal = useCallback((job: JobApplication) => {
     setFormData({ ...job });
     setModalMode('edit');
     setShowModal(true);
-  };
+  }, []);
 
   const switchToEditMode = () => {
     setModalMode('edit');
@@ -206,7 +206,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   };
 
   // --- Mouse Drag Handlers ---
-  const handleDragStart = (e: React.DragEvent, jobId: string) => {
+  const handleDragStart = useCallback((e: React.DragEvent, jobId: string) => {
     setDraggedItemId(jobId);
     e.dataTransfer.setData('jobId', jobId);
     e.dataTransfer.effectAllowed = 'move';
@@ -214,13 +214,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     const img = new Image();
     img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
     e.dataTransfer.setDragImage(img, 0, 0);
-  };
+  }, []);
 
-  const handleDragEnd = () => {
+  const handleDragEnd = useCallback(() => {
     setDraggedItemId(null);
     setDragOverColumn(null);
     pointerRef.current = null;
-  };
+  }, []);
 
   const handleDragOver = (e: React.DragEvent, status: ApplicationStatus) => {
     e.preventDefault();
@@ -259,7 +259,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   };
 
   // --- Touch Drag Handlers ---
-  const handleTouchStart = (e: React.TouchEvent, job: JobApplication) => {
+  const handleTouchStart = useCallback((e: React.TouchEvent, job: JobApplication) => {
     const touch = e.touches[0];
     const x = touch.clientX;
     const y = touch.clientY;
@@ -274,9 +274,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       // Try to vibrate for feedback
       if (navigator.vibrate) navigator.vibrate(50);
     }, 300); // 300ms long press to activate drag
-  };
+  }, []);
 
-  const handleTouchMove = (e: React.TouchEvent) => {
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!isTouchDragging) {
       // If we move before the timer fires, it's a scroll, not a drag. Cancel timer.
       if (dragItemTimer.current) {
@@ -303,9 +303,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     } else {
       setDragOverColumn(null);
     }
-  };
+  }, [isTouchDragging, dragOverColumn]);
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = useCallback(() => {
     // Clear timer if it's pending
     if (dragItemTimer.current) {
       clearTimeout(dragItemTimer.current);
@@ -324,13 +324,24 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       setDragOverColumn(null);
       pointerRef.current = null;
     }
-  };
+  }, [isTouchDragging, draggedItemId, dragOverColumn, onUpdateStatus]);
 
-  const getNextStatus = (current: ApplicationStatus): ApplicationStatus | null => {
+  const getNextStatus = useCallback((current: ApplicationStatus): ApplicationStatus | null => {
     const idx = columns.indexOf(current);
     if (idx < columns.length - 1) return columns[idx + 1];
     return null;
-  };
+  }, [columns]);
+
+  const handleDeleteRequest = useCallback((job: JobApplication) => {
+    setJobToDelete(job);
+  }, []);
+
+  const handleNextStatus = useCallback((job: JobApplication) => {
+    const next = getNextStatus(job.status);
+    if (next) {
+      onUpdateStatus(job.id, next);
+    }
+  }, [getNextStatus, onUpdateStatus]);
   const visibleJobs = useMemo(() => {
     let result = [...jobs];
 
@@ -740,11 +751,11 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 job={job}
                 language={language}
                 isGhost={true}
-                onEdit={() => { }}
-                onDelete={() => { }}
-                onDragStart={() => { }}
-                onDragEnd={() => { }}
-                onTouchStart={() => { }}
+                onEdit={openEditModal}
+                onDelete={handleDeleteRequest}
+                onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
+                onTouchStart={handleTouchStart}
               />
             ) : null;
           })()}
@@ -1052,14 +1063,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                     draggedItemId={draggedItemId}
                     onView={openViewModal}
                     onEdit={openEditModal}
-                    onDelete={(id) => {
-                      const job = jobs.find(j => j.id === id);
-                      if (job) setJobToDelete(job);
-                    }}
-                    onNextStatus={(() => {
-                      const next = getNextStatus(job.status);
-                      return next ? () => onUpdateStatus(job.id, next) : undefined;
-                    })()}
+                    onDelete={handleDeleteRequest}
+                    onNextStatus={getNextStatus(job.status) ? handleNextStatus : undefined}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                     onTouchStart={handleTouchStart}
@@ -1120,14 +1125,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                       draggedItemId={draggedItemId}
                       onView={openViewModal}
                       onEdit={openEditModal}
-                      onDelete={(id) => {
-                        const job = jobs.find(j => j.id === id);
-                        if (job) setJobToDelete(job);
-                      }}
-                      onNextStatus={(() => {
-                        const next = getNextStatus(job.status);
-                        return next ? () => onUpdateStatus(job.id, next) : undefined;
-                      })()}
+                      onDelete={handleDeleteRequest}
+                      onNextStatus={getNextStatus(job.status) ? handleNextStatus : undefined}
                       onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
                       onTouchStart={handleTouchStart}
