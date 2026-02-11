@@ -58,10 +58,10 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
       <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-[280px] md:h-[350px] transition-colors">
         <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 md:mb-6">{t.dashboard.funnel}</h3>
         <ResponsiveContainer width="100%" height="80%">
-          <BarChart data={funnelData} layout="vertical" margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+          <BarChart data={funnelData} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" className="dark:stroke-gray-700" />
             <XAxis type="number" hide />
-            <YAxis dataKey="name" type="category" width={60} tick={{fontSize: 11, fill: '#6b7280'}} className="dark:fill-gray-400" />
+            <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 11, fill: '#6b7280'}} className="dark:fill-gray-400" />
             <Tooltip
               cursor={{fill: 'transparent'}}
               contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
