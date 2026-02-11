@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { GoogleGenAI } from '@google/genai';
+import { validateGeminiConfig } from './utils/validation';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Only allow POST requests
@@ -17,6 +18,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const { action, prompt, config } = req.body;
 
+    // Validate config to prevent passing unallowed parameters
+    const validatedConfig = validateGeminiConfig(config);
+
     if (!action || !prompt) {
       return res.status(400).json({ error: 'Missing required fields: action, prompt' });
     }
@@ -28,7 +32,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const response = await genAI.models.generateContent({
       model: 'gemini-3-flash-preview',
       contents: prompt,
-      ...(config && { config })
+      ...(validatedConfig && { config: validatedConfig })
     });
 
     const text = response.text || '';
