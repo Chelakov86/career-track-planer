@@ -11,8 +11,8 @@ interface JobCardProps {
 
     onView?: (job: JobApplication) => void;
     onEdit: (job: JobApplication) => void;
-    onDelete: (id: string) => void;
-    onNextStatus?: () => void;
+    onDelete: (job: JobApplication) => void;
+    onNextStatus?: (job: JobApplication) => void;
 
     onDragStart: (e: React.DragEvent, id: string) => void;
     onDragEnd: () => void;
@@ -22,7 +22,7 @@ interface JobCardProps {
     onTouchEnd?: () => void;
 }
 
-export const JobCard: React.FC<JobCardProps> = ({
+export const JobCard: React.FC<JobCardProps> = React.memo(({
     job,
     language,
     isGhost = false,
@@ -131,7 +131,7 @@ export const JobCard: React.FC<JobCardProps> = ({
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onDelete(job.id);
+                                onDelete(job);
                             }}
                             className="text-gray-400 hover:text-red-500 p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
                             title="Delete"
@@ -245,7 +245,7 @@ export const JobCard: React.FC<JobCardProps> = ({
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
-                            onNextStatus();
+                            onNextStatus(job);
                         }}
                         title={t.board.moveStage}
                         aria-label={t.board.moveStage}
@@ -257,4 +257,4 @@ export const JobCard: React.FC<JobCardProps> = ({
             </div>
         </div>
     );
-};
+});
