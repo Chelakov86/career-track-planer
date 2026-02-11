@@ -949,7 +949,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               onClick={() => setShowEmptyColumns(!showEmptyColumns)}
               className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline"
             >
-              {showEmptyColumns ? 'Hide empty columns' : 'Show empty columns'}
+              {showEmptyColumns ? t.board.filters.hideEmptyColumns : t.board.filters.showEmptyColumns}
             </button>
           )}
           {hasActiveFilters && (
@@ -1065,6 +1065,10 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                     onEdit={openEditModal}
                     onDelete={handleDeleteRequest}
                     onNextStatus={getNextStatus(job.status) ? handleNextStatus : undefined}
+                    nextStatusLabel={(() => {
+                      const next = getNextStatus(job.status);
+                      return next ? t.board.status[next] : undefined;
+                    })()}
                     onDragStart={handleDragStart}
                     onDragEnd={handleDragEnd}
                     onTouchStart={handleTouchStart}
@@ -1127,6 +1131,10 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                       onEdit={openEditModal}
                       onDelete={handleDeleteRequest}
                       onNextStatus={getNextStatus(job.status) ? handleNextStatus : undefined}
+                      nextStatusLabel={(() => {
+                        const next = getNextStatus(job.status);
+                        return next ? t.board.status[next] : undefined;
+                      })()}
                       onDragStart={handleDragStart}
                       onDragEnd={handleDragEnd}
                       onTouchStart={handleTouchStart}

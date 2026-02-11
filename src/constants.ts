@@ -104,9 +104,12 @@ export const TRANSLATIONS = {
         last30Days: 'Last 30 days',
         thisMonth: 'This month',
         noResults: 'No applications found',
-        noResultsMessage: 'Try adjusting your filters or search terms to find what you\'re looking for.'
+        noResultsMessage: 'Try adjusting your filters or search terms to find what you\'re looking for.',
+        hideEmptyColumns: 'Hide empty columns',
+        showEmptyColumns: 'Show empty columns'
       }
     },
+    toggleTheme: 'Toggle Dark Mode',
     dashboard: {
       total: "Total Applications",
       active: "Active Pipeline",
@@ -266,9 +269,12 @@ export const TRANSLATIONS = {
         last30Days: 'Letzte 30 Tage',
         thisMonth: 'Dieser Monat',
         noResults: 'Keine Bewerbungen gefunden',
-        noResultsMessage: 'Versuche, deine Filter oder Suchbegriffe anzupassen, um zu finden, wonach du suchst.'
+        noResultsMessage: 'Versuche, deine Filter oder Suchbegriffe anzupassen, um zu finden, wonach du suchst.',
+        hideEmptyColumns: 'Leere Spalten ausblenden',
+        showEmptyColumns: 'Leere Spalten anzeigen'
       }
     },
+    toggleTheme: 'Design wechseln',
     dashboard: {
       total: "Bewerbungen Gesamt",
       active: "Aktive Pipeline",

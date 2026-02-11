@@ -13,6 +13,7 @@ interface JobCardProps {
     onEdit: (job: JobApplication) => void;
     onDelete: (job: JobApplication) => void;
     onNextStatus?: (job: JobApplication) => void;
+    nextStatusLabel?: string;
 
     onDragStart: (e: React.DragEvent, id: string) => void;
     onDragEnd: () => void;
@@ -31,6 +32,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
     onEdit,
     onDelete,
     onNextStatus,
+    nextStatusLabel,
     onDragStart,
     onDragEnd,
     onTouchStart,
@@ -250,6 +252,8 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                         title={t.board.moveStage}
                         aria-label={t.board.moveStage}
                         className="p-1 rounded-full hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        title={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
+                        aria-label={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
                     >
                         <ChevronRight className="w-4 h-4" />
                     </button>

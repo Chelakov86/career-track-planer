@@ -105,7 +105,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <button
                         onClick={toggleTheme}
                         className="flex items-center justify-center p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
-                        title="Toggle Dark Mode"
+                        title={t.toggleTheme}
+                        aria-label={t.toggleTheme}
                     >
                         {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                     </button>
