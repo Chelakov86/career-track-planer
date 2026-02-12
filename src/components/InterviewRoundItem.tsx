@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { InterviewRound, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { getGoogleCalendarUrl } from '../lib/calendar';
@@ -10,7 +10,7 @@ interface InterviewRoundItemProps {
   onDelete: (roundId: string) => void | Promise<void>;
 }
 
-export const InterviewRoundItem = ({ round, language, onUpdate, onDelete }: InterviewRoundItemProps) => {
+export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, language, onUpdate, onDelete }) => {
   const t = TRANSLATIONS[language];
   const [showNotes, setShowNotes] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
