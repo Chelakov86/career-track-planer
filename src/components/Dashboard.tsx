@@ -26,7 +26,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
   return (
     <div className="space-y-6 animate-fadeIn">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4 transition-colors">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex items-center gap-4 transition-colors">
           <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
             <Target className="w-6 h-6" />
           </div>
@@ -35,7 +35,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
             <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{totalApps}</h3>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4 transition-colors">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex items-center gap-4 transition-colors">
           <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
             <Activity className="w-6 h-6" />
           </div>
@@ -44,7 +44,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
             <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{active}</h3>
           </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4 transition-colors">
+        <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex items-center gap-4 transition-colors">
           <div className="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
             <TrendingUp className="w-6 h-6" />
           </div>
@@ -55,7 +55,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 h-[280px] md:h-[350px] transition-colors">
+      <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 h-[280px] md:h-[350px] transition-colors">
         <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 md:mb-6">{t.dashboard.funnel}</h3>
         <ResponsiveContainer width="100%" height="80%">
           <BarChart data={funnelData} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>

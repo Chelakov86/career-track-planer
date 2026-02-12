@@ -144,7 +144,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
       case 'interview_feedback':
         return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-300 dark:border-yellow-700';
       default:
-        return 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700';
+        return 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-slate-700';
     }
   };
 
@@ -163,7 +163,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
   };
 
   return (
-    <div className="flex-1 p-4 md:p-6 overflow-y-auto bg-gray-50 dark:bg-gray-900">
+    <div className="flex-1 p-4 md:p-6 overflow-y-auto bg-gray-50 dark:bg-slate-900">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -185,19 +185,19 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.board.filters.searchPlaceholder}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-primary/50 focus:border-transparent"
             />
           </div>
 
           {/* Filter Toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-indigo-600 dark:hover:text-indigo-400"
+            className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-primary"
           >
             <Filter className="w-4 h-4" />
             {t.timeline.filters}
             {selectedEventTypes.length > 0 && (
-              <span className="px-2 py-0.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 rounded-full text-xs">
+              <span className="px-2 py-0.5 bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary rounded-full text-xs">
                 {selectedEventTypes.length}
               </span>
             )}
@@ -205,14 +205,14 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
 
           {/* Event Type Filters */}
           {showFilters && (
-            <div className="flex flex-wrap gap-2 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div className="flex flex-wrap gap-2 p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg">
               {eventTypeOptions.map(option => (
                 <button
                   key={option.type}
                   onClick={() => toggleEventType(option.type)}
                   className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${selectedEventTypes.includes(option.type)
-                    ? 'bg-indigo-600 text-white'
-                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                    ? 'bg-primary text-white'
+                    : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-600'
                     }`}
                 >
                   {option.label}
@@ -241,21 +241,21 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
             {Object.keys(groupedEvents).map(date => (
               <div key={date} className="relative">
                 {/* Date Header */}
-                <div className="sticky top-0 z-10 bg-gray-50 dark:bg-gray-900 py-2 mb-4">
+                <div className="sticky top-0 z-10 bg-gray-50 dark:bg-slate-900 py-2 mb-4">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                     {formatDate(date)}
                   </h3>
                 </div>
 
                 {/* Events for this date */}
-                <div className="space-y-3 ml-6 border-l-2 border-gray-200 dark:border-gray-700 pl-6">
+                <div className="space-y-3 ml-6 border-l-2 border-gray-200 dark:border-slate-700 pl-6">
                   {groupedEvents[date].map(event => (
                     <div
                       key={event.id}
                       className={`relative p-4 rounded-lg border-2 ${getEventColor(event.eventType)}`}
                     >
                       {/* Timeline dot */}
-                      <div className="absolute -left-[33px] top-5 w-4 h-4 rounded-full bg-white dark:bg-gray-900 border-2 border-gray-300 dark:border-gray-600" />
+                      <div className="absolute -left-[33px] top-5 w-4 h-4 rounded-full bg-white dark:bg-slate-900 border-2 border-gray-300 dark:border-slate-600" />
 
                       <div className="flex items-start gap-3">
                         <div className="flex-shrink-0 mt-1.5">
@@ -289,7 +289,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
                                 const url = getGoogleCalendarUrl(event.metadata!.interviewRound!);
                                 window.open(url, '_blank');
                               }}
-                              className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 bg-white dark:bg-gray-800 text-purple-700 dark:text-purple-300 rounded-lg border-2 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/40 transition-colors shadow-sm mt-1"
+                              className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 bg-white dark:bg-slate-800 text-purple-700 dark:text-purple-300 rounded-lg border-2 border-purple-200 dark:border-purple-800 hover:bg-purple-50 dark:hover:bg-purple-900/40 transition-colors shadow-sm mt-1"
                             >
                               <Calendar className="w-3.5 h-3.5" />
                               {t.interviewRound.addToCalendar}

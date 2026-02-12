@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { JobApplication, ApplicationStatus, Language } from '../types';
-import { TRANSLATIONS, STATUS_COLORS } from '../constants';
+import { TRANSLATIONS, STATUS_COLORS, STATUS_COUNT_COLORS } from '../constants';
 import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search, X, Calendar, SearchX } from 'lucide-react';
 import { JobCard } from './JobCard';
 import { JobModal } from './JobModal';
@@ -546,7 +546,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.board.filters?.searchPlaceholder || 'Search company, position, location, notes...'}
-              className="w-full px-3 py-2 pr-8 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/60 focus:border-indigo-500"
+              className="w-full px-3 py-2 pr-8 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50/60 focus:border-primary"
             />
             {searchQuery && (
               <button
@@ -568,7 +568,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <button
               type="button"
               onClick={() => setStatusFilter('ALL')}
-              className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+              className="text-xs text-primary dark:text-primary hover:underline"
             >
               {t.board.filters?.allStatuses || 'All'}
             </button>
@@ -581,11 +581,10 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   key={status}
                   type="button"
                   onClick={() => toggleStatusInFilter(status)}
-                  className={`px-2 py-1 text-[10px] rounded-full border transition-colors ${
-                    isSelected
-                      ? STATUS_COLORS[status]
-                      : 'bg-gray-50 dark:bg-gray-900/50 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-gray-800 hover:text-gray-600 dark:hover:text-gray-300'
-                  }`}
+                  className={`px-2 py-1 text-[10px] rounded-full border transition-colors ${isSelected
+                    ? STATUS_COLORS[status]
+                    : 'bg-gray-50 dark:bg-slate-900/50 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-slate-800 hover:text-gray-600 dark:hover:text-gray-300'
+                    }`}
                 >
                   {t.board.status[status]}
                 </button>
@@ -610,14 +609,14 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               type="date"
               value={dateAddedFrom}
               onChange={(e) => setDateAddedFrom(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-200"
+              className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             <span className="text-gray-400 text-xs">→</span>
             <input
               type="date"
               value={dateAddedTo}
               onChange={(e) => setDateAddedTo(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-200"
+              className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             {(dateAddedFrom || dateAddedTo) && (
               <button
@@ -633,21 +632,21 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <button
               type="button"
               onClick={() => setDatePreset('last7Days', 'dateAdded')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.last7Days || 'Last 7 days'}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('last30Days', 'dateAdded')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.last30Days || 'Last 30 days'}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('thisMonth', 'dateAdded')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.thisMonth || 'This month'}
             </button>
@@ -667,14 +666,14 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               type="date"
               value={lastUpdatedFrom}
               onChange={(e) => setLastUpdatedFrom(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-200"
+              className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             <span className="text-gray-400 text-xs">→</span>
             <input
               type="date"
               value={lastUpdatedTo}
               onChange={(e) => setLastUpdatedTo(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-200"
+              className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             {(lastUpdatedFrom || lastUpdatedTo) && (
               <button
@@ -690,21 +689,21 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <button
               type="button"
               onClick={() => setDatePreset('last7Days', 'lastUpdated')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.last7Days || 'Last 7 days'}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('last30Days', 'lastUpdated')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.last30Days || 'Last 30 days'}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('thisMonth', 'lastUpdated')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.thisMonth || 'This month'}
             </button>
@@ -712,7 +711,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         </div>
       </div>
 
-      <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-700">
+      <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-slate-700">
         <button
           type="button"
           onClick={resetFilters}
@@ -785,7 +784,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         />
       )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 shrink-0 transition-colors">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
         <div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{t.board.title}</h2>
           <p className="text-gray-500 dark:text-gray-400 text-sm">{t.board.subtitle}</p>
@@ -798,8 +797,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               if (!showFilters) setShowSort(false);
             }}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm font-medium shadow-sm border ${showFilters || hasActiveFilters
-              ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800'
-              : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+              ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/30'
+              : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-600'
               }`}
             title={t.board.filters?.status || 'Filters'}
           >
@@ -807,7 +806,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <span className="sm:hidden">{t.board.filters?.status || 'Filters'}</span>
             <span className="hidden sm:inline">{t.board.filters?.status || 'Filters'}</span>
             {activeFilterCount > 0 && (
-              <span className="bg-indigo-600 dark:bg-indigo-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+              <span className="bg-primary dark:bg-primary text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
                 {activeFilterCount}
               </span>
             )}
@@ -821,8 +820,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 if (!showSort) setShowFilters(false);
               }}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm font-medium shadow-sm border ${showSort
-                ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border-indigo-200 dark:border-indigo-800'
-                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+                ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/30'
+                : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
               title={t.board.filters?.sortBy || 'Sort'}
             >
@@ -833,7 +832,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             </button>
 
             {showSort && (
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 z-50 py-2 animate-in fade-in zoom-in duration-200">
+              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 py-2 animate-in fade-in zoom-in duration-200">
                 {[
                   { value: 'dateAdded_desc', label: t.board.filters?.sortOptions?.dateAddedDesc || 'Date added (newest)' },
                   { value: 'dateAdded_asc', label: t.board.filters?.sortOptions?.dateAddedAsc || 'Date added (oldest)' },
@@ -853,13 +852,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                       setShowSort(false);
                     }}
                     className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${`${sortField}_${sortDirection}` === opt.value
-                        ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 font-medium'
-                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary font-medium'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                       }`}
                   >
                     {opt.label}
                     {`${sortField}_${sortDirection}` === opt.value && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
+                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                     )}
                   </button>
                 ))}
@@ -868,7 +867,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           </div>
           <button
             onClick={handleExportCSV}
-            className="flex items-center gap-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm font-medium shadow-sm"
+            className="flex items-center gap-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm font-medium shadow-sm"
             title={t.board.exportCSV}
           >
             <Download className="w-4 h-4" />
@@ -877,11 +876,10 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           </button>
           <button
             onClick={openAddModal}
-            className="flex items-center gap-2 bg-indigo-600 dark:bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm font-medium shadow-sm"
+            className="hidden sm:flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
           >
             <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">{t.board.addJob}</span>
-            <span className="sm:hidden">{t.board.addJob.split(' ')[0]}</span>
+            {t.board.addJob}
           </button>
         </div>
       </div>
@@ -893,9 +891,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             {t.board.filters?.activeFilters || 'Active filters:'}
           </span>
           {statusFilter !== 'ALL' && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-200 border border-indigo-200 dark:border-indigo-700">
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/30">
               {t.board.labels.status}: {statusFilter.map(s => t.board.status[s]).join(', ')}
-              <button onClick={() => removeFilter('status')} className="hover:text-indigo-900 dark:hover:text-white">
+              <button onClick={() => removeFilter('status')} className="hover:text-primary dark:hover:text-white">
                 <X className="w-3 h-3" />
               </button>
             </span>
@@ -942,7 +940,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           {hasEmptyColumns && (
             <button
               onClick={() => setShowEmptyColumns(!showEmptyColumns)}
-              className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline"
+              className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary hover:underline"
             >
               {showEmptyColumns ? t.board.filters.hideEmptyColumns : t.board.filters.showEmptyColumns}
             </button>
@@ -950,7 +948,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           {hasActiveFilters && (
             <button
               onClick={resetFilters}
-              className="text-indigo-600 dark:text-indigo-400 hover:underline text-xs"
+              className="text-primary dark:text-primary hover:underline text-xs"
             >
               {t.board.filters?.clearAll || 'Clear all filters'}
             </button>
@@ -969,7 +967,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             onClick={() => setShowFilters(false)}
           >
             <div
-              className="absolute inset-x-0 bottom-0 bg-white dark:bg-gray-800 rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto shadow-2xl"
+              className="absolute inset-x-0 bottom-0 bg-white dark:bg-slate-800 rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-3">
@@ -991,7 +989,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
         {/* Filters bar (desktop) */}
         <div
-          className={`hidden sm:flex bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex-col overflow-hidden transition-all duration-300 ${showFilters ? 'p-4 opacity-100' : 'h-0 p-0 opacity-0 border-none'
+          className={`hidden sm:flex bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex-col overflow-hidden transition-all duration-300 ${showFilters ? 'p-4 opacity-100' : 'h-0 p-0 opacity-0 border-none'
             }`}
         >
           {filtersPanelContent}
@@ -1001,7 +999,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       {/* Empty state when filters return no results */}
       {visibleJobs.length === 0 && hasActiveFilters && (
         <div className="flex-1 flex flex-col items-center justify-center py-16 px-4">
-          <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-8 text-center max-w-md">
+          <div className="bg-gray-50 dark:bg-slate-800/50 rounded-2xl p-8 text-center max-w-md">
             <SearchX className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
               {t.board.filters?.noResults || 'No applications found'}
@@ -1011,7 +1009,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             </p>
             <button
               onClick={resetFilters}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 dark:bg-indigo-500 text-white rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors text-sm font-medium"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary dark:bg-primary text-white rounded-lg hover:bg-blue-700 dark:hover:bg-primary transition-colors text-sm font-medium"
             >
               <X className="w-4 h-4" />
               {t.board.filters?.clearAll || 'Clear all filters'}
@@ -1034,48 +1032,58 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               onDragOver={(e) => handleDragOver(e, status)}
               onDrop={(e) => handleDrop(e, status)}
               onDragLeave={handleDragLeave}
-              className={`flex-1 flex flex-col rounded-xl border-2 transition-all duration-200 min-w-[280px] 2xl:min-w-0 ${dragOverColumn === status
-                ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-400 border-dashed shadow-inner scale-[1.01]'
-                : 'bg-gray-50 dark:bg-gray-900/50 border-gray-200 dark:border-gray-800 border-solid'
-                }`}
+              className={`flex-1 flex flex-col min-w-[300px] 2xl:min-w-0 transition-all duration-200 ${dragOverColumn === status
+                ? 'bg-primary/5 dark:bg-primary/10 rounded-xl border-2 border-dashed border-primary/40 scale-[1.01]'
+                : ''
+                } ${status === ApplicationStatus.REJECTED ? 'opacity-60 grayscale-[0.5] dark:opacity-50 dark:grayscale-[0.3]' : ''}`}
             >
-              <div className={`p-3 border-b border-gray-200 dark:border-gray-700 rounded-t-xl font-semibold text-sm flex justify-between items-center transition-colors ${dragOverColumn === status ? 'bg-indigo-100/50 dark:bg-indigo-900/50' :
-                status === ApplicationStatus.REJECTED ? 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300' :
-                  status === ApplicationStatus.OFFER ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-                }`}>
-                {t.board.status[status]}
-                <span className="bg-white dark:bg-gray-700 px-2 py-0.5 rounded-full text-xs border dark:border-gray-600 shadow-sm">
-                  {statusCounts[status]}
-                </span>
+              <div className="flex items-center justify-between mb-4 sticky top-0 bg-[#f6f6f8]/80 dark:bg-[#101622]/90 backdrop-blur-sm py-2 z-10">
+                <h2 className="font-bold text-lg flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                  {t.board.status[status]}
+                  <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_COUNT_COLORS[status]}`}>
+                    {statusCounts[status]}
+                  </span>
+                </h2>
               </div>
 
-              <div className="p-2 space-y-3 overflow-y-auto flex-1 custom-scrollbar">
-                {visibleJobs.filter(j => j.status === status).map(job => (
-                  <JobCard
-                    key={job.id}
-                    job={job}
-                    language={language}
-                    draggedItemId={draggedItemId}
-                    onView={openViewModal}
-                    onEdit={openEditModal}
-                    onDelete={handleDeleteRequest}
-                    onNextStatus={getNextStatus(job.status) ? handleNextStatus : undefined}
-                    nextStatusLabel={(() => {
-                      const next = getNextStatus(job.status);
-                      return next ? t.board.status[next] : undefined;
-                    })()}
-                    onDragStart={handleDragStart}
-                    onDragEnd={handleDragEnd}
-                    onTouchStart={handleTouchStart}
-                    onTouchMove={handleTouchMove}
-                    onTouchEnd={handleTouchEnd}
-                  />
-                ))}
-                {/* Visual Placeholder for drop zone */}
-                {dragOverColumn === status && (
-                  <div className="h-24 rounded-lg border-2 border-dashed border-indigo-200 dark:border-indigo-700 bg-indigo-50/30 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-300 dark:text-indigo-400 text-xs font-medium animate-pulse">
-                    Drop Here
+              <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar p-2">
+                {visibleJobs.filter(j => j.status === status).length === 0 && !dragOverColumn ? (
+                  <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-8 opacity-50 dark:opacity-40">
+                    <div className="w-16 h-16 bg-slate-200 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 dark:border dark:border-slate-800">
+                      <SearchX className="w-8 h-8 text-slate-400 dark:text-slate-600" />
+                    </div>
+                    <p className="text-sm font-medium text-slate-400 dark:text-slate-500 text-center">{t.board.emptyColumns[status]}</p>
                   </div>
+                ) : (
+                  <>
+                    {visibleJobs.filter(j => j.status === status).map(job => (
+                      <JobCard
+                        key={job.id}
+                        job={job}
+                        language={language}
+                        draggedItemId={draggedItemId}
+                        onView={openViewModal}
+                        onEdit={openEditModal}
+                        onDelete={handleDeleteRequest}
+                        onNextStatus={getNextStatus(job.status) ? handleNextStatus : undefined}
+                        nextStatusLabel={(() => {
+                          const next = getNextStatus(job.status);
+                          return next ? t.board.status[next] : undefined;
+                        })()}
+                        onDragStart={handleDragStart}
+                        onDragEnd={handleDragEnd}
+                        onTouchStart={handleTouchStart}
+                        onTouchMove={handleTouchMove}
+                        onTouchEnd={handleTouchEnd}
+                      />
+                    ))}
+                    {/* Visual Placeholder for drop zone */}
+                    {dragOverColumn === status && (
+                      <div className="h-24 rounded-lg border-2 border-dashed border-primary/30 dark:border-primary/30 bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary text-xs font-medium animate-pulse">
+                        Drop Here
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
@@ -1084,7 +1092,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       </div>
 
       {/* Mobile board (stacked) */}
-      <div
+      < div
         className={`sm:hidden flex-1 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
       >
         <div className="flex flex-col gap-3 pb-4">
@@ -1096,18 +1104,18 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               onDrop={(e) => handleDrop(e, status)}
               onDragLeave={handleDragLeave}
               className={`rounded-xl border transition-all ${dragOverColumn === status
-                ? 'bg-indigo-50 dark:bg-indigo-900/40 border-indigo-300 border-dashed'
-                : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                }`}
+                ? 'bg-primary/10 dark:bg-primary/20 border-primary/40 border-dashed'
+                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
+                } ${status === ApplicationStatus.REJECTED ? 'opacity-60' : ''}`}
             >
               <button
                 onClick={() => toggleMobileStatus(status)}
                 className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold"
                 aria-expanded={mobileOpenStatuses.includes(status)}
               >
-                <span className="text-gray-700 dark:text-gray-200">{t.board.status[status]}</span>
+                <span className="text-slate-700 dark:text-slate-200">{t.board.status[status]}</span>
                 <span className="flex items-center gap-2">
-                  <span className="bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-xs border dark:border-gray-600">
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COUNT_COLORS[status]}`}>
                     {statusCounts[status]}
                   </span>
                   {mobileOpenStatuses.includes(status) ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
@@ -1138,7 +1146,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                     />
                   ))}
                   {dragOverColumn === status && (
-                    <div className="h-20 rounded-lg border-2 border-dashed border-indigo-200 dark:border-indigo-700 bg-indigo-50/30 dark:bg-indigo-900/20 flex items-center justify-center text-indigo-300 dark:text-indigo-400 text-xs font-medium animate-pulse">
+                    <div className="h-20 rounded-lg border-2 border-dashed border-primary/30 dark:border-primary/30 bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary text-xs font-medium animate-pulse">
                       Drop Here
                     </div>
                   )}
@@ -1147,7 +1155,17 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             </div>
           ))}
         </div>
-      </div>
-    </div >
+      </div >
+      {/* Floating Action Button */}
+      <button
+        onClick={openAddModal}
+        className="glass-fab fixed bottom-8 right-8 text-white flex items-center gap-3 pl-4 pr-6 py-4 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all z-30 group sm:hidden"
+        aria-label={t.board.addJob}
+      >
+        <div className="bg-white/20 p-1 rounded-full group-hover:bg-white/30 transition-colors">
+          <Plus className="w-6 h-6" />
+        </div>
+      </button>
+    </div>
   );
 };

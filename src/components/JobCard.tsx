@@ -1,7 +1,22 @@
 import React, { useRef, useState } from 'react';
-import { Pencil, Trash2, MapPin, Euro, ChevronRight, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
-import { JobApplication, Language } from '../types';
+import { Pencil, Trash2, Calendar, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
+import { JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
+
+const AVATAR_PALETTES = [
+    'bg-blue-500 border-blue-400',
+    'bg-emerald-500 border-emerald-400',
+    'bg-purple-500 border-purple-400',
+    'bg-orange-500 border-orange-400',
+    'bg-pink-500 border-pink-400',
+    'bg-teal-500 border-teal-400',
+    'bg-cyan-500 border-cyan-400',
+    'bg-rose-500 border-rose-400',
+];
+
+const getAvatarClasses = (name: string) => {
+    return AVATAR_PALETTES[name.charCodeAt(0) % AVATAR_PALETTES.length];
+};
 
 interface JobCardProps {
     job: JobApplication;
@@ -60,7 +75,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
         if (isGhost || !mouseDownPos.current) return;
         const deltaX = Math.abs(e.clientX - mouseDownPos.current.x);
         const deltaY = Math.abs(e.clientY - mouseDownPos.current.y);
-        const threshold = 5; // pixels
+        const threshold = 5;
         if (deltaX > threshold || deltaY > threshold) {
             hasDragged.current = true;
         }
@@ -68,7 +83,6 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
 
     const handleClick = (e: React.MouseEvent) => {
         if (isGhost || !onView) return;
-        // Don't trigger view if clicking on buttons, links, or if drag occurred
         const target = e.target as HTMLElement;
         if (
             target.closest('button') ||
@@ -91,18 +105,22 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
         if (!isGhost) {
             onDragEnd();
         }
-        // Reset after a short delay to allow click event to check
         setTimeout(() => {
             hasDragged.current = false;
             mouseDownPos.current = null;
         }, 100);
     };
 
+    const accentBorder =
+        job.status === ApplicationStatus.APPLIED ? 'border-l-4 !border-l-primary' :
+            job.status === ApplicationStatus.INTERVIEW ? 'border-l-4 !border-l-amber-400' :
+                job.status === ApplicationStatus.OFFER ? 'border-l-4 !border-l-emerald-500' : '';
+
     return (
         <div
-            className={`bg-white dark:bg-gray-800 p-3 2xl:p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm transition-all relative ${isGhost ? 'shadow-2xl ring-2 ring-indigo-500 rotate-3 z-50 opacity-90' :
-                draggedItemId === job.id && !isGhost ? 'opacity-30 grayscale' :
-                    'hover:shadow-md hover:-translate-y-0.5 hover:border-indigo-200 dark:hover:border-indigo-900'
+            className={`bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all ${accentBorder} ${isGhost ? 'shadow-2xl ring-2 ring-primary rotate-3 z-50 opacity-90' :
+                    draggedItemId === job.id && !isGhost ? 'opacity-30 grayscale' :
+                        'hover:shadow-md dark:hover:border-slate-700'
                 } ${!isGhost ? 'cursor-grab active:cursor-grabbing group' : ''}`}
             draggable={!isGhost}
             onMouseDown={handleMouseDown}
@@ -110,21 +128,23 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
             onClick={handleClick}
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
-
-            // Touch Events
             onTouchStart={(e) => !isGhost && onTouchStart(e, job)}
             onTouchMove={!isGhost ? onTouchMove : undefined}
             onTouchEnd={!isGhost ? onTouchEnd : undefined}
         >
-            <div className="flex justify-end items-start mb-2">
+            {/* Top row: Avatar + Actions */}
+            <div className="flex justify-between items-start mb-3">
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0 border ${getAvatarClasses(job.company)}`}>
+                    {job.company.charAt(0).toUpperCase()}
+                </div>
                 {!isGhost && (
-                    <div className="flex gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 2xl:opacity-100 transition-opacity">
+                    <div className="flex items-center gap-1">
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onEdit(job);
                             }}
-                            className="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
+                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-primary p-1 rounded transition-all"
                             title={t.board.editJob}
                             aria-label={t.board.editJob}
                         >
@@ -135,8 +155,8 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                                 e.stopPropagation();
                                 onDelete(job);
                             }}
-                            className="text-gray-400 hover:text-red-500 p-1 hover:bg-gray-50 dark:hover:bg-gray-700 rounded"
-                            title="Delete"
+                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 p-1 rounded transition-all"
+                            title={t.board.confirmDelete || 'Delete'}
                             aria-label={t.board.confirmDelete || 'Delete'}
                         >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -145,12 +165,13 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                 )}
             </div>
 
+            {/* Title */}
             {job.link ? (
                 <a
                     href={ensureAbsoluteUrl(job.link)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-semibold text-gray-800 dark:text-white text-sm 2xl:text-base truncate 2xl:whitespace-normal 2xl:line-clamp-2 pr-4 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors block"
+                    className="font-bold text-slate-900 dark:text-white mb-1 text-sm truncate hover:text-primary dark:hover:text-primary transition-colors block"
                     draggable={false}
                     onClick={(e) => {
                         e.stopPropagation();
@@ -164,29 +185,32 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                     {job.position}
                 </a>
             ) : (
-                <h4 className="font-semibold text-gray-800 dark:text-white text-sm 2xl:text-base truncate 2xl:whitespace-normal 2xl:line-clamp-2 pr-4">{job.position}</h4>
+                <h3 className="font-bold text-slate-900 dark:text-white mb-1 text-sm truncate">{job.position}</h3>
             )}
-            <div className="flex items-center gap-2 mb-2">
-                <p className="text-gray-500 dark:text-gray-400 text-xs 2xl:text-sm font-medium">{job.company}</p>
-            </div>
 
-            <div className="flex flex-col gap-1 mb-3">
-                {job.location && (
-                    <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs">
-                        <MapPin className="w-3 h-3" /> {job.location}
-                    </div>
-                )}
+            {/* Company + Location */}
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+                {job.company}{job.location ? ` · ${job.location}` : ''}
+            </p>
+
+            {/* Tags */}
+            <div className="flex flex-wrap gap-2 mb-3">
                 {job.salary && (
-                    <div className="flex items-center gap-1 text-gray-400 dark:text-gray-500 text-xs">
-                        <Euro className="w-3 h-3" /> {job.salary}
-                    </div>
+                    <span className="px-2 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider rounded">
+                        {job.salary}
+                    </span>
+                )}
+                {job.location && job.location.toLowerCase().includes('remote') && (
+                    <span className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider rounded dark:border dark:border-primary/20">
+                        Remote
+                    </span>
                 )}
             </div>
 
             {/* Notes preview - visible on large screens */}
             {job.notes && (
                 <div className="hidden 2xl:block mb-3">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 italic">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 italic">
                         {job.notes}
                     </p>
                 </div>
@@ -194,13 +218,14 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
 
             {/* Interview Rounds Section */}
             {job.interviewRounds && job.interviewRounds.length > 0 && !isGhost && (
-                <div className="mb-2">
+                <div className="mb-3">
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
                             setShowInterviews(!showInterviews);
                         }}
-                        className="flex items-center gap-1 text-xs text-gray-600 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors w-full"
+                        aria-expanded={showInterviews}
+                        className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors w-full"
                     >
                         <Calendar className="w-3 h-3" />
                         <span>
@@ -210,7 +235,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                     </button>
 
                     {showInterviews && (
-                        <div className="mt-2 space-y-1 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+                        <div className="mt-2 space-y-1 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
                             {job.interviewRounds.map(round => {
                                 const statusColors = {
                                     scheduled: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
@@ -221,12 +246,12 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                                 return (
                                     <div key={round.id} className="text-xs py-1">
                                         <div className="flex items-center justify-between gap-2">
-                                            <span className="text-gray-700 dark:text-gray-300 font-medium truncate">{round.roundName}</span>
+                                            <span className="text-slate-700 dark:text-slate-300 font-medium truncate">{round.roundName}</span>
                                             <span className={`px-2 py-0.5 rounded text-[10px] font-medium whitespace-nowrap ${statusColors[round.status]}`}>
                                                 {t.interviewRound.statuses[round.status]}
                                             </span>
                                         </div>
-                                        <div className="text-gray-500 dark:text-gray-500 text-[10px] mt-0.5">
+                                        <div className="text-slate-500 dark:text-slate-500 text-[10px] mt-0.5">
                                             {round.interviewDate}
                                         </div>
                                     </div>
@@ -237,8 +262,21 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                 </div>
             )}
 
-            <div className="flex justify-between items-center pt-2 border-t border-gray-50 dark:border-gray-700">
-                <span className="text-[10px] text-gray-400 dark:text-gray-500">
+            {/* View Details Button */}
+            {!isGhost && onView && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onView(job);
+                    }}
+                    className="w-full py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-primary hover:text-white transition-all mb-3"
+                >
+                    {t.board.viewDetails}
+                </button>
+            )}
+
+            <div className="flex justify-between items-center pt-2 border-t border-slate-50 dark:border-slate-700">
+                <span className="text-[10px] text-slate-400 dark:text-slate-500">
                     {t.board.labels.lastUpdated}: {job.lastUpdated}
                 </span>
 
@@ -248,7 +286,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                             e.stopPropagation();
                             onNextStatus(job);
                         }}
-                        className="p-1 rounded-full hover:bg-indigo-50 dark:hover:bg-gray-700 text-gray-400 dark:text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        className="p-1 rounded-full hover:bg-primary/10 dark:hover:bg-slate-700 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors"
                         title={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
                         aria-label={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
                     >

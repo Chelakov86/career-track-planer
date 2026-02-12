@@ -39,6 +39,7 @@ export const TRANSLATIONS = {
       addJob: "Add Job",
       editJob: "Edit Job",
       viewJob: "View Job",
+      moveStage: "Move to next stage",
       openLink: "Open Link",
       exportCSV: "Export CSV",
       newOpp: "Add New Opportunity",
@@ -105,6 +106,15 @@ export const TRANSLATIONS = {
         noResultsMessage: 'Try adjusting your filters or search terms to find what you\'re looking for.',
         hideEmptyColumns: 'Hide empty columns',
         showEmptyColumns: 'Show empty columns'
+      },
+      viewDetails: 'View Details',
+      emptyColumns: {
+        RESEARCH: 'Start exploring opportunities!',
+        TO_APPLY: 'Add jobs you want to apply for.',
+        APPLIED: 'Submit your first application!',
+        INTERVIEW: 'Interviews coming your way!',
+        OFFER: 'No offers yet. Keep pushing!',
+        REJECTED: 'Every no gets you closer to yes.',
       }
     },
     toggleTheme: 'Toggle Dark Mode',
@@ -202,6 +212,7 @@ export const TRANSLATIONS = {
       addJob: "Job hinzufügen",
       editJob: "Job bearbeiten",
       viewJob: "Job anzeigen",
+      moveStage: "In nächste Phase verschieben",
       openLink: "Link öffnen",
       exportCSV: "Excel Export",
       newOpp: "Neue Chance hinzufügen",
@@ -268,6 +279,15 @@ export const TRANSLATIONS = {
         noResultsMessage: 'Versuche, deine Filter oder Suchbegriffe anzupassen, um zu finden, wonach du suchst.',
         hideEmptyColumns: 'Leere Spalten ausblenden',
         showEmptyColumns: 'Leere Spalten anzeigen'
+      },
+      viewDetails: 'Details anzeigen',
+      emptyColumns: {
+        RESEARCH: 'Entdecke neue Möglichkeiten!',
+        TO_APPLY: 'Füge Jobs hinzu, auf die du dich bewerben willst.',
+        APPLIED: 'Reiche deine erste Bewerbung ein!',
+        INTERVIEW: 'Interviews kommen auf dich zu!',
+        OFFER: 'Noch keine Angebote. Bleib dran!',
+        REJECTED: 'Jedes Nein bringt dich näher ans Ja.',
       }
     },
     toggleTheme: 'Design wechseln',
@@ -434,6 +454,15 @@ export const STATUS_COLORS: Record<ApplicationStatus, string> = {
   [ApplicationStatus.INTERVIEW]: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-900',
   [ApplicationStatus.OFFER]: 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-900',
   [ApplicationStatus.REJECTED]: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-900',
+};
+
+export const STATUS_COUNT_COLORS: Record<ApplicationStatus, string> = {
+  [ApplicationStatus.RESEARCH]: 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
+  [ApplicationStatus.TO_APPLY]: 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
+  [ApplicationStatus.APPLIED]: 'bg-primary/20 text-primary dark:border dark:border-primary/30',
+  [ApplicationStatus.INTERVIEW]: 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400',
+  [ApplicationStatus.OFFER]: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400',
+  [ApplicationStatus.REJECTED]: 'bg-slate-200 dark:bg-slate-800 text-slate-500',
 };
 
 export const MOCK_JOBS: JobApplication[] = [
