@@ -26,7 +26,7 @@ export const Layout: React.FC<LayoutProps> = ({
     }, [mobileMenuOpen]);
 
     return (
-        <div className="min-h-screen flex flex-col md:flex-row bg-[#f8fafc] dark:bg-gray-950 transition-colors duration-200">
+        <div className="min-h-screen flex flex-col md:flex-row bg-[#f6f6f8] dark:bg-[#101622] transition-colors duration-200">
             <Header
                 language={language}
                 setLanguage={setLanguage}

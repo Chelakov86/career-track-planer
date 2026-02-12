@@ -11,6 +11,9 @@
         theme: {
           extend: {
             colors: {
+              primary: '#135bec',
+              'background-light': '#f6f6f8',
+              'background-dark': '#101622',
               gray: {
                 750: '#2d3748',
                 850: '#1a202c',
@@ -24,17 +27,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
-      body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+      body { font-family: 'Inter', sans-serif; background-color: #f6f6f8; }
       /* Custom scrollbar for better UI */
       ::-webkit-scrollbar { width: 6px; height: 6px; }
       ::-webkit-scrollbar-track { background: transparent; }
       ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
       ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-      
-      .dark body { background-color: #111827; }
-      .dark ::-webkit-scrollbar-track { background: #1f2937; }
-      .dark ::-webkit-scrollbar-thumb { background: #4b5563; }
-      .dark ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+
+      .dark body { background-color: #101622; }
+      .dark ::-webkit-scrollbar-track { background: #1e293b; }
+      .dark ::-webkit-scrollbar-thumb { background: #334155; }
+      .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+      .glass-fab {
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        background-color: rgba(19, 91, 236, 0.85);
+      }
     </style>
   <script type="importmap">
 {
