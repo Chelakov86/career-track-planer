@@ -235,7 +235,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
             {Object.keys(groupedEvents).map(date => (
               <div key={date}>
                 {/* Date Header */}
-                <div className="mb-3">
+                <div className="sticky top-0 z-10 bg-background-light dark:bg-background-dark py-2 mb-3">
                   <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
                     {formatDate(date)}
                   </h3>
