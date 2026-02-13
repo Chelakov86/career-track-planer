@@ -122,7 +122,13 @@ export const TRANSLATIONS = {
       total: "Total Applications",
       active: "Active Pipeline",
       interviews: "Interviews",
-      funnel: "Application Funnel"
+      funnel: "Application Funnel",
+      title: "Statistics",
+      subtitle: "Track your job search progress",
+      thisWeek: "this week",
+      applicationsOverTime: "Applications Over Time",
+      recentActivity: "Recent Activity",
+      noActivity: "No recent activity"
     },
     modal: {
       interviews: "Interview Rounds",
@@ -295,7 +301,13 @@ export const TRANSLATIONS = {
       total: "Bewerbungen Gesamt",
       active: "Aktive Pipeline",
       interviews: "Interviews",
-      funnel: "Bewerbungstrichter"
+      funnel: "Bewerbungstrichter",
+      title: "Statistik",
+      subtitle: "Verfolge deinen Bewerbungsfortschritt",
+      thisWeek: "diese Woche",
+      applicationsOverTime: "Bewerbungen im Zeitverlauf",
+      recentActivity: "Letzte Aktivitäten",
+      noActivity: "Keine Aktivitäten"
     },
     modal: {
       interviews: "Interview-Runden",
