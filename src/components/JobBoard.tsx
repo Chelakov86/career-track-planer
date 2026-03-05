@@ -1095,7 +1095,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       < div
         className={`sm:hidden flex-1 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
       >
-        <div className="flex flex-col gap-3 pb-4">
+        <div className="flex flex-col gap-3 pb-28">
           {columns.map(status => (
             <div
               key={status}
