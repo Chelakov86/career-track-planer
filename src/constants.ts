@@ -140,6 +140,7 @@ export const TRANSLATIONS = {
       allEvents: "All Events",
       eventTypes: {
         jobAdded: "Job Added",
+        jobApplied: "Applied",
         statusChanged: "Status Changed",
         interviewScheduled: "Interview Scheduled",
         interviewCompleted: "Interview Completed",
@@ -319,6 +320,7 @@ export const TRANSLATIONS = {
       allEvents: "Alle Ereignisse",
       eventTypes: {
         jobAdded: "Job hinzugefügt",
+        jobApplied: "Beworben",
         statusChanged: "Status geändert",
         interviewScheduled: "Interview geplant",
         interviewCompleted: "Interview abgeschlossen",

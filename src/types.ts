@@ -47,7 +47,7 @@ export interface JobApplication {
   interviewRounds?: InterviewRound[];
 }
 
-export type TimelineEventType = 'job_added' | 'status_changed' | 'interview_scheduled' | 'interview_completed' | 'interview_feedback';
+export type TimelineEventType = 'job_added' | 'job_applied' | 'status_changed' | 'interview_scheduled' | 'interview_completed' | 'interview_feedback';
 
 export interface TimelineEvent {
   id: string;

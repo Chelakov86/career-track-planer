@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Clock, Briefcase, Calendar, CheckCircle, MessageCircle, Search } from 'lucide-react';
-import { JobApplication, Language, TimelineEvent, TimelineEventType } from '../types';
+import { Clock, Briefcase, Calendar, CheckCircle, MessageCircle, Search, Send } from 'lucide-react';
+import { JobApplication, Language, TimelineEvent, TimelineEventType, ApplicationStatus } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { getGoogleCalendarUrl } from '../lib/calendar';
 
@@ -30,6 +30,26 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
         description: `${job.position} at ${job.company}`,
         metadata: {}
       });
+
+      // Job applied event
+      if (
+        job.status === ApplicationStatus.APPLIED ||
+        job.status === ApplicationStatus.INTERVIEW ||
+        job.status === ApplicationStatus.OFFER ||
+        job.status === ApplicationStatus.REJECTED
+      ) {
+        const appliedDate = job.status === ApplicationStatus.APPLIED ? job.lastUpdated : job.dateAdded;
+        events.push({
+          id: `job-${job.id}-applied`,
+          jobId: job.id,
+          company: job.company,
+          position: job.position,
+          eventType: 'job_applied',
+          eventDate: appliedDate,
+          description: `${job.position} at ${job.company}`,
+          metadata: { newStatus: ApplicationStatus.APPLIED }
+        });
+      }
 
       // Interview events
       if (job.interviewRounds && job.interviewRounds.length > 0) {
@@ -106,6 +126,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
 
   const eventTypeOptions: { type: TimelineEventType; label: string }[] = [
     { type: 'job_added', label: t.timeline.eventTypes.jobAdded },
+    { type: 'job_applied', label: t.timeline.eventTypes.jobApplied },
     { type: 'interview_scheduled', label: t.timeline.eventTypes.interviewScheduled },
     { type: 'interview_completed', label: t.timeline.eventTypes.interviewCompleted },
     { type: 'interview_feedback', label: t.timeline.eventTypes.awaitingFeedback }
@@ -121,6 +142,8 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
     switch (type) {
       case 'job_added':
         return <Briefcase className="w-4 h-4" />;
+      case 'job_applied':
+        return <Send className="w-4 h-4" />;
       case 'interview_scheduled':
         return <Calendar className="w-4 h-4" />;
       case 'interview_completed':
@@ -135,6 +158,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
   const getIconColor = (type: TimelineEventType) => {
     switch (type) {
       case 'job_added': return 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
+      case 'job_applied': return 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400';
       case 'interview_scheduled': return 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
       case 'interview_completed': return 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400';
       case 'interview_feedback': return 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400';
@@ -145,6 +169,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
   const getEventPillColor = (type: TimelineEventType) => {
     switch (type) {
       case 'job_added': return 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
+      case 'job_applied': return 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300';
       case 'interview_scheduled': return 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300';
       case 'interview_completed': return 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300';
       case 'interview_feedback': return 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300';
@@ -155,6 +180,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
   const getEventLabel = (type: TimelineEventType) => {
     switch (type) {
       case 'job_added': return t.timeline.eventTypes.jobAdded;
+      case 'job_applied': return t.timeline.eventTypes.jobApplied;
       case 'interview_scheduled': return t.timeline.eventTypes.interviewScheduled;
       case 'interview_completed': return t.timeline.eventTypes.interviewCompleted;
       case 'interview_feedback': return t.timeline.eventTypes.awaitingFeedback;
