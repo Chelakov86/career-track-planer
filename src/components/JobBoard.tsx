@@ -172,6 +172,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         // Preserve link field - convert empty string to undefined for optional field
         link: data.link && data.link.trim() ? data.link.trim() : undefined
       } as JobApplication);
+      onRefetchJobs?.();
     } else {
       // Create new
       const job: JobApplication = {
@@ -188,6 +189,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         link: data.link && data.link.trim() ? data.link.trim() : undefined
       };
       onAddJob(job);
+      onRefetchJobs?.();
     }
     setShowModal(false);
   };
@@ -781,6 +783,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             onRefetchJobs?.();
           }}
           onEdit={modalMode === 'view' ? switchToEditMode : undefined}
+          onDataChanged={onRefetchJobs}
         />
       )}
 

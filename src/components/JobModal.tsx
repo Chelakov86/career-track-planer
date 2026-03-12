@@ -13,6 +13,7 @@ interface JobModalProps {
     onSave: (data: Partial<JobApplication>) => void;
     onCancel: () => void;
     onEdit?: () => void;
+    onDataChanged?: () => void;
 }
 
 export const JobModal: React.FC<JobModalProps> = ({
@@ -21,7 +22,8 @@ export const JobModal: React.FC<JobModalProps> = ({
     mode = 'edit',
     onSave,
     onCancel,
-    onEdit
+    onEdit,
+    onDataChanged
 }) => {
     const { user } = useAuth();
     const [showInterviews, setShowInterviews] = useState(false);
@@ -86,6 +88,22 @@ export const JobModal: React.FC<JobModalProps> = ({
     const handleSave = () => {
         if (!formData.company || !formData.position) return;
         onSave(formData);
+    };
+
+
+    const handleAddRound = async (round: Omit<InterviewRound, 'id' | 'createdAt' | 'updatedAt'>) => {
+        await addRound(round);
+        onDataChanged?.();
+    };
+
+    const handleUpdateRound = async (roundId: string, updates: Partial<InterviewRound>) => {
+        await updateRound(roundId, updates);
+        onDataChanged?.();
+    };
+
+    const handleDeleteRound = async (roundId: string) => {
+        await deleteRound(roundId);
+        onDataChanged?.();
     };
 
     const renderField = (label: string, value: string | undefined, placeholder?: string) => {
@@ -324,13 +342,13 @@ export const JobModal: React.FC<JobModalProps> = ({
                                                         key={round.id}
                                                         round={round}
                                                         language={language}
-                                                        onUpdate={updateRound}
-                                                        onDelete={deleteRound}
+                                                        onUpdate={handleUpdateRound}
+                                                        onDelete={handleDeleteRound}
                                                     />
                                                 ))}
                                                 <button
                                                     type="button"
-                                                    onClick={() => addRound({
+                                                    onClick={() => handleAddRound({
                                                         jobId: formData.id!,
                                                         roundName: '',
                                                         interviewDate: new Date().toISOString().split('T')[0],
