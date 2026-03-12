@@ -10,7 +10,7 @@ interface JobModalProps {
     initialData: Partial<JobApplication>;
     language: Language;
     mode?: 'view' | 'edit';
-    onSave: (data: Partial<JobApplication>) => void;
+    onSave: (data: Partial<JobApplication>) => void | Promise<void>;
     onCancel: () => void;
     onEdit?: () => void;
     onDataChanged?: () => void;

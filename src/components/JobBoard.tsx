@@ -26,11 +26,11 @@ function useDebounce<T>(value: T, delay: number): T {
 
 interface JobBoardProps {
   jobs: JobApplication[];
-  onAddJob: (job: JobApplication) => void;
-  onEditJob: (job: JobApplication) => void;
-  onUpdateStatus: (id: string, status: ApplicationStatus) => void;
-  onDeleteJob: (id: string) => void;
-  onRefetchJobs?: () => void;
+  onAddJob: (job: JobApplication) => Promise<void>;
+  onEditJob: (job: JobApplication) => Promise<void>;
+  onUpdateStatus: (id: string, status: ApplicationStatus) => Promise<void>;
+  onDeleteJob: (id: string) => Promise<void>;
+  onRefetchJobs?: () => void | Promise<void>;
   language: Language;
 }
 
@@ -163,16 +163,16 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     );
   };
 
-  const handleSaveJob = (data: Partial<JobApplication>) => {
+  const handleSaveJob = async (data: Partial<JobApplication>) => {
     if (data.id) {
       // Edit existing
-      onEditJob({
+      await onEditJob({
         ...data,
         lastUpdated: new Date().toISOString().split('T')[0],
         // Preserve link field - convert empty string to undefined for optional field
         link: data.link && data.link.trim() ? data.link.trim() : undefined
       } as JobApplication);
-      onRefetchJobs?.();
+      await onRefetchJobs?.();
     } else {
       // Create new
       const job: JobApplication = {
@@ -188,8 +188,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         // Preserve link field - convert empty string to undefined for optional field
         link: data.link && data.link.trim() ? data.link.trim() : undefined
       };
-      onAddJob(job);
-      onRefetchJobs?.();
+      await onAddJob(job);
+      await onRefetchJobs?.();
     }
     setShowModal(false);
   };
