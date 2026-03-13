@@ -10,7 +10,8 @@ const escapeCsv = (str: string | undefined): string => {
 };
 
 /**
- * Generates a CSV string from a list of job applications.
+ * Generates a CSV string from a list of job applications,
+ * including interview round data as flattened rows.
  */
 export const generateJobsCSV = (jobs: JobApplication[], language: Language): string => {
   const t = TRANSLATIONS[language];
@@ -24,12 +25,21 @@ export const generateJobsCSV = (jobs: JobApplication[], language: Language): str
     t.board.labels.link,
     t.board.labels.dateAdded,
     t.board.labels.lastUpdated,
-    t.board.labels.notes
+    t.board.labels.notes,
+    t.board.labels.interviewRound,
+    t.board.labels.interviewDate,
+    t.board.labels.interviewStart,
+    t.board.labels.interviewEnd,
+    t.board.labels.interviewStatus,
+    t.board.labels.interviewNotes,
+    t.board.labels.interviewMeetingLink
   ];
 
-  const csvContent = [
-    headers.join(','),
-    ...jobs.map(job => [
+  const emptyInterviewCols = Array(7).fill('""').join(',');
+
+  const rows: string[] = [];
+  for (const job of jobs) {
+    const baseCols = [
       escapeCsv(job.company),
       escapeCsv(job.position),
       escapeCsv(t.board.status[job.status]),
@@ -39,9 +49,27 @@ export const generateJobsCSV = (jobs: JobApplication[], language: Language): str
       escapeCsv(job.dateAdded),
       escapeCsv(job.lastUpdated),
       escapeCsv(job.notes?.replace(/\n/g, ' '))
-    ].join(','))
-  ].join('\n');
+    ].join(',');
 
+    if (job.interviewRounds && job.interviewRounds.length > 0) {
+      for (const round of job.interviewRounds) {
+        const interviewCols = [
+          escapeCsv(round.roundName),
+          escapeCsv(round.interviewDate),
+          escapeCsv(round.startTime),
+          escapeCsv(round.endTime),
+          escapeCsv(t.interviewRound.statuses[round.status]),
+          escapeCsv(round.notes?.replace(/\n/g, ' ')),
+          escapeCsv(round.meetingLink)
+        ].join(',');
+        rows.push(`${baseCols},${interviewCols}`);
+      }
+    } else {
+      rows.push(`${baseCols},${emptyInterviewCols}`);
+    }
+  }
+
+  const csvContent = [headers.join(','), ...rows].join('\n');
   return BOM + csvContent;
 };
 

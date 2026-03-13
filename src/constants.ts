@@ -67,7 +67,14 @@ export const TRANSLATIONS = {
         link: "Link",
         notes: "Notes",
         dateAdded: "Date Added",
-        lastUpdated: "Last Updated"
+        lastUpdated: "Last Updated",
+        interviewRound: "Interview Round",
+        interviewDate: "Interview Date",
+        interviewStart: "Start Time",
+        interviewEnd: "End Time",
+        interviewStatus: "Interview Status",
+        interviewNotes: "Interview Notes",
+        interviewMeetingLink: "Meeting Link"
       },
       status: {
         [ApplicationStatus.RESEARCH]: 'Research',
@@ -247,7 +254,14 @@ export const TRANSLATIONS = {
         link: "Link",
         notes: "Notizen",
         dateAdded: "Hinzugefügt",
-        lastUpdated: "Aktualisiert"
+        lastUpdated: "Aktualisiert",
+        interviewRound: "Interview-Runde",
+        interviewDate: "Interview-Datum",
+        interviewStart: "Startzeit",
+        interviewEnd: "Endzeit",
+        interviewStatus: "Interview-Status",
+        interviewNotes: "Interview-Notizen",
+        interviewMeetingLink: "Meeting-Link"
       },
       status: {
         [ApplicationStatus.RESEARCH]: 'Recherche',
