@@ -196,7 +196,12 @@ export const JobModal: React.FC<JobModalProps> = ({
                     <h3 className="font-bold text-gray-800 dark:text-white">
                         {mode === 'view' ? t.board.viewJob : (formData.id ? t.board.editJob : t.board.newOpp)}
                     </h3>
-                    <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <button
+                        onClick={onCancel}
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus-visible:ring-2 focus-visible:ring-primary/50 outline-none rounded-md"
+                        aria-label={t.board.close}
+                        title={t.board.close}
+                    >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -217,7 +222,14 @@ export const JobModal: React.FC<JobModalProps> = ({
                                             {formData.link || <span className="text-gray-400 dark:text-gray-500 italic">{t.board.placeholders.link}</span>}
                                         </div>
                                         {formData.link && (
-                                            <a href={ensureAbsoluteUrl(formData.link)} target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-100 dark:bg-slate-700 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary hover:bg-primary/10 dark:hover:bg-primary/20 border border-gray-200 dark:border-slate-600">
+                                            <a
+                                                href={ensureAbsoluteUrl(formData.link)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="p-2 bg-gray-100 dark:bg-slate-700 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary hover:bg-primary/10 dark:hover:bg-primary/20 border border-gray-200 dark:border-slate-600 focus-visible:ring-2 focus-visible:ring-primary/50 outline-none"
+                                                aria-label={t.board.openLink}
+                                                title={t.board.openLink}
+                                            >
                                                 <ExternalLink className="w-5 h-5" />
                                             </a>
                                         )}
@@ -315,7 +327,14 @@ export const JobModal: React.FC<JobModalProps> = ({
                                             onChange={e => setFormData({ ...formData, link: e.target.value })}
                                         />
                                         {formData.link && (
-                                            <a href={ensureAbsoluteUrl(formData.link)} target="_blank" rel="noopener noreferrer" className="p-2 bg-gray-100 dark:bg-slate-700 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary hover:bg-primary/10 dark:hover:bg-primary/20 border border-gray-200 dark:border-slate-600">
+                                            <a
+                                                href={ensureAbsoluteUrl(formData.link)}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="p-2 bg-gray-100 dark:bg-slate-700 rounded-lg text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary hover:bg-primary/10 dark:hover:bg-primary/20 border border-gray-200 dark:border-slate-600 focus-visible:ring-2 focus-visible:ring-primary/50 outline-none"
+                                                aria-label={t.board.openLink}
+                                                title={t.board.openLink}
+                                            >
                                                 <ExternalLink className="w-5 h-5" />
                                             </a>
                                         )}
