@@ -22,7 +22,8 @@ export const TRANSLATIONS = {
       timeline: "Timeline",
       stats: "Analytics",
       subtitle: "Job Hunt Planner",
-      logout: "Log out"
+      logout: "Log out",
+      menu: "Toggle menu"
     },
     schedule: {
       title: "Daily Routine",
@@ -209,7 +210,8 @@ export const TRANSLATIONS = {
       timeline: "Timeline",
       stats: "Statistik",
       subtitle: "Jobsuche Planer",
-      logout: "Abmelden"
+      logout: "Abmelden",
+      menu: "Menü umschalten"
     },
     schedule: {
       title: "Tagesablauf",
