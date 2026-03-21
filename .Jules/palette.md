@@ -1,0 +1,3 @@
+## 2024-05-15 - Icon-Only Interactive Elements
+**Learning:** Icon-only interactive elements (both buttons and links) frequently lack accessible names and clear keyboard focus indicators, making them difficult to use for screen reader and keyboard-only users. This is a common pattern in modals and lists where space is constrained.
+**Action:** Always ensure that icon-only buttons (like the `X` Close button) and icon-only links (like the `ExternalLink` anchor) have explicit `aria-label` and `title` attributes using translated strings, and implement explicit `focus-visible` styling (e.g., `focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none`) to provide clear visual feedback during keyboard navigation.
