@@ -94,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <p className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">{user.name}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
                     </div>
-                    <button onClick={logout} className="text-gray-400 hover:text-red-500 transition-colors" title={t.nav.logout}>
+                    <button onClick={logout} className="text-gray-400 hover:text-red-500 transition-colors focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none rounded" title={t.nav.logout} aria-label={t.nav.logout}>
                         <LogOut className="w-4 h-4" />
                     </button>
                 </div>
