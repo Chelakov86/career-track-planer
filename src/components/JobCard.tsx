@@ -144,7 +144,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                                 e.stopPropagation();
                                 onEdit(job);
                             }}
-                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-primary p-1 rounded transition-all"
+                            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none text-slate-400 hover:text-primary p-1 rounded transition-all"
                             title={t.board.editJob}
                             aria-label={t.board.editJob}
                         >
@@ -155,7 +155,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                                 e.stopPropagation();
                                 onDelete(job);
                             }}
-                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 p-1 rounded transition-all"
+                            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none text-slate-400 hover:text-red-500 p-1 rounded transition-all"
                             title={t.board.confirmDelete || 'Delete'}
                             aria-label={t.board.confirmDelete || 'Delete'}
                         >
@@ -225,7 +225,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                             setShowInterviews(!showInterviews);
                         }}
                         aria-expanded={showInterviews}
-                        className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors w-full"
+                        className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors w-full focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded"
                     >
                         <Calendar className="w-3 h-3" />
                         <span>
@@ -286,9 +286,9 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                             e.stopPropagation();
                             onNextStatus(job);
                         }}
-                        className="p-1 rounded-full hover:bg-primary/10 dark:hover:bg-slate-700 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors"
-                        title={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
-                        aria-label={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
+                        className="p-1 rounded-full hover:bg-primary/10 dark:hover:bg-slate-700 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
+                        title={nextStatusLabel ? `→ ${nextStatusLabel}` : t.board.moveStage}
+                        aria-label={nextStatusLabel ? `→ ${nextStatusLabel}` : t.board.moveStage}
                     >
                         <ChevronRight className="w-4 h-4" />
                     </button>
