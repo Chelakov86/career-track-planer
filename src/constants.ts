@@ -22,7 +22,10 @@ export const TRANSLATIONS = {
       timeline: "Timeline",
       stats: "Analytics",
       subtitle: "Job Hunt Planner",
-      logout: "Log out"
+      logout: "Log out",
+      openMenu: "Open menu",
+      closeMenu: "Close menu",
+      switchLanguage: "Switch language"
     },
     schedule: {
       title: "Daily Routine",
@@ -209,7 +212,10 @@ export const TRANSLATIONS = {
       timeline: "Timeline",
       stats: "Statistik",
       subtitle: "Jobsuche Planer",
-      logout: "Abmelden"
+      logout: "Abmelden",
+      openMenu: "Menü öffnen",
+      closeMenu: "Menü schließen",
+      switchLanguage: "Sprache wechseln"
     },
     schedule: {
       title: "Tagesablauf",

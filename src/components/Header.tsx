@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-2">
                 <button
                     onClick={toggleTheme}
-                    className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg"
+                    className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                     title={t.toggleTheme}
                     aria-label={t.toggleTheme}
                 >
@@ -37,11 +37,18 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
                 <button
                     onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}
-                    className="text-xs font-semibold bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded text-gray-600 dark:text-gray-300 uppercase"
+                    aria-label={t.nav.switchLanguage}
+                    title={t.nav.switchLanguage}
+                    className="text-xs font-semibold bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded text-gray-600 dark:text-gray-300 uppercase focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                 >
                     {language}
                 </button>
-                <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-600 dark:text-gray-400">
+                <button
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    aria-label={mobileMenuOpen ? t.nav.closeMenu : t.nav.openMenu}
+                    title={mobileMenuOpen ? t.nav.closeMenu : t.nav.openMenu}
+                    className="text-gray-600 dark:text-gray-400 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded"
+                >
                     {mobileMenuOpen ? <X /> : <Menu />}
                 </button>
             </div>

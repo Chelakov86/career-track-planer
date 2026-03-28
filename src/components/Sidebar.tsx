@@ -94,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <p className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">{user.name}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
                     </div>
-                    <button onClick={logout} className="text-gray-400 hover:text-red-500 transition-colors" title={t.nav.logout}>
+                    <button onClick={logout} className="text-gray-400 hover:text-red-500 transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded" title={t.nav.logout} aria-label={t.nav.logout}>
                         <LogOut className="w-4 h-4" />
                     </button>
                 </div>
@@ -104,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {/* Theme Toggle */}
                     <button
                         onClick={toggleTheme}
-                        className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors shadow-sm"
+                        className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                         title={t.toggleTheme}
                         aria-label={t.toggleTheme}
                     >
@@ -115,13 +115,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <div className="flex flex-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md p-0.5 shadow-sm">
                         <button
                             onClick={() => setLanguage('en')}
-                            className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors ${language === 'en' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                            className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${language === 'en' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
                         >
                             EN
                         </button>
                         <button
                             onClick={() => setLanguage('de')}
-                            className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors ${language === 'de' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                            className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${language === 'de' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
                         >
                             DE
                         </button>
