@@ -115,13 +115,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     <div className="flex flex-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md p-0.5 shadow-sm">
                         <button
                             onClick={() => setLanguage('en')}
-                            className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors ${language === 'en' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                            className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${language === 'en' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                            title="English (EN)"
+                            aria-label="English (EN)"
                         >
                             EN
                         </button>
                         <button
                             onClick={() => setLanguage('de')}
-                            className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors ${language === 'de' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                            className={`flex-1 px-2 py-1.5 text-xs font-medium rounded transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none ${language === 'de' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : 'text-gray-400 hover:text-gray-600 dark:hover:text-gray-300'}`}
+                            title="Deutsch (DE)"
+                            aria-label="Deutsch (DE)"
                         >
                             DE
                         </button>
