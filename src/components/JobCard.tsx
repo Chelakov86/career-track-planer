@@ -118,7 +118,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
 
     return (
         <div
-            className={`bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all ${accentBorder} ${isGhost ? 'shadow-2xl ring-2 ring-primary rotate-3 z-50 opacity-90' :
+            className={`bg-white dark:bg-slate-800 p-3 2xl:p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all ${accentBorder} ${isGhost ? 'shadow-2xl ring-2 ring-primary rotate-3 z-50 opacity-90' :
                     draggedItemId === job.id && !isGhost ? 'opacity-30 grayscale' :
                         'hover:shadow-md dark:hover:border-slate-700'
                 } ${!isGhost ? 'cursor-grab active:cursor-grabbing group' : ''}`}
@@ -133,8 +133,8 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
             onTouchEnd={!isGhost ? onTouchEnd : undefined}
         >
             {/* Top row: Avatar + Actions */}
-            <div className="flex justify-between items-start mb-3">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0 border ${getAvatarClasses(job.company)}`}>
+            <div className="flex justify-between items-start mb-2 2xl:mb-3">
+                <div className={`w-8 h-8 2xl:w-10 2xl:h-10 rounded-lg flex items-center justify-center text-white font-bold text-sm shrink-0 border ${getAvatarClasses(job.company)}`}>
                     {job.company.charAt(0).toUpperCase()}
                 </div>
                 {!isGhost && (
@@ -189,12 +189,12 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
             )}
 
             {/* Company + Location */}
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-2 2xl:mb-3">
                 {job.company}{job.location ? ` · ${job.location}` : ''}
             </p>
 
             {/* Tags */}
-            <div className="flex flex-wrap gap-2 mb-3">
+            <div className="flex flex-wrap gap-2 mb-2 2xl:mb-3">
                 {job.salary && (
                     <span className="px-2 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider rounded">
                         {job.salary}
@@ -209,7 +209,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
 
             {/* Notes preview - visible on large screens */}
             {job.notes && (
-                <div className="hidden 2xl:block mb-3">
+                <div className="hidden 2xl:block mb-2 2xl:mb-3">
                     <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 italic">
                         {job.notes}
                     </p>
@@ -218,7 +218,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
 
             {/* Interview Rounds Section */}
             {job.interviewRounds && job.interviewRounds.length > 0 && !isGhost && (
-                <div className="mb-3">
+                <div className="mb-2 2xl:mb-3">
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
@@ -269,7 +269,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                         e.stopPropagation();
                         onView(job);
                     }}
-                    className="w-full py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg text-sm font-medium hover:bg-primary hover:text-white transition-all mb-3"
+                    className="w-full py-1.5 2xl:py-2 text-xs 2xl:text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-primary hover:text-white transition-all mb-2 2xl:mb-3"
                 >
                     {t.board.viewDetails}
                 </button>
