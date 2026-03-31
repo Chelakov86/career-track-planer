@@ -532,9 +532,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   }, []);
 
   const filtersPanelContent = (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-col lg:flex-row gap-4">
-        {/* Search */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
+      {/* Search */}
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <Search className="w-3.5 h-3.5 text-gray-400" />
@@ -548,7 +547,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder={t.board.filters?.searchPlaceholder || 'Search company, position, location, notes...'}
-              className="w-full px-3 py-2 pr-8 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50/60 focus:border-primary"
+              className="w-full px-3 py-1.5 pr-8 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50/60 focus:border-primary"
             />
             {searchQuery && (
               <button
@@ -594,10 +593,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             })}
           </div>
         </div>
-      </div>
 
       {/* Date filters with presets */}
-      <div className="flex flex-col lg:flex-row gap-4">
         {/* Date Added */}
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
@@ -611,14 +608,14 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               type="date"
               value={dateAddedFrom}
               onChange={(e) => setDateAddedFrom(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
+              className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             <span className="text-gray-400 text-xs">→</span>
             <input
               type="date"
               value={dateAddedTo}
               onChange={(e) => setDateAddedTo(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
+              className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             {(dateAddedFrom || dateAddedTo) && (
               <button
@@ -668,14 +665,14 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               type="date"
               value={lastUpdatedFrom}
               onChange={(e) => setLastUpdatedFrom(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
+              className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             <span className="text-gray-400 text-xs">→</span>
             <input
               type="date"
               value={lastUpdatedTo}
               onChange={(e) => setLastUpdatedTo(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
+              className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             {(lastUpdatedFrom || lastUpdatedTo) && (
               <button
@@ -711,9 +708,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             </button>
           </div>
         </div>
-      </div>
 
-      <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-slate-700">
+      <div className="flex justify-end col-span-1 md:col-span-2 lg:col-span-4 pt-2 border-t border-gray-100 dark:border-slate-700">
         <button
           type="button"
           onClick={resetFilters}
@@ -1035,7 +1031,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               onDragOver={(e) => handleDragOver(e, status)}
               onDrop={(e) => handleDrop(e, status)}
               onDragLeave={handleDragLeave}
-              className={`flex-1 flex flex-col min-w-[300px] 2xl:min-w-0 transition-all duration-200 ${dragOverColumn === status
+              className={`flex-1 flex flex-col min-w-[260px] md:min-w-[280px] 2xl:min-w-[300px] 2xl:min-w-0 transition-all duration-200 ${dragOverColumn === status
                 ? 'bg-primary/5 dark:bg-primary/10 rounded-xl border-2 border-dashed border-primary/40 scale-[1.01]'
                 : ''
                 } ${status === ApplicationStatus.REJECTED ? 'opacity-60 grayscale-[0.5] dark:opacity-50 dark:grayscale-[0.3]' : ''}`}
