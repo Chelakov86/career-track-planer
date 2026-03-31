@@ -124,7 +124,8 @@ export const TRANSLATIONS = {
         REJECTED: 'Every no gets you closer to yes.',
       }
     },
-    toggleTheme: 'Toggle Dark Mode',
+    toggleTheme: "Toggle Dark Mode",
+    toggleMenu: "Toggle Mobile Menu",
     dashboard: {
       total: "Total Applications",
       active: "Active Pipeline",
@@ -311,7 +312,8 @@ export const TRANSLATIONS = {
         REJECTED: 'Jedes Nein bringt dich näher ans Ja.',
       }
     },
-    toggleTheme: 'Design wechseln',
+    toggleTheme: "Design wechseln",
+    toggleMenu: "Mobiles Menü umschalten",
     dashboard: {
       total: "Bewerbungen Gesamt",
       active: "Aktive Pipeline",
