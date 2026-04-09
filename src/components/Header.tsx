@@ -38,10 +38,15 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                     onClick={() => setLanguage(language === 'en' ? 'de' : 'en')}
                     className="text-xs font-semibold bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded text-gray-600 dark:text-gray-300 uppercase"
+                    title={language === 'en' ? 'Switch to German' : 'Auf Englisch wechseln'}
+                    aria-label={language === 'en' ? 'Switch to German' : 'Auf Englisch wechseln'}
                 >
                     {language}
                 </button>
-                <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-600 dark:text-gray-400">
+                <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    className="text-gray-600 dark:text-gray-400 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none rounded"
+                    title={t.nav.toggleMenu}
+                    aria-label={t.nav.toggleMenu}>
                     {mobileMenuOpen ? <X /> : <Menu />}
                 </button>
             </div>
