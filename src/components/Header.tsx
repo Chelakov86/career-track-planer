@@ -41,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                     {language}
                 </button>
-                <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-600 dark:text-gray-400">
+                <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-600 dark:text-gray-400 p-1 rounded focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none" aria-label={mobileMenuOpen ? "Close menu" : "Open menu"} aria-expanded={mobileMenuOpen}>
                     {mobileMenuOpen ? <X /> : <Menu />}
                 </button>
             </div>
