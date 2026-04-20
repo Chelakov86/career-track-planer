@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Clock, Briefcase, Calendar, CheckCircle, MessageCircle, Search, Send } from 'lucide-react';
+import { Clock, Briefcase, Calendar, CheckCircle, MessageCircle, Search, Send, XCircle } from 'lucide-react';
 import { JobApplication, Language, TimelineEvent, TimelineEventType, ApplicationStatus } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { getGoogleCalendarUrl } from '../lib/calendar';
@@ -48,6 +48,20 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
           eventDate: appliedDate,
           description: `${job.position} at ${job.company}`,
           metadata: { newStatus: ApplicationStatus.APPLIED }
+        });
+      }
+
+      // Job rejected event
+      if (job.status === ApplicationStatus.REJECTED) {
+        events.push({
+          id: `job-${job.id}-rejected`,
+          jobId: job.id,
+          company: job.company,
+          position: job.position,
+          eventType: 'job_rejected',
+          eventDate: job.lastUpdated,
+          description: `${job.position} at ${job.company}`,
+          metadata: { newStatus: ApplicationStatus.REJECTED }
         });
       }
 
@@ -127,6 +141,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
   const eventTypeOptions: { type: TimelineEventType; label: string }[] = [
     { type: 'job_added', label: t.timeline.eventTypes.jobAdded },
     { type: 'job_applied', label: t.timeline.eventTypes.jobApplied },
+    { type: 'job_rejected', label: t.timeline.eventTypes.jobRejected },
     { type: 'interview_scheduled', label: t.timeline.eventTypes.interviewScheduled },
     { type: 'interview_completed', label: t.timeline.eventTypes.interviewCompleted },
     { type: 'interview_feedback', label: t.timeline.eventTypes.awaitingFeedback }
@@ -150,6 +165,8 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
         return <CheckCircle className="w-4 h-4" />;
       case 'interview_feedback':
         return <MessageCircle className="w-4 h-4" />;
+      case 'job_rejected':
+        return <XCircle className="w-4 h-4" />;
       default:
         return <Clock className="w-4 h-4" />;
     }
@@ -162,6 +179,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
       case 'interview_scheduled': return 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
       case 'interview_completed': return 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400';
       case 'interview_feedback': return 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400';
+      case 'job_rejected': return 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400';
       default: return 'bg-gray-50 dark:bg-slate-700 text-gray-600 dark:text-gray-400';
     }
   };
@@ -173,6 +191,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
       case 'interview_scheduled': return 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300';
       case 'interview_completed': return 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300';
       case 'interview_feedback': return 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300';
+      case 'job_rejected': return 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300';
       default: return 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300';
     }
   };
@@ -184,6 +203,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
       case 'interview_scheduled': return t.timeline.eventTypes.interviewScheduled;
       case 'interview_completed': return t.timeline.eventTypes.interviewCompleted;
       case 'interview_feedback': return t.timeline.eventTypes.awaitingFeedback;
+      case 'job_rejected': return t.timeline.eventTypes.jobRejected;
       default: return '';
     }
   };

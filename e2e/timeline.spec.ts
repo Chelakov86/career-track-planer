@@ -17,6 +17,7 @@ test.describe('Timeline View', () => {
 
     test('should display event type filter buttons', async ({ page }) => {
         await expect(page.getByRole('button', { name: DE.timeline.eventTypes.jobAdded })).toBeVisible({ timeout: 10000 });
+        await expect(page.getByRole('button', { name: DE.timeline.eventTypes.jobRejected })).toBeVisible();
         await expect(page.getByRole('button', { name: DE.timeline.eventTypes.interviewScheduled })).toBeVisible();
         await expect(page.getByRole('button', { name: DE.timeline.eventTypes.interviewCompleted })).toBeVisible();
         await expect(page.getByRole('button', { name: DE.timeline.eventTypes.awaitingFeedback })).toBeVisible();
