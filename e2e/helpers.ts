@@ -60,6 +60,7 @@ export const DE = {
         noEvents: 'Keine Ereignisse anzuzeigen',
         eventTypes: {
             jobAdded: 'Job hinzugefügt',
+            jobRejected: 'Abgelehnt',
             interviewScheduled: 'Interview geplant',
             interviewCompleted: 'Interview abgeschlossen',
             awaitingFeedback: 'Warte auf Rückmeldung',
