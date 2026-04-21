@@ -144,7 +144,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                                 e.stopPropagation();
                                 onEdit(job);
                             }}
-                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-primary p-1 rounded transition-all"
+                            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none text-slate-400 hover:text-primary p-1 rounded transition-all"
                             title={t.board.editJob}
                             aria-label={t.board.editJob}
                         >
@@ -155,7 +155,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                                 e.stopPropagation();
                                 onDelete(job);
                             }}
-                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 p-1 rounded transition-all"
+                            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none text-slate-400 hover:text-red-500 p-1 rounded transition-all"
                             title={t.board.confirmDelete || 'Delete'}
                             aria-label={t.board.confirmDelete || 'Delete'}
                         >
