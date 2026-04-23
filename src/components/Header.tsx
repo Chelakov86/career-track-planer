@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-2">
                 <button
                     onClick={toggleTheme}
-                    className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg"
+                    className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                     title={t.toggleTheme}
                     aria-label={t.toggleTheme}
                 >
@@ -41,7 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                     {language}
                 </button>
-                <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-600 dark:text-gray-400">
+                <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-600 dark:text-gray-400 p-1 rounded-md hover:bg-gray-100 dark:hover:bg-slate-800 focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none" aria-label={t.nav.menu} title={t.nav.menu}>
                     {mobileMenuOpen ? <X /> : <Menu />}
                 </button>
             </div>

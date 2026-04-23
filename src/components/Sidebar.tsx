@@ -94,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <p className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">{user.name}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
                     </div>
-                    <button onClick={logout} className="text-gray-400 hover:text-red-500 transition-colors" title={t.nav.logout}>
+                    <button onClick={logout} className="text-gray-400 p-1 rounded-md hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:outline-none" title={t.nav.logout} aria-label={t.nav.logout}>
                         <LogOut className="w-4 h-4" />
                     </button>
                 </div>
@@ -104,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {/* Theme Toggle */}
                     <button
                         onClick={toggleTheme}
-                        className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors shadow-sm"
+                        className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors shadow-sm focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none"
                         title={t.toggleTheme}
                         aria-label={t.toggleTheme}
                     >
