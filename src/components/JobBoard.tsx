@@ -1023,7 +1023,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         ref={scrollContainerRef}
         onDragOver={handleContainerDragOver} // Track drag over globally in container
       >
-        <div className="flex gap-4 min-w-max 2xl:min-w-0 h-full pb-2">
+        <div className="flex gap-4 min-w-full h-full pb-2">
           {columnsForDesktop.map(status => (
             <div
               key={status}

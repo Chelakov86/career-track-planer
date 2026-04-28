@@ -82,7 +82,7 @@ test.describe('JobCard Responsive Behavior', () => {
         await expect(toggleButton).toBeHidden();
     });
 
-    test('mobile view: should hide notes by default and toggle them', async ({ page }) => {
+    test('mobile view: should show notes by default and not have a toggle button', async ({ page }) => {
         await page.setViewportSize({ width: 375, height: 667 });
         await ensureTestJobExists(page);
 
@@ -91,20 +91,10 @@ test.describe('JobCard Responsive Behavior', () => {
         await expect(jobCard).toBeVisible();
 
         const toggleButton = jobCard.locator('.job-card-expand-button');
-        await expect(toggleButton).toBeVisible();
+        await expect(toggleButton).toBeHidden();
         
         const notesContainer = jobCard.locator('div:has(p.line-clamp-2)');
-        
-        await expect(notesContainer).toBeHidden();
-        
-        // Toggle expansion
-        await toggleButton.click();
         await expect(notesContainer).toBeVisible();
-        await expect(toggleButton).toHaveAttribute('aria-expanded', 'true');
-        
-        // Toggle collapse
-        await toggleButton.click();
-        await expect(notesContainer).toBeHidden();
     });
 
     test('mobile view: should have smaller tags', async ({ page }) => {

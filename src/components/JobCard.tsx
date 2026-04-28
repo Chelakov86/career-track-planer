@@ -58,7 +58,6 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
     const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
     const hasDragged = useRef(false);
     const [showInterviews, setShowInterviews] = useState(false);
-    const [isExpanded, setIsExpanded] = useState(false);
 
     const ensureAbsoluteUrl = (url: string) => {
         if (!url) return '';
@@ -117,7 +116,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
             job.status === ApplicationStatus.INTERVIEW ? 'border-l-4 !border-l-amber-400' :
                 job.status === ApplicationStatus.OFFER ? 'border-l-4 !border-l-emerald-500' : '';
 
-    const notesVisibility = isGhost ? 'hidden 2xl:block' : (isExpanded ? 'block' : 'hidden md:block');
+    const notesVisibility = isGhost ? 'hidden 2xl:block' : 'block';
 
     return (
         <div
@@ -263,20 +262,6 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                         </div>
                     )}
                 </div>
-            )}
-
-            {job.notes && (
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        setIsExpanded(!isExpanded);
-                    }}
-                    className="job-card-expand-button md:hidden w-full flex items-center justify-center py-1 mb-1 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors"
-                    aria-expanded={isExpanded}
-                    aria-label={isExpanded ? "Collapse notes" : "Expand notes"}
-                >
-                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
             )}
 
             {/* View Details Button */}
