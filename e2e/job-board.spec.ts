@@ -14,7 +14,7 @@ test.describe('Job Board', () => {
 
     test('should display kanban columns with status headers', async ({ page, isMobile }) => {
         if (isMobile) {
-            const accordionButtons = page.locator('button[aria-expanded]');
+            const accordionButtons = page.locator('button.column-accordion-button');
             await expect(accordionButtons.first()).toBeVisible({ timeout: 10000 });
             expect(await accordionButtons.count()).toBeGreaterThanOrEqual(1);
         } else {

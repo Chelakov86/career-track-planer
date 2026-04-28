@@ -1109,7 +1109,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             >
               <button
                 onClick={() => toggleMobileStatus(status)}
-                className="w-full flex items-center justify-between px-3 py-2 text-sm font-semibold"
+                className="column-accordion-button w-full flex items-center justify-between px-3 py-2 text-sm font-semibold"
                 aria-expanded={mobileOpenStatuses.includes(status)}
               >
                 <span className="text-slate-700 dark:text-slate-200">{t.board.status[status]}</span>

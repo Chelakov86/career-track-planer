@@ -57,7 +57,7 @@ test.describe('Mobile View', () => {
         await expect(page.getByText(DE.board.title)).toBeVisible({ timeout: 10000 });
 
         // Mobile board shows collapsible status sections with aria-expanded
-        const accordionButtons = page.locator('button[aria-expanded]');
+        const accordionButtons = page.locator('button.column-accordion-button');
         const count = await accordionButtons.count();
         expect(count).toBeGreaterThanOrEqual(1);
     });
@@ -66,7 +66,7 @@ test.describe('Mobile View', () => {
         await navigateTo(page, '/');
         await expect(page.getByText(DE.board.title)).toBeVisible({ timeout: 10000 });
 
-        const accordionButtons = page.locator('button[aria-expanded]');
+        const accordionButtons = page.locator('button.column-accordion-button');
         const count = await accordionButtons.count();
 
         if (count > 1) {

@@ -14,7 +14,7 @@ test.describe('Authenticated user', () => {
 
     if (isMobile) {
       // Mobile shows accordion sections with aria-expanded
-      const accordionButtons = page.locator('button[aria-expanded]');
+      const accordionButtons = page.locator('button.column-accordion-button');
       await expect(accordionButtons.first()).toBeVisible({ timeout: 10000 });
       expect(await accordionButtons.count()).toBeGreaterThanOrEqual(1);
     } else {

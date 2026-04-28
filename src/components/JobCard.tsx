@@ -117,9 +117,11 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
             job.status === ApplicationStatus.INTERVIEW ? 'border-l-4 !border-l-amber-400' :
                 job.status === ApplicationStatus.OFFER ? 'border-l-4 !border-l-emerald-500' : '';
 
+    const notesVisibility = isGhost ? 'hidden 2xl:block' : (isExpanded ? 'block' : 'hidden md:block');
+
     return (
         <div
-            className={`bg-white dark:bg-slate-800 p-3 2xl:p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all ${accentBorder} ${isGhost ? 'shadow-2xl ring-2 ring-primary rotate-3 z-50 opacity-90' :
+            className={`job-card bg-white dark:bg-slate-800 p-3 2xl:p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all ${accentBorder} ${isGhost ? 'shadow-2xl ring-2 ring-primary rotate-3 z-50 opacity-90' :
                     draggedItemId === job.id && !isGhost ? 'opacity-30 grayscale' :
                         'hover:shadow-md dark:hover:border-slate-700'
                 } ${!isGhost ? 'cursor-grab active:cursor-grabbing group' : ''}`}
@@ -210,7 +212,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
 
             {/* Notes preview - visible on large screens */}
             {job.notes && (
-                <div className={`mb-2 2xl:mb-3 ${isExpanded ? 'block' : 'hidden md:block'}`}>
+                <div className={`mb-2 2xl:mb-3 ${notesVisibility}`}>
                     <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 italic">
                         {job.notes}
                     </p>
@@ -269,7 +271,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                         e.stopPropagation();
                         setIsExpanded(!isExpanded);
                     }}
-                    className="md:hidden w-full flex items-center justify-center py-1 mb-1 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors"
+                    className="job-card-expand-button md:hidden w-full flex items-center justify-center py-1 mb-1 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors"
                     aria-expanded={isExpanded}
                     aria-label={isExpanded ? "Collapse notes" : "Expand notes"}
                 >
