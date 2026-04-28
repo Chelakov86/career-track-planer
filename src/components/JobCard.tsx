@@ -58,6 +58,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
     const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
     const hasDragged = useRef(false);
     const [showInterviews, setShowInterviews] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
 
     const ensureAbsoluteUrl = (url: string) => {
         if (!url) return '';
@@ -196,12 +197,12 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
             {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-2 2xl:mb-3">
                 {job.salary && (
-                    <span className="px-2 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider rounded">
+                    <span className="px-1.5 py-0.5 md:px-2 md:py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 text-[9px] md:text-[10px] font-bold uppercase tracking-wider rounded">
                         {job.salary}
                     </span>
                 )}
                 {job.location && job.location.toLowerCase().includes('remote') && (
-                    <span className="px-2 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-wider rounded dark:border dark:border-primary/20">
+                    <span className="px-1.5 py-0.5 md:px-2 md:py-1 bg-primary/10 text-primary text-[9px] md:text-[10px] font-bold uppercase tracking-wider rounded dark:border dark:border-primary/20">
                         Remote
                     </span>
                 )}
@@ -209,7 +210,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
 
             {/* Notes preview - visible on large screens */}
             {job.notes && (
-                <div className="hidden 2xl:block mb-2 2xl:mb-3">
+                <div className={`mb-2 2xl:mb-3 ${isExpanded ? 'block' : 'hidden md:block'}`}>
                     <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2 italic">
                         {job.notes}
                     </p>
@@ -260,6 +261,20 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                         </div>
                     )}
                 </div>
+            )}
+
+            {job.notes && (
+                <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        setIsExpanded(!isExpanded);
+                    }}
+                    className="md:hidden w-full flex items-center justify-center py-1 mb-1 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors"
+                    aria-expanded={isExpanded}
+                    aria-label={isExpanded ? "Collapse notes" : "Expand notes"}
+                >
+                    {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                </button>
             )}
 
             {/* View Details Button */}
