@@ -31,15 +31,19 @@ const mapDbToUi = (dbRound: DbInterviewRound): InterviewRound => ({
   updatedAt: dbRound.updated_at
 });
 
-const mapUiToDb = (uiRound: Partial<InterviewRound>, userId: string, jobId?: string) => {
+const mapUiToDb = (uiRound: Partial<InterviewRound>, userId?: string, jobId?: string) => {
   const dbRound: any = {};
 
   if (jobId) dbRound.job_id = jobId;
   if (userId) dbRound.user_id = userId;
+  
   if (uiRound.roundName !== undefined) dbRound.round_name = uiRound.roundName;
   if (uiRound.interviewDate !== undefined) dbRound.interview_date = uiRound.interviewDate;
-  if (uiRound.startTime !== undefined) dbRound.start_time = uiRound.startTime;
-  if (uiRound.endTime !== undefined) dbRound.end_time = uiRound.endTime;
+  
+  // Convert empty strings to null for TIME columns to avoid 400 errors in Postgres
+  if (uiRound.startTime !== undefined) dbRound.start_time = uiRound.startTime || null;
+  if (uiRound.endTime !== undefined) dbRound.end_time = uiRound.endTime || null;
+  
   if (uiRound.status !== undefined) dbRound.status = uiRound.status;
   if (uiRound.notes !== undefined) dbRound.notes = uiRound.notes;
   if (uiRound.meetingLink !== undefined) dbRound.meeting_link = uiRound.meetingLink;
@@ -105,9 +109,10 @@ export const useInterviewRounds = (jobId: string | null, userId: string | null) 
 
     if (error) {
       console.error('Error adding interview round:', error);
+      console.error('Payload:', dbRound);
       // Revert optimistic update
       setRounds(prev => prev.filter(r => r.id !== tempId));
-      alert('Failed to add interview round. Please try again.');
+      alert(`Failed to add interview round: ${error.message}`);
     } else if (data) {
       // Replace temp ID with real ID
       const mappedData = mapDbToUi(data);
@@ -118,13 +123,18 @@ export const useInterviewRounds = (jobId: string | null, userId: string | null) 
   const updateRound = async (roundId: string, updates: Partial<InterviewRound>) => {
     if (!userId) return;
 
+    // Don't send empty strings for required fields
+    if (updates.interviewDate === "") return;
+    if (updates.roundName === "") return;
+
     // Optimistic update
     const previousRounds = [...rounds];
     setRounds(prev => prev.map(r =>
       r.id === roundId ? { ...r, ...updates, updatedAt: new Date().toISOString() } : r
-    ).sort((a, b) => a.interviewDate.localeCompare(b.interviewDate)));
+    ).sort((a, b) => (a.interviewDate || "").localeCompare(b.interviewDate || "")));
 
-    const dbUpdates = mapUiToDb(updates, userId);
+    // For updates, we don't send userId or jobId to avoid RLS/trigger issues
+    const dbUpdates = mapUiToDb(updates);
     dbUpdates.updated_at = new Date().toISOString();
 
     const { error } = await supabase
@@ -134,11 +144,14 @@ export const useInterviewRounds = (jobId: string | null, userId: string | null) 
 
     if (error) {
       console.error('Error updating interview round:', error);
+      console.error('Payload:', dbUpdates);
+      console.error('Round ID:', roundId);
       // Revert optimistic update
       setRounds(previousRounds);
-      alert('Failed to update interview round. Please try again.');
+      alert(`Failed to update interview round: ${error.message}`);
     }
   };
+
 
   const deleteRound = async (roundId: string) => {
     if (!userId) return;
