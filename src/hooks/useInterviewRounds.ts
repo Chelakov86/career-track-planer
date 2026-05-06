@@ -17,6 +17,19 @@ interface DbInterviewRound {
   updated_at: string;
 }
 
+type DbInterviewRoundMutation = Partial<Pick<
+  DbInterviewRound,
+  | 'job_id'
+  | 'user_id'
+  | 'round_name'
+  | 'interview_date'
+  | 'start_time'
+  | 'end_time'
+  | 'status'
+  | 'notes'
+  | 'meeting_link'
+>>;
+
 const mapDbToUi = (dbRound: DbInterviewRound): InterviewRound => ({
   id: dbRound.id,
   jobId: dbRound.job_id,
@@ -32,7 +45,7 @@ const mapDbToUi = (dbRound: DbInterviewRound): InterviewRound => ({
 });
 
 const mapUiToDb = (uiRound: Partial<InterviewRound>, userId?: string, jobId?: string) => {
-  const dbRound: any = {};
+  const dbRound: DbInterviewRoundMutation = {};
 
   if (jobId) dbRound.job_id = jobId;
   if (userId) dbRound.user_id = userId;
@@ -135,7 +148,6 @@ export const useInterviewRounds = (jobId: string | null, userId: string | null) 
 
     // For updates, we don't send userId or jobId to avoid RLS/trigger issues
     const dbUpdates = mapUiToDb(updates);
-    dbUpdates.updated_at = new Date().toISOString();
 
     const { error } = await supabase
       .from('interview_rounds')
