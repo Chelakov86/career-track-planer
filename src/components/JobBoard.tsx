@@ -410,12 +410,23 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     return result;
   }, [jobs, statusFilter, debouncedSearchQuery, dateAddedFrom, dateAddedTo, lastUpdatedFrom, lastUpdatedTo, sortField, sortDirection, columns]);
 
-  const statusCounts = useMemo(() => {
+  const { statusCounts, jobsByStatus } = useMemo(() => {
     const counts = {} as Record<ApplicationStatus, number>;
+    const byStatus = {} as Record<ApplicationStatus, JobApplication[]>;
+
     columns.forEach((status) => {
-      counts[status] = visibleJobs.filter((j) => j.status === status).length;
+      counts[status] = 0;
+      byStatus[status] = [];
     });
-    return counts;
+
+    visibleJobs.forEach((job) => {
+      if (byStatus[job.status]) {
+        counts[job.status]++;
+        byStatus[job.status].push(job);
+      }
+    });
+
+    return { statusCounts: counts, jobsByStatus: byStatus };
   }, [columns, visibleJobs]);
 
   const hasEmptyColumns = columns.some((status) => statusCounts[status] === 0);
@@ -1046,7 +1057,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               </div>
 
               <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar p-2">
-                {visibleJobs.filter(j => j.status === status).length === 0 && !dragOverColumn ? (
+                {jobsByStatus[status].length === 0 && !dragOverColumn ? (
                   <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-8 opacity-50 dark:opacity-40">
                     <div className="w-16 h-16 bg-slate-200 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 dark:border dark:border-slate-800">
                       <SearchX className="w-8 h-8 text-slate-400 dark:text-slate-600" />
@@ -1055,7 +1066,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   </div>
                 ) : (
                   <>
-                    {visibleJobs.filter(j => j.status === status).map(job => (
+                    {jobsByStatus[status].map(job => (
                       <JobCard
                         key={job.id}
                         job={job}
@@ -1123,7 +1134,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
               {mobileOpenStatuses.includes(status) && (
                 <div className="p-2 space-y-3">
-                  {visibleJobs.filter(j => j.status === status).map(job => (
+                  {jobsByStatus[status].map(job => (
                     <JobCard
                       key={job.id}
                       job={job}
