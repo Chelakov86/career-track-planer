@@ -45,8 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   } catch (error: any) {
     console.error('Error calling Gemini API:', error);
     return res.status(500).json({
-      error: 'Failed to generate content',
-      message: error.message
+      error: 'An internal error occurred while generating content'
     });
   }
 }
