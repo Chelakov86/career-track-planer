@@ -141,6 +141,25 @@ export const TRANSLATIONS = {
       interviews: "Interview Rounds",
       addInterview: "Add Interview Round"
     },
+    calendarImport: {
+      importFromGoogleCalendar: "Import from Google Calendar",
+      connectGoogleCalendar: "Connect Google Calendar",
+      reconnectGoogleCalendar: "Reconnect Google Calendar",
+      selectCalendars: "Select calendars",
+      showAllEvents: "Show all events",
+      showMatchingEvents: "Show matching events",
+      noCalendarEventsFound: "No calendar events found.",
+      alreadyImported: "Already imported",
+      matchedJob: "Matched job",
+      loadingCalendars: "Loading calendars...",
+      loadingEvents: "Loading events...",
+      calendarAccessExpired: "Calendar access expired. Please reconnect Google Calendar.",
+      calendarSetupRequired: "Google Calendar access could not be started. Check Supabase identity linking and Google Calendar API setup.",
+      importEvent: "Import event",
+      importFailed: "Import failed. Please try again.",
+      meetingLink: "Meeting link",
+      openInCalendar: "Open in Calendar"
+    },
     timeline: {
       title: "Application Timeline",
       filters: "Filters",
@@ -328,6 +347,25 @@ export const TRANSLATIONS = {
     modal: {
       interviews: "Interview-Runden",
       addInterview: "Interview-Runde hinzufügen"
+    },
+    calendarImport: {
+      importFromGoogleCalendar: "Aus Google Kalender importieren",
+      connectGoogleCalendar: "Google Kalender verbinden",
+      reconnectGoogleCalendar: "Google Kalender erneut verbinden",
+      selectCalendars: "Kalender auswählen",
+      showAllEvents: "Alle Ereignisse anzeigen",
+      showMatchingEvents: "Passende Ereignisse anzeigen",
+      noCalendarEventsFound: "Keine Kalenderereignisse gefunden.",
+      alreadyImported: "Bereits importiert",
+      matchedJob: "Passender Job",
+      loadingCalendars: "Kalender werden geladen...",
+      loadingEvents: "Ereignisse werden geladen...",
+      calendarAccessExpired: "Kalenderzugriff ist abgelaufen. Bitte Google Kalender erneut verbinden.",
+      calendarSetupRequired: "Google Kalender konnte nicht verbunden werden. Prüfe Supabase Identity Linking und die Google Calendar API.",
+      importEvent: "Ereignis importieren",
+      importFailed: "Import fehlgeschlagen. Bitte erneut versuchen.",
+      meetingLink: "Meeting-Link",
+      openInCalendar: "Im Kalender öffnen"
     },
     timeline: {
       title: "Bewerbungs-Zeitstrahl",

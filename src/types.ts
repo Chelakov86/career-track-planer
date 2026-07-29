@@ -29,6 +29,10 @@ export interface InterviewRound {
   status: InterviewRoundStatus;
   notes?: string;
   meetingLink?: string;
+  sourceProvider?: 'google_calendar';
+  sourceCalendarId?: string;
+  sourceEventId?: string;
+  sourceEventUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

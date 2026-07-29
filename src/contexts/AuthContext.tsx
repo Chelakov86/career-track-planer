@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User } from '../types';
 import { supabase } from '../lib/supabase';
+import { getGoogleCalendarProviderToken, requestGoogleCalendarAccess } from '../lib/googleCalendarAuth';
 
 interface AuthContextType {
   user: User | null;
   loginWithGoogle: () => Promise<void>;
   loginWithEmail: (email: string) => Promise<void>;
+  getGoogleCalendarProviderToken: () => Promise<string | null>;
+  requestGoogleCalendarAccess: () => Promise<void>;
   logout: () => Promise<void>;
   isLoading: boolean;
 }
@@ -89,7 +92,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, loginWithGoogle, loginWithEmail, logout, isLoading }}>
+    <AuthContext.Provider value={{
+      user,
+      loginWithGoogle,
+      loginWithEmail,
+      getGoogleCalendarProviderToken,
+      requestGoogleCalendarAccess: () => requestGoogleCalendarAccess(user),
+      logout,
+      isLoading
+    }}>
       {children}
     </AuthContext.Provider>
   );
