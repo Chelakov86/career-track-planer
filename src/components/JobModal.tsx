@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, ExternalLink, ChevronDown, ChevronRight } from 'lucide-react';
+import { X, ExternalLink, ChevronDown, ChevronRight, Calendar } from 'lucide-react';
 import { JobApplication, ApplicationStatus, Language, InterviewRound } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { useInterviewRounds } from '../hooks/useInterviewRounds';
 import { InterviewRoundItem } from './InterviewRoundItem';
 import { useAuth } from '../contexts/AuthContext';
+import { GoogleCalendarImportPicker } from './GoogleCalendarImportPicker';
 
 interface JobModalProps {
     initialData: Partial<JobApplication>;
@@ -14,6 +15,8 @@ interface JobModalProps {
     onCancel: () => void;
     onEdit?: () => void;
     onDataChanged?: () => void;
+    initialShowInterviews?: boolean;
+    initialOpenCalendarImport?: boolean;
 }
 
 export const JobModal: React.FC<JobModalProps> = ({
@@ -23,10 +26,13 @@ export const JobModal: React.FC<JobModalProps> = ({
     onSave,
     onCancel,
     onEdit,
-    onDataChanged
+    onDataChanged,
+    initialShowInterviews = false,
+    initialOpenCalendarImport = false
 }) => {
     const { user } = useAuth();
-    const [showInterviews, setShowInterviews] = useState(false);
+    const [showInterviews, setShowInterviews] = useState(initialShowInterviews);
+    const [showCalendarImport, setShowCalendarImport] = useState(initialOpenCalendarImport);
 
     const ensureAbsoluteUrl = (url: string) => {
         if (!url) return '';
@@ -337,6 +343,24 @@ export const JobModal: React.FC<JobModalProps> = ({
 
                                         {showInterviews && (
                                             <div className="space-y-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowCalendarImport(!showCalendarImport)}
+                                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 border border-blue-200 dark:border-blue-900 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-sm text-primary dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
+                                                >
+                                                    <Calendar className="w-4 h-4" />
+                                                    {t.calendarImport.importFromGoogleCalendar}
+                                                </button>
+
+                                                {showCalendarImport && (
+                                                    <GoogleCalendarImportPicker
+                                                        job={formData}
+                                                        rounds={rounds}
+                                                        language={language}
+                                                        onImport={handleAddRound}
+                                                    />
+                                                )}
+
                                                 {rounds.map(round => (
                                                     <InterviewRoundItem
                                                         key={round.id}

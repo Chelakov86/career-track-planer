@@ -13,6 +13,10 @@ interface DbInterviewRound {
   status: InterviewRoundStatus;
   notes?: string;
   meeting_link?: string;
+  source_provider?: 'google_calendar';
+  source_calendar_id?: string;
+  source_event_id?: string;
+  source_event_url?: string;
   created_at: string;
   updated_at: string;
 }
@@ -28,6 +32,10 @@ type DbInterviewRoundMutation = Partial<Pick<
   | 'status'
   | 'notes'
   | 'meeting_link'
+  | 'source_provider'
+  | 'source_calendar_id'
+  | 'source_event_id'
+  | 'source_event_url'
 >>;
 
 const mapDbToUi = (dbRound: DbInterviewRound): InterviewRound => ({
@@ -40,6 +48,10 @@ const mapDbToUi = (dbRound: DbInterviewRound): InterviewRound => ({
   status: dbRound.status,
   notes: dbRound.notes,
   meetingLink: dbRound.meeting_link,
+  sourceProvider: dbRound.source_provider,
+  sourceCalendarId: dbRound.source_calendar_id,
+  sourceEventId: dbRound.source_event_id,
+  sourceEventUrl: dbRound.source_event_url,
   createdAt: dbRound.created_at,
   updatedAt: dbRound.updated_at
 });
@@ -60,6 +72,10 @@ const mapUiToDb = (uiRound: Partial<InterviewRound>, userId?: string, jobId?: st
   if (uiRound.status !== undefined) dbRound.status = uiRound.status;
   if (uiRound.notes !== undefined) dbRound.notes = uiRound.notes;
   if (uiRound.meetingLink !== undefined) dbRound.meeting_link = uiRound.meetingLink;
+  if (uiRound.sourceProvider !== undefined) dbRound.source_provider = uiRound.sourceProvider;
+  if (uiRound.sourceCalendarId !== undefined) dbRound.source_calendar_id = uiRound.sourceCalendarId;
+  if (uiRound.sourceEventId !== undefined) dbRound.source_event_id = uiRound.sourceEventId;
+  if (uiRound.sourceEventUrl !== undefined) dbRound.source_event_url = uiRound.sourceEventUrl;
 
   return dbRound;
 };

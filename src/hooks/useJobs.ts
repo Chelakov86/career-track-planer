@@ -50,6 +50,10 @@ export const useJobs = (user: User | null) => {
                         status: round.status,
                         notes: round.notes,
                         meetingLink: round.meeting_link,
+                        sourceProvider: round.source_provider,
+                        sourceCalendarId: round.source_calendar_id,
+                        sourceEventId: round.source_event_id,
+                        sourceEventUrl: round.source_event_url,
                         createdAt: round.created_at,
                         updatedAt: round.updated_at
                     })) || [];

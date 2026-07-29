@@ -6,6 +6,7 @@ import { JobCard } from './JobCard';
 import { JobModal } from './JobModal';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { generateJobsCSV, downloadFile } from '../lib/csvExport';
+import { clearPendingCalendarImport, readPendingCalendarImport } from '../lib/googleCalendarAuth';
 
 // Debounce hook for search
 function useDebounce<T>(value: T, delay: number): T {
@@ -50,6 +51,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [formData, setFormData] = useState<Partial<JobApplication>>({});
   const [viewJobId, setViewJobId] = useState<string | null>(null);
   const [modalMode, setModalMode] = useState<'view' | 'edit'>('edit');
+  const [resumeCalendarImport, setResumeCalendarImport] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
   const [showEmptyColumns, setShowEmptyColumns] = useState(true);
@@ -127,6 +129,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   }, [showSort]);
 
   const openAddModal = () => {
+    setResumeCalendarImport(false);
     setFormData({
       company: '',
       position: '',
@@ -141,6 +144,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   };
 
   const openViewModal = useCallback((job: JobApplication) => {
+    setResumeCalendarImport(false);
     setFormData({ ...job });
     setViewJobId(job.id);
     setModalMode('view');
@@ -148,14 +152,31 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   }, []);
 
   const openEditModal = useCallback((job: JobApplication) => {
+    setResumeCalendarImport(false);
     setFormData({ ...job });
     setModalMode('edit');
     setShowModal(true);
   }, []);
 
   const switchToEditMode = () => {
+    setResumeCalendarImport(false);
     setModalMode('edit');
   };
+
+  useEffect(() => {
+    const pendingImport = readPendingCalendarImport();
+    if (!pendingImport || jobs.length === 0) return;
+
+    const job = jobs.find((candidate) => candidate.id === pendingImport.jobId);
+    if (!job) return;
+
+    setFormData({ ...job });
+    setViewJobId(null);
+    setModalMode('edit');
+    setResumeCalendarImport(true);
+    setShowModal(true);
+    clearPendingCalendarImport();
+  }, [jobs]);
 
   const toggleMobileStatus = (status: ApplicationStatus) => {
     setMobileOpenStatuses((prev) =>
@@ -787,10 +808,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           onCancel={() => {
             setShowModal(false);
             setViewJobId(null);
+            setResumeCalendarImport(false);
             onRefetchJobs?.();
           }}
           onEdit={modalMode === 'view' ? switchToEditMode : undefined}
           onDataChanged={onRefetchJobs}
+          initialShowInterviews={resumeCalendarImport}
+          initialOpenCalendarImport={resumeCalendarImport}
         />
       )}
 
