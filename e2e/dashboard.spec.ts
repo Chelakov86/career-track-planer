@@ -191,6 +191,37 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
     });
 
+    test('should keep the filter active across period changes and not change card values', async ({ page }) => {
+        await navigateTo(page, '/stats');
+        // Pin a custom range with no data so card values are stable and free of
+        // cross-project interference (concurrent tests share the test user's board).
+        await page.getByTestId('analytics-period').selectOption('custom');
+        await page.getByLabel(DE.dashboard.from).fill('2020-01-01');
+        await page.getByLabel(DE.dashboard.to).fill('2020-01-02');
+        await expect(page.getByTestId('activity-chart')).toBeVisible({ timeout: 10000 });
+
+        const addedCard = page.getByTestId('analytics-total-added');
+        const rejectedCard = page.getByTestId('analytics-total-rejected');
+
+        // Card values are unchanged by filtering: 0 stays 0 after a filter is applied.
+        await expect(addedCard.locator('p.text-xl')).toHaveText('0');
+        await rejectedCard.click();
+        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'true');
+        await expect(addedCard).toHaveAttribute('aria-pressed', 'false');
+        await expect(addedCard.locator('p.text-xl')).toHaveText('0');
+
+        // The filter persists across a Selected Period preset change.
+        await page.getByTestId('analytics-period').selectOption('this_week');
+        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'true');
+
+        // With the filter still active, an invalid custom range yields no matches -> empty state.
+        await page.getByTestId('analytics-period').selectOption('custom');
+        await page.getByLabel(DE.dashboard.from).fill('2026-01-10');
+        await page.getByLabel(DE.dashboard.to).fill('2026-01-01');
+        await expect(page.getByTestId('analytics-job-list-empty')).toBeVisible({ timeout: 10000 });
+        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'true');
+    });
+
     test('should open a read-only job details modal from the analytics job list', async ({ page, isMobile }) => {
         test.skip(isMobile, 'The mutation flow is covered on the desktop dashboard path.');
 
