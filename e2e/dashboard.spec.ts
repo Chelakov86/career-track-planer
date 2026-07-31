@@ -46,15 +46,37 @@ test.describe('Dashboard', () => {
 
     test('should update the selected period and grain controls', async ({ page }) => {
         const period = page.getByTestId('analytics-period');
-        await period.selectOption('last_4_weeks');
-        await expect(period).toHaveValue('last_4_weeks');
+        const presets = ['this_week', 'last_4_weeks', 'last_8_weeks', 'last_3_months', 'this_year', 'all_time'];
+
+        for (const preset of presets) {
+            await period.selectOption(preset);
+            await expect(period).toHaveValue(preset);
+        }
 
         await page.getByTestId('analytics-grain-day').click();
         await expect(page.getByTestId('analytics-grain-day')).toHaveAttribute('aria-pressed', 'true');
+        await page.getByTestId('analytics-grain-month').click();
+        await expect(page.getByTestId('analytics-grain-month')).toHaveAttribute('aria-pressed', 'true');
 
         await period.selectOption('custom');
         await expect(page.getByLabel(DE.dashboard.from)).toBeVisible();
         await expect(page.getByLabel(DE.dashboard.to)).toBeVisible();
+        await expect(page.getByText(DE.dashboard.total)).toBeVisible();
+        await expect(page.getByText(DE.dashboard.funnel)).toBeVisible();
+        await expect(page.getByText(DE.dashboard.recentActivity)).toBeVisible();
+    });
+
+    test('should keep analytics surfaces readable in dark mode', async ({ page }) => {
+        const html = page.locator('html');
+        const themeButton = page.locator(`button[title="${DE.toggleTheme}"]:visible`).first();
+        const isDark = (await html.getAttribute('class'))?.includes('dark') ?? false;
+        if (!isDark) await themeButton.click();
+
+        await expect(html).toHaveClass(/dark/);
+        await expect(page.getByTestId('analytics-controls')).toBeVisible();
+        await expect(page.getByTestId('rejection-depth')).toBeVisible();
+
+        if (!isDark) await themeButton.click();
     });
 
     test('should localize the replacement analytics section in English', async ({ page, isMobile }) => {

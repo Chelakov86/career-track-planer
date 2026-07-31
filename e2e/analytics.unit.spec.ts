@@ -4,6 +4,7 @@ import {
   bucketLabel,
   buildActivitySeries,
   computeRejectionDepth,
+  findEarliestDataDate,
   listBuckets,
   resolvePeriod,
 } from '../src/lib/analytics';
@@ -59,7 +60,11 @@ test.describe('analytics date helpers', () => {
     expect(resolvePeriod('last_8_weeks', null, today)).toEqual({ from: '2026-06-08', to: '2026-07-31' });
     expect(resolvePeriod('last_3_months', null, today)).toEqual({ from: '2026-05-01', to: '2026-07-31' });
     expect(resolvePeriod('this_year', null, today)).toEqual({ from: '2026-01-01', to: '2026-07-31' });
-    expect(resolvePeriod('all_time', null, today, '2025-12-12')).toEqual({ from: '2025-12-12', to: '2026-07-31' });
+    const earliestData = findEarliestDataDate(
+      [makeEvent({ occurredOn: '2025-12-12' })],
+      [makeJob({ interviewRounds: [makeRound({ interviewDate: '2026-01-01' })] })]
+    );
+    expect(resolvePeriod('all_time', null, today, earliestData)).toEqual({ from: '2025-12-12', to: '2026-07-31' });
     expect(resolvePeriod('all_time', null, today)).toEqual({ from: '2026-07-31', to: '2026-07-31' });
     expect(resolvePeriod('custom', { from: '2026-07-20', to: '2026-07-31' }, today)).toEqual({
       from: '2026-07-20',
@@ -79,6 +84,16 @@ test.describe('analytics date helpers', () => {
       '2026-07-31',
       '2026-08-01',
     ]);
+  });
+
+  test('returns stable zero values for an empty data set', () => {
+    const period = { from: '2026-07-30', to: '2026-07-31' };
+
+    expect(buildActivitySeries([], [], period, 'day')).toEqual([
+      { bucket: '2026-07-30', added: 0, applied: 0, rejected: 0, interviews: 0 },
+      { bucket: '2026-07-31', added: 0, applied: 0, rejected: 0, interviews: 0 },
+    ]);
+    expect(computeRejectionDepth([], [], period)).toEqual({ zero: 0, one: 0, two: 0, threePlus: 0 });
   });
 
   test('formats bucket labels for both supported languages', () => {
@@ -107,20 +122,33 @@ test.describe('buildActivitySeries', () => {
         occurredOn: '2026-07-29',
       }),
       makeEvent({
+        id: 'backfilled-applied',
+        fromStatus: ApplicationStatus.RESEARCH,
+        toStatus: ApplicationStatus.APPLIED,
+        occurredOn: '2026-07-28',
+        backfilled: true,
+      }),
+      makeEvent({
         id: 'rejection',
         fromStatus: ApplicationStatus.APPLIED,
         toStatus: ApplicationStatus.REJECTED,
         occurredOn: '2026-07-30',
         backfilled: true,
       }),
+      makeEvent({
+        id: 'repeated-rejection',
+        fromStatus: ApplicationStatus.APPLIED,
+        toStatus: ApplicationStatus.REJECTED,
+        occurredOn: '2026-07-30',
+      }),
       makeEvent({ id: 'outside', occurredOn: '2026-07-31' }),
     ];
 
     expect(buildActivitySeries(events, [], { from: '2026-07-27', to: '2026-07-30' }, 'day')).toEqual([
       { bucket: '2026-07-27', added: 1, applied: 1, rejected: 0, interviews: 0 },
-      { bucket: '2026-07-28', added: 0, applied: 0, rejected: 0, interviews: 0 },
+      { bucket: '2026-07-28', added: 0, applied: 1, rejected: 0, interviews: 0 },
       { bucket: '2026-07-29', added: 0, applied: 1, rejected: 0, interviews: 0 },
-      { bucket: '2026-07-30', added: 0, applied: 0, rejected: 1, interviews: 0 },
+      { bucket: '2026-07-30', added: 0, applied: 0, rejected: 2, interviews: 0 },
     ]);
   });
 
