@@ -332,12 +332,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-2">{t.dashboard.periodTotals}</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" aria-label={t.dashboard.periodTotals}>
-                {[
+                {([
                   { key: 'added', label: t.dashboard.added, value: activityTotals.added, color: 'text-blue-600 dark:text-blue-400' },
                   { key: 'applied', label: t.dashboard.applied, value: activityTotals.applied, color: 'text-indigo-600 dark:text-indigo-400' },
                   { key: 'rejected', label: t.dashboard.rejected, value: activityTotals.rejected, color: 'text-red-600 dark:text-red-400' },
                   { key: 'interviews', label: t.dashboard.interviewsSeries, value: activityTotals.interviews, color: 'text-purple-600 dark:text-purple-400' },
-                ].map(total => {
+                ] as { key: ActivityType; label: string; value: number; color: string }[]).map(total => {
                   const isActive = activityFilter === total.key;
                   return (
                     <button
@@ -345,7 +345,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       type="button"
                       data-testid={`analytics-total-${total.key}`}
                       aria-pressed={isActive}
-                      onClick={() => setActivityFilter(isActive ? null : total.key as ActivityType)}
+                      onClick={() => setActivityFilter(isActive ? null : total.key)}
                       className={`rounded-lg border px-3 py-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 ${
                         isActive
                           ? 'border-primary dark:border-primary bg-primary/10 dark:bg-primary/20 ring-1 ring-primary'

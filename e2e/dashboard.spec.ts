@@ -85,6 +85,7 @@ test.describe('Dashboard', () => {
         await page.getByRole('button', { name: 'EN', exact: true }).click();
         await expect(page.getByText(EN.dashboard.title)).toBeVisible();
         await expect(page.getByText(EN.dashboard.analyticsTitle)).toBeVisible();
+        await expect(page.getByText(EN.dashboard.jobsInPeriod)).toBeVisible();
         await expect(page.getByTestId('analytics-period')).toHaveValue('last_8_weeks');
     });
 
@@ -229,6 +230,17 @@ test.describe('Dashboard', () => {
         await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
         await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
         await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
+    });
+
+    test('should show the job-list empty state for an invalid custom range', async ({ page }) => {
+        await navigateTo(page, '/stats');
+        await page.getByTestId('analytics-period').selectOption('custom');
+        // Invalid range (to before from) resolves to an empty period deterministically.
+        await page.getByLabel(DE.dashboard.from).fill('2026-01-10');
+        await page.getByLabel(DE.dashboard.to).fill('2026-01-01');
+        const empty = page.getByTestId('analytics-job-list-empty');
+        await expect(empty).toBeVisible({ timeout: 10000 });
+        await expect(empty).toContainText(DE.dashboard.noApplicationDataInPeriod);
     });
 
     test('should display recent activity section', async ({ page }) => {
