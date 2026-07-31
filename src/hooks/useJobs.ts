@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { JobApplication, ApplicationStatus, User } from '../types';
 import { MOCK_JOBS } from '../constants';
 import { supabase } from '../lib/supabase';
+import { formatLocalDate } from '../lib/date';
 
 export const useJobs = (user: User | null) => {
     const [jobs, setJobs] = useState<JobApplication[]>([]);
@@ -140,16 +141,20 @@ export const useJobs = (user: User | null) => {
 
         const previousJobs = [...jobs];
         setJobs(prev => prev.map(j => j.id === updatedJob.id ? updatedJob : j));
+        const existingJob = jobs.find(job => job.id === updatedJob.id);
+        const statusChanged = existingJob ? existingJob.status !== updatedJob.status : false;
+        const date = formatLocalDate();
 
         const dbUpdate = {
             company: updatedJob.company,
             position: updatedJob.position,
             location: updatedJob.location,
             status: updatedJob.status,
-            last_updated: new Date().toISOString().split('T')[0],
+            last_updated: date,
             notes: updatedJob.notes,
             salary: updatedJob.salary,
-            link: updatedJob.link
+            link: updatedJob.link,
+            ...(statusChanged ? { status_changed_on: date } : {})
         };
 
         const { error } = await supabase
@@ -170,12 +175,12 @@ export const useJobs = (user: User | null) => {
         if (!user) return;
 
         const previousJobs = [...jobs];
-        const date = new Date().toISOString().split('T')[0];
+        const date = formatLocalDate();
         setJobs(prev => prev.map(j => j.id === id ? { ...j, status, lastUpdated: date } : j));
 
         const { error } = await supabase
             .from('jobs')
-            .update({ status, last_updated: date })
+            .update({ status, last_updated: date, status_changed_on: date })
             .eq('id', id);
 
         if (error) {

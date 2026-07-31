@@ -2,6 +2,9 @@
 -- Before applying this migration, verify that public.jobs.status is TEXT with the
 -- values below and inspect existing triggers on public.jobs.
 
+ALTER TABLE public.jobs
+  ADD COLUMN status_changed_on DATE;
+
 CREATE TABLE application_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   job_id UUID REFERENCES jobs(id) ON DELETE CASCADE NOT NULL,
@@ -43,7 +46,9 @@ BEGIN
   ELSIF TG_OP = 'UPDATE' AND OLD.status IS DISTINCT FROM NEW.status THEN
     event_from_status := OLD.status;
     event_to_status := NEW.status;
-    event_occurred_on := CURRENT_DATE;
+    -- The browser supplies this plain local date for status changes. The
+    -- fallback preserves a date for out-of-band database updates.
+    event_occurred_on := COALESCE(NEW.status_changed_on, CURRENT_DATE);
   ELSE
     RETURN NEW;
   END IF;

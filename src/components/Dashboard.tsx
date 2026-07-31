@@ -56,6 +56,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
       added: bucket.added,
     }))
   ), [events, language]);
+  const addedEventCount = addedEventSeries.reduce((total, bucket) => total + bucket.added, 0);
 
   // Recent activity feed
   const recentActivity = useMemo(() => {
@@ -156,15 +157,23 @@ export const Dashboard: React.FC<DashboardProps> = ({
               {t.dashboard.noApplicationEvents}
             </div>
           ) : (
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={addedEventSeries} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#6b7280' }} />
-                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#6b7280' }} />
-                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-                <Bar dataKey="added" name={t.dashboard.added} fill="#135bec" radius={[4, 4, 0, 0]} barSize={24} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div
+              className="h-[220px]"
+              data-testid="added-event-chart"
+              data-added-count={addedEventCount}
+              role="img"
+              aria-label={`${t.dashboard.applicationsAddedOverTime}: ${addedEventCount} ${t.dashboard.added}`}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={addedEventSeries} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                  <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#6b7280' }} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#6b7280' }} />
+                  <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+                  <Bar dataKey="added" name={t.dashboard.added} fill="#135bec" radius={[4, 4, 0, 0]} barSize={24} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           )}
         </div>
       </div>

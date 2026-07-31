@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { buildRecentAddedEventSeries } from '../src/lib/analytics';
+import { formatLocalDate } from '../src/lib/date';
 import { ApplicationEvent, ApplicationStatus } from '../src/types';
 
 const makeEvent = (overrides: Partial<ApplicationEvent> = {}): ApplicationEvent => ({
@@ -13,6 +14,12 @@ const makeEvent = (overrides: Partial<ApplicationEvent> = {}): ApplicationEvent 
 });
 
 test.describe('buildRecentAddedEventSeries', () => {
+  test('formats a Date using its local calendar date', () => {
+    const localDate = new Date(2026, 6, 31, 23, 45);
+
+    expect(formatLocalDate(localDate)).toBe('2026-07-31');
+  });
+
   test('counts creation Application Events and preserves every recent weekly bucket', () => {
     const events = [
       makeEvent({ id: 'current-week', occurredOn: '2026-07-31' }),

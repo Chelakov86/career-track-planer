@@ -7,6 +7,7 @@ import { JobModal } from './JobModal';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
 import { generateJobsCSV, downloadFile } from '../lib/csvExport';
 import { clearPendingCalendarImport, readPendingCalendarImport } from '../lib/googleCalendarAuth';
+import { formatLocalDate } from '../lib/date';
 
 // Debounce hook for search
 function useDebounce<T>(value: T, delay: number): T {
@@ -185,11 +186,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   };
 
   const handleSaveJob = async (data: Partial<JobApplication>) => {
+    const today = formatLocalDate();
+
     if (data.id) {
       // Edit existing
       await onEditJob({
         ...data,
-        lastUpdated: new Date().toISOString().split('T')[0],
+        lastUpdated: today,
         // Preserve link field - convert empty string to undefined for optional field
         link: data.link && data.link.trim() ? data.link.trim() : undefined
       } as JobApplication);
@@ -202,8 +205,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         position: data.position!,
         location: data.location?.trim() || '',
         status: data.status || ApplicationStatus.RESEARCH,
-        dateAdded: new Date().toISOString().split('T')[0],
-        lastUpdated: new Date().toISOString().split('T')[0],
+        dateAdded: today,
+        lastUpdated: today,
         notes: data.notes || '',
         salary: data.salary,
         // Preserve link field - convert empty string to undefined for optional field
