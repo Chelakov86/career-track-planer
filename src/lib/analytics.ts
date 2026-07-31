@@ -29,6 +29,15 @@ export interface RejectionDepth {
   threePlus: number;
 }
 
+export interface JobActivity {
+  job: JobApplication;
+  added: number;
+  applied: number;
+  rejected: number;
+  interviews: number;
+  lastActivity: string;
+}
+
 const parseLocalDate = (dateString: string): Date | null => {
   const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateString);
   if (!match) return null;
@@ -277,4 +286,69 @@ export const findEarliestDataDate = (
   const eventDates = events.map(event => event.occurredOn);
   const roundDates = jobs.flatMap(job => job.interviewRounds?.map(round => round.interviewDate) || []);
   return getEarliestDate([...eventDates, ...roundDates]);
+};
+
+export const listJobActivities = (
+  events: ApplicationEvent[],
+  jobs: JobApplication[],
+  period: PeriodRange
+): JobActivity[] => {
+  const jobsById = new Map(jobs.map(job => [job.id, job]));
+  const activities = new Map<string, JobActivity>();
+
+  const ensure = (jobId: string): JobActivity | null => {
+    const job = jobsById.get(jobId);
+    if (!job) return null;
+
+    let entry = activities.get(jobId);
+    if (!entry) {
+      entry = {
+        job,
+        added: 0,
+        applied: 0,
+        rejected: 0,
+        interviews: 0,
+        lastActivity: '',
+      };
+      activities.set(jobId, entry);
+    }
+    return entry;
+  };
+
+  const trackLastActivity = (entry: JobActivity, date: string) => {
+    if (date > entry.lastActivity) entry.lastActivity = date;
+  };
+
+  events.forEach(event => {
+    if (!isInPeriod(event.occurredOn, period)) return;
+
+    const entry = ensure(event.jobId);
+    if (!entry) return;
+
+    if (event.fromStatus === null) entry.added += 1;
+    if (event.toStatus === ApplicationStatus.APPLIED) entry.applied += 1;
+    if (event.toStatus === ApplicationStatus.REJECTED) entry.rejected += 1;
+    trackLastActivity(entry, event.occurredOn);
+  });
+
+  jobs.forEach(job => {
+    job.interviewRounds?.forEach(round => {
+      if (!isInPeriod(round.interviewDate, period)) return;
+
+      const entry = ensure(job.id);
+      if (!entry) return;
+
+      entry.interviews += 1;
+      trackLastActivity(entry, round.interviewDate);
+    });
+  });
+
+  return [...activities.values()]
+    .filter(activity =>
+      activity.added > 0 ||
+      activity.applied > 0 ||
+      activity.rejected > 0 ||
+      activity.interviews > 0
+    )
+    .sort((a, b) => b.lastActivity.localeCompare(a.lastActivity));
 };

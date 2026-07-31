@@ -17,11 +17,13 @@ import {
   bucketLabel,
   computeRejectionDepth,
   findEarliestDataDate,
+  listJobActivities,
   PeriodRange,
   resolvePeriod,
 } from '../lib/analytics';
 import { getMillisecondsUntilNextLocalMidnight } from '../lib/date';
 import { useTheme } from '../contexts/ThemeContext';
+import { AnalyticsJobList } from './AnalyticsJobList';
 
 interface DashboardProps {
   jobs: JobApplication[];
@@ -138,7 +140,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
     [events, jobs, analyticsPeriod.from, analyticsPeriod.to]
   );
   const rejectionTotal = rejectionDepth.zero + rejectionDepth.one + rejectionDepth.two + rejectionDepth.threePlus;
-  const hasActivity = activityTotals.added > 0 || activityTotals.applied > 0 || activityTotals.rejected > 0 || activityTotals.interviews > 0;
+  const jobActivities = useMemo(
+    () => listJobActivities(events, jobs, analyticsPeriod),
+    [events, jobs, analyticsPeriod.from, analyticsPeriod.to]
+  );
   const chartTextColor = theme === 'dark' ? '#94a3b8' : '#6b7280';
   const chartGridColor = theme === 'dark' ? '#334155' : '#e5e7eb';
   const chartTooltipStyle = {
@@ -381,13 +386,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </div>
                   )}
                 </div>
-                {!hasActivity && !customRangeIsInvalid && (
-                  <p className="text-center text-xs text-gray-400 dark:text-gray-500" data-testid="analytics-empty-state">
-                    {t.dashboard.noApplicationDataInPeriod}
-                  </p>
-                )}
               </>
             )}
+          </div>
+
+          <div className="mt-5 border-t border-gray-100 dark:border-slate-700 pt-4" data-testid="analytics-jobs">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t.dashboard.jobsInPeriod}</h4>
+              <span className="text-xs text-gray-400 dark:text-gray-500">{jobActivities.length}</span>
+            </div>
+            <AnalyticsJobList
+              items={jobActivities}
+              activeFilter={null}
+              onSelectJob={() => {}}
+              language={language}
+            />
           </div>
         </section>
       </div>

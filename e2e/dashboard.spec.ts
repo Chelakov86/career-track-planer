@@ -118,6 +118,34 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
     });
 
+    test('should list a newly created Job Application with an Added badge', async ({ page, isMobile }) => {
+        test.skip(isMobile, 'The mutation flow is covered on the desktop dashboard path.');
+
+        await navigateTo(page, '/stats');
+        await expect(page.getByText(DE.dashboard.jobsInPeriod)).toBeVisible({ timeout: 10000 });
+        await expect(page.getByTestId('analytics-job-list')).toBeVisible({ timeout: 10000 });
+
+        const company = `Analytics Job ${Date.now()}`;
+        await navigateTo(page, '/');
+        await page.getByRole('button', { name: DE.board.addJob }).click();
+        await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
+        await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Analytics Row Test');
+        await page.getByRole('button', { name: DE.board.save }).click();
+        await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
+
+        await navigateTo(page, '/stats');
+        const row = page.getByTestId('analytics-job-row').filter({ hasText: company });
+        await expect(row).toBeVisible({ timeout: 10000 });
+        await expect(row.getByTestId('analytics-badge-added')).toBeVisible();
+
+        await navigateTo(page, '/');
+        const board = page.locator('div.hidden.sm\\:block').first();
+        const jobCard = board.locator('.job-card').filter({ hasText: company });
+        await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
+        await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
+        await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
+    });
+
     test('should display recent activity section', async ({ page }) => {
         await expect(page.getByText(DE.dashboard.recentActivity)).toBeVisible({ timeout: 10000 });
     });

@@ -80,6 +80,8 @@ export const DE = {
         twoRounds: '2 Runden',
         threePlusRounds: '3+ Runden',
         recentActivity: 'Letzte Aktivitäten',
+        jobsInPeriod: 'Bewerbungen im Zeitraum',
+        noApplicationDataInPeriod: 'Keine Bewerbungsdaten in diesem Zeitraum',
     },
     timeline: {
         title: 'Bewerbungs-Zeitstrahl',
@@ -119,6 +121,8 @@ export const EN = {
     dashboard: {
         title: 'Statistics',
         analyticsTitle: 'Application Analytics',
+        jobsInPeriod: 'Jobs in this period',
+        added: 'Added',
     },
     timeline: {
         title: 'Application Timeline',
