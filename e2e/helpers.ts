@@ -52,7 +52,7 @@ export const DE = {
         active: 'Aktive Pipeline',
         interviews: 'Interviews',
         funnel: 'Bewerbungstrichter',
-        activityTitle: 'Bewerbungsaktivität',
+        analyticsTitle: 'Bewerbungsanalyse',
         period: 'Zeitraum',
         grain: 'Auflösung',
         periodPresets: {
@@ -118,7 +118,7 @@ export const EN = {
     },
     dashboard: {
         title: 'Statistics',
-        activityTitle: 'Application Activity',
+        analyticsTitle: 'Application Analytics',
     },
     timeline: {
         title: 'Application Timeline',

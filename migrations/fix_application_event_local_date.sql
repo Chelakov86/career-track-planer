@@ -22,7 +22,12 @@ BEGIN
   ELSIF TG_OP = 'UPDATE' AND OLD.status IS DISTINCT FROM NEW.status THEN
     event_from_status := OLD.status;
     event_to_status := NEW.status;
-    event_occurred_on := COALESCE(NEW.status_changed_on, CURRENT_DATE);
+    event_occurred_on := CASE
+      WHEN NEW.status_changed_on IS NOT NULL
+        AND NEW.status_changed_on IS DISTINCT FROM OLD.status_changed_on
+        THEN NEW.status_changed_on
+      ELSE CURRENT_DATE
+    END;
   ELSE
     RETURN NEW;
   END IF;

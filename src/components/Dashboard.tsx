@@ -228,10 +228,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4 md:mb-6">{t.dashboard.funnel}</h3>
           <ResponsiveContainer width="100%" height="80%">
             <BarChart data={funnelData} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" horizontal vertical={false} stroke={chartGridColor} />
+              <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} stroke="#e5e7eb" className="dark:stroke-gray-700" />
               <XAxis type="number" hide />
-              <YAxis dataKey="name" type="category" width={80} tick={{ fontSize: 11, fill: chartTextColor }} />
-              <Tooltip cursor={{ fill: 'transparent' }} contentStyle={chartTooltipStyle} />
+              <YAxis dataKey="name" type="category" width={80} tick={{fontSize: 11, fill: '#6b7280'}} className="dark:fill-gray-400" />
+              <Tooltip
+                cursor={{fill: 'transparent'}}
+                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+              />
               <Bar dataKey="count" fill="#135bec" radius={[0, 4, 4, 0]} barSize={20} />
             </BarChart>
           </ResponsiveContainer>
@@ -325,7 +328,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           </div>
 
           <div className="mt-5 border-t border-gray-100 dark:border-slate-700 pt-4">
-            <h3 id="activity-title" className="text-lg font-bold text-gray-800 dark:text-white">{t.dashboard.activityTitle}</h3>
+            <h3 id="activity-title" className="text-lg font-bold text-gray-800 dark:text-white">{t.dashboard.analyticsTitle}</h3>
             {eventsLoading && (
               <div className="h-[245px] flex items-center justify-center text-sm text-gray-400 dark:text-gray-500" role="status">
                 {t.dashboard.loadingAnalytics}
@@ -344,7 +347,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   data-rejected-count={activityTotals.rejected}
                   data-interviews-count={activityTotals.interviews}
                   role="img"
-                  aria-label={`${t.dashboard.activityTitle}: ${activityTotals.added} ${t.dashboard.added}, ${activityTotals.applied} ${t.dashboard.applied}, ${activityTotals.rejected} ${t.dashboard.rejected}, ${activityTotals.interviews} ${t.dashboard.interviewsSeries}`}
+                  aria-label={`${t.dashboard.analyticsTitle}: ${activityTotals.added} ${t.dashboard.added}, ${activityTotals.applied} ${t.dashboard.applied}, ${activityTotals.rejected} ${t.dashboard.rejected}, ${activityTotals.interviews} ${t.dashboard.interviewsSeries}`}
                 >
                   {chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
@@ -362,13 +365,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     </ResponsiveContainer>
                   ) : (
                     <div className="h-full flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
-                      {t.dashboard.noActivityInPeriod}
+                      {t.dashboard.noApplicationDataInPeriod}
                     </div>
                   )}
                 </div>
                 {!hasActivity && !customRangeIsInvalid && (
                   <p className="text-center text-xs text-gray-400 dark:text-gray-500" data-testid="analytics-empty-state">
-                    {t.dashboard.noActivityInPeriod}
+                    {t.dashboard.noApplicationDataInPeriod}
                   </p>
                 )}
               </>
@@ -400,7 +403,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           )}
         </section>
 
-        <section className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-lg border border-gray-200 dark:border-slate-700 min-h-[220px] transition-colors">
+        <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-lg border border-gray-200 dark:border-slate-700">
           <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">{t.dashboard.recentActivity}</h3>
           {recentActivity.length === 0 ? (
             <p className="text-sm text-gray-400 dark:text-gray-500">{t.dashboard.noActivity}</p>
@@ -419,7 +422,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               ))}
             </div>
           )}
-        </section>
+        </div>
       </div>
     </div>
   );

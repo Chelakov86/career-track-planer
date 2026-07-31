@@ -6,6 +6,7 @@ import { useInterviewRounds } from '../hooks/useInterviewRounds';
 import { InterviewRoundItem } from './InterviewRoundItem';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleCalendarImportPicker } from './GoogleCalendarImportPicker';
+import { formatLocalDate } from '../lib/date';
 
 interface JobModalProps {
     initialData: Partial<JobApplication>;
@@ -375,7 +376,7 @@ export const JobModal: React.FC<JobModalProps> = ({
                                                     onClick={() => handleAddRound({
                                                         jobId: formData.id!,
                                                         roundName: '',
-                                                        interviewDate: new Date().toISOString().split('T')[0],
+                                                         interviewDate: formatLocalDate(),
                                                         status: 'scheduled'
                                                     })}
                                                     className="w-full px-4 py-2 border-2 border-dashed border-gray-300 dark:border-slate-600 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:border-primary dark:hover:border-primary hover:text-primary dark:hover:text-primary transition-colors"

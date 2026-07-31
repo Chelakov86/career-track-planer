@@ -34,7 +34,7 @@ test.describe('Dashboard', () => {
     });
 
     test('should display the selected-period activity sections', async ({ page }) => {
-        await expect(page.getByText(DE.dashboard.activityTitle)).toBeVisible({ timeout: 10000 });
+        await expect(page.getByText(DE.dashboard.analyticsTitle)).toBeVisible({ timeout: 10000 });
         await expect(page.getByTestId('analytics-period')).toHaveValue('last_8_weeks');
         await expect(page.getByTestId('analytics-grain-week')).toHaveAttribute('aria-pressed', 'true');
         await expect(page.getByTestId('analytics-total-added')).toBeVisible();
@@ -62,7 +62,7 @@ test.describe('Dashboard', () => {
 
         await page.getByRole('button', { name: 'EN', exact: true }).click();
         await expect(page.getByText(EN.dashboard.title)).toBeVisible();
-        await expect(page.getByText(EN.dashboard.activityTitle)).toBeVisible();
+        await expect(page.getByText(EN.dashboard.analyticsTitle)).toBeVisible();
         await expect(page.getByTestId('analytics-period')).toHaveValue('last_8_weeks');
     });
 

@@ -46,9 +46,14 @@ BEGIN
   ELSIF TG_OP = 'UPDATE' AND OLD.status IS DISTINCT FROM NEW.status THEN
     event_from_status := OLD.status;
     event_to_status := NEW.status;
-    -- The browser supplies this plain local date for status changes. The
-    -- fallback preserves a date for out-of-band database updates.
-    event_occurred_on := COALESCE(NEW.status_changed_on, CURRENT_DATE);
+    -- The browser supplies a fresh plain local date for status changes. Do
+    -- not reuse a persisted transport value for out-of-band updates.
+    event_occurred_on := CASE
+      WHEN NEW.status_changed_on IS NOT NULL
+        AND NEW.status_changed_on IS DISTINCT FROM OLD.status_changed_on
+        THEN NEW.status_changed_on
+      ELSE CURRENT_DATE
+    END;
   ELSE
     RETURN NEW;
   END IF;
