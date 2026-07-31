@@ -190,6 +190,47 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
     });
 
+    test('should open a read-only job details modal from the analytics job list', async ({ page, isMobile }) => {
+        test.skip(isMobile, 'The mutation flow is covered on the desktop dashboard path.');
+
+        const company = `Analytics Modal ${Date.now()}`;
+        await navigateTo(page, '/');
+        await page.getByRole('button', { name: DE.board.addJob }).click();
+        await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
+        await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Analytics Modal Test');
+        await page.getByRole('button', { name: DE.board.save }).click();
+        await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
+
+        await navigateTo(page, '/stats');
+        const row = page.getByTestId('analytics-job-row').filter({ hasText: company });
+        await expect(row).toBeVisible({ timeout: 10000 });
+
+        const modal = page.locator('.fixed.inset-0');
+
+        // Row click opens the job details modal in view mode.
+        await row.click();
+        await expect(modal.getByText(DE.board.viewJob)).toBeVisible({ timeout: 10000 });
+        // No edit action is offered from analytics.
+        await expect(modal.getByRole('button', { name: DE.board.edit })).toHaveCount(0);
+
+        // Escape dismisses.
+        await page.keyboard.press('Escape');
+        await expect(modal.getByText(DE.board.viewJob)).toHaveCount(0);
+
+        // Reopen and dismiss via the Close button.
+        await row.click();
+        await expect(modal.getByText(DE.board.viewJob)).toBeVisible({ timeout: 10000 });
+        await modal.getByRole('button', { name: DE.board.close }).click();
+        await expect(modal.getByText(DE.board.viewJob)).toHaveCount(0);
+
+        await navigateTo(page, '/');
+        const board = page.locator('div.hidden.sm\\:block').first();
+        const jobCard = board.locator('.job-card').filter({ hasText: company });
+        await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
+        await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
+        await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
+    });
+
     test('should display recent activity section', async ({ page }) => {
         await expect(page.getByText(DE.dashboard.recentActivity)).toBeVisible({ timeout: 10000 });
     });

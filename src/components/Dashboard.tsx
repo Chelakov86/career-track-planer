@@ -24,6 +24,7 @@ import {
 import { getMillisecondsUntilNextLocalMidnight } from '../lib/date';
 import { useTheme } from '../contexts/ThemeContext';
 import { AnalyticsJobList, ActivityType } from './AnalyticsJobList';
+import { JobModal } from './JobModal';
 
 interface DashboardProps {
   jobs: JobApplication[];
@@ -68,6 +69,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [customRange, setCustomRange] = useState<PeriodRange>(getInitialCustomRange);
   const [today, setToday] = useState(() => new Date());
   const [activityFilter, setActivityFilter] = useState<ActivityType | null>(null);
+  const [viewingJob, setViewingJob] = useState<JobApplication | null>(null);
 
   useEffect(() => {
     const now = new Date();
@@ -413,7 +415,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             <AnalyticsJobList
               items={jobActivities}
               activeFilter={activityFilter}
-              onSelectJob={() => {}}
+              onSelectJob={setViewingJob}
               language={language}
             />
           </div>
@@ -464,6 +466,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
           )}
         </div>
       </div>
+
+      {viewingJob && (
+        <JobModal
+          key={viewingJob.id}
+          initialData={viewingJob}
+          language={language}
+          mode="view"
+          onSave={() => {}}
+          onCancel={() => setViewingJob(null)}
+        />
+      )}
     </div>
   );
 };

@@ -36,6 +36,7 @@ export const DE = {
         columns: ['Recherche', 'Zu bewerben', 'Beworben', 'Interview', 'Angebot', 'Abgelehnt'],
         filter: 'Filter',
         sort: 'Sortieren nach',
+        viewJob: 'Job anzeigen',
         placeholders: {
             company: 'Firma',
             position: 'Position',
