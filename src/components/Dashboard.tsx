@@ -23,7 +23,7 @@ import {
 } from '../lib/analytics';
 import { getMillisecondsUntilNextLocalMidnight } from '../lib/date';
 import { useTheme } from '../contexts/ThemeContext';
-import { AnalyticsJobList } from './AnalyticsJobList';
+import { AnalyticsJobList, ActivityType } from './AnalyticsJobList';
 
 interface DashboardProps {
   jobs: JobApplication[];
@@ -67,6 +67,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [grain, setGrain] = useState<Grain>('week');
   const [customRange, setCustomRange] = useState<PeriodRange>(getInitialCustomRange);
   const [today, setToday] = useState(() => new Date());
+  const [activityFilter, setActivityFilter] = useState<ActivityType | null>(null);
 
   useEffect(() => {
     const now = new Date();
@@ -334,12 +335,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   { key: 'applied', label: t.dashboard.applied, value: activityTotals.applied, color: 'text-indigo-600 dark:text-indigo-400' },
                   { key: 'rejected', label: t.dashboard.rejected, value: activityTotals.rejected, color: 'text-red-600 dark:text-red-400' },
                   { key: 'interviews', label: t.dashboard.interviewsSeries, value: activityTotals.interviews, color: 'text-purple-600 dark:text-purple-400' },
-                ].map(total => (
-                  <div key={total.key} data-testid={`analytics-total-${total.key}`} className="rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/40 px-3 py-2">
-                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{total.label}</p>
-                    <p className={`text-xl font-bold ${total.color}`}>{total.value}</p>
-                  </div>
-                ))}
+                ].map(total => {
+                  const isActive = activityFilter === total.key;
+                  return (
+                    <button
+                      key={total.key}
+                      type="button"
+                      data-testid={`analytics-total-${total.key}`}
+                      aria-pressed={isActive}
+                      onClick={() => setActivityFilter(isActive ? null : total.key as ActivityType)}
+                      className={`rounded-lg border px-3 py-2 text-left transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                        isActive
+                          ? 'border-primary dark:border-primary bg-primary/10 dark:bg-primary/20 ring-1 ring-primary'
+                          : 'border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/40 hover:bg-gray-100 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{total.label}</p>
+                      <p className={`text-xl font-bold ${total.color}`}>{total.value}</p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -397,7 +412,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
             </div>
             <AnalyticsJobList
               items={jobActivities}
-              activeFilter={null}
+              activeFilter={activityFilter}
               onSelectJob={() => {}}
               language={language}
             />

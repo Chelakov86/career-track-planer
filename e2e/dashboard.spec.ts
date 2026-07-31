@@ -146,6 +146,50 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
     });
 
+    test('should filter the analytics job list via period-total cards', async ({ page, isMobile }) => {
+        test.skip(isMobile, 'The mutation flow is covered on the desktop dashboard path.');
+
+        const company = `Analytics Filter ${Date.now()}`;
+        await navigateTo(page, '/');
+        await page.getByRole('button', { name: DE.board.addJob }).click();
+        await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
+        await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Analytics Filter Test');
+        await page.getByRole('button', { name: DE.board.save }).click();
+        await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
+
+        await navigateTo(page, '/stats');
+        const row = page.getByTestId('analytics-job-row').filter({ hasText: company });
+        await expect(row).toBeVisible({ timeout: 10000 });
+
+        const rejectedCard = page.getByTestId('analytics-total-rejected');
+        const addedCard = page.getByTestId('analytics-total-added');
+        await expect(addedCard).toHaveAttribute('aria-pressed', 'false');
+
+        // Filter to a type the created job does not have: the row disappears.
+        await rejectedCard.click();
+        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'true');
+        await expect(addedCard).toHaveAttribute('aria-pressed', 'false');
+        await expect(row).toHaveCount(0);
+
+        // Click the active card again to clear the filter: the row returns.
+        await rejectedCard.click();
+        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'false');
+        await expect(row).toBeVisible();
+
+        // Switch to a matching filter: the row stays visible under that filter.
+        await addedCard.click();
+        await expect(addedCard).toHaveAttribute('aria-pressed', 'true');
+        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'false');
+        await expect(row).toBeVisible();
+
+        await navigateTo(page, '/');
+        const board = page.locator('div.hidden.sm\\:block').first();
+        const jobCard = board.locator('.job-card').filter({ hasText: company });
+        await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
+        await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
+        await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
+    });
+
     test('should display recent activity section', async ({ page }) => {
         await expect(page.getByText(DE.dashboard.recentActivity)).toBeVisible({ timeout: 10000 });
     });
