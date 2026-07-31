@@ -144,6 +144,7 @@ export const useJobs = (user: User | null) => {
         const existingJob = jobs.find(job => job.id === updatedJob.id);
         const statusChanged = existingJob ? existingJob.status !== updatedJob.status : false;
         const date = formatLocalDate();
+        const timezoneOffsetMinutes = new Date().getTimezoneOffset();
 
         const dbUpdate = {
             company: updatedJob.company,
@@ -156,7 +157,8 @@ export const useJobs = (user: User | null) => {
             link: updatedJob.link,
             ...(statusChanged ? {
                 status_changed_on: date,
-                status_change_token: crypto.randomUUID()
+                status_change_token: crypto.randomUUID(),
+                status_timezone_offset_minutes: timezoneOffsetMinutes
             } : {})
         };
 
@@ -179,6 +181,7 @@ export const useJobs = (user: User | null) => {
 
         const previousJobs = [...jobs];
         const date = formatLocalDate();
+        const timezoneOffsetMinutes = new Date().getTimezoneOffset();
         setJobs(prev => prev.map(j => j.id === id ? { ...j, status, lastUpdated: date } : j));
 
         const { error } = await supabase
@@ -187,7 +190,8 @@ export const useJobs = (user: User | null) => {
                 status,
                 last_updated: date,
                 status_changed_on: date,
-                status_change_token: crypto.randomUUID()
+                status_change_token: crypto.randomUUID(),
+                status_timezone_offset_minutes: timezoneOffsetMinutes
             })
             .eq('id', id);
 

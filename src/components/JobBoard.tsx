@@ -513,8 +513,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         break;
     }
 
-    const fromStr = fromDate.toISOString().split('T')[0];
-    const toStr = today.toISOString().split('T')[0];
+    const fromStr = formatLocalDate(fromDate);
+    const toStr = formatLocalDate(today);
 
     if (field === 'dateAdded') {
       setDateAddedFrom(fromStr);
