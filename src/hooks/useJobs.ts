@@ -91,9 +91,9 @@ export const useJobs = (user: User | null) => {
         fetchJobs(user);
     }, [user]);
 
-    const refetchJobs = () => {
+    const refetchJobs = async () => {
         if (user) {
-            fetchJobs(user);
+            await fetchJobs(user);
         }
     };
 
@@ -154,7 +154,10 @@ export const useJobs = (user: User | null) => {
             notes: updatedJob.notes,
             salary: updatedJob.salary,
             link: updatedJob.link,
-            ...(statusChanged ? { status_changed_on: date } : {})
+            ...(statusChanged ? {
+                status_changed_on: date,
+                status_change_token: crypto.randomUUID()
+            } : {})
         };
 
         const { error } = await supabase
@@ -180,7 +183,12 @@ export const useJobs = (user: User | null) => {
 
         const { error } = await supabase
             .from('jobs')
-            .update({ status, last_updated: date, status_changed_on: date })
+            .update({
+                status,
+                last_updated: date,
+                status_changed_on: date,
+                status_change_token: crypto.randomUUID()
+            })
             .eq('id', id);
 
         if (error) {

@@ -65,8 +65,16 @@ export const useApplicationEvents = (
 
     void fetchEvents();
 
+    // A job trigger writes the event in the same transaction, but a fresh
+    // page can briefly read before the committed row is visible through the
+    // API. One short retry keeps the dashboard fresh without a polling loop.
+    const retryTimeout = window.setTimeout(() => {
+      if (!cancelled) void fetchEvents();
+    }, 300);
+
     return () => {
       cancelled = true;
+      window.clearTimeout(retryTimeout);
     };
   }, [user, jobs, jobsRevision]);
 

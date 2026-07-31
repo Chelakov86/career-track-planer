@@ -1,8 +1,5 @@
--- Status changes from the browser carry a plain local date because the
--- Supabase database session timezone is UTC and cannot infer each user's zone.
-
-ALTER TABLE public.jobs
-  ADD COLUMN IF NOT EXISTS status_changed_on DATE;
+-- Give each browser status change a unique token so repeated transitions on
+-- one local date are not mistaken for out-of-band database updates.
 
 ALTER TABLE public.jobs
   ADD COLUMN IF NOT EXISTS status_change_token UUID;

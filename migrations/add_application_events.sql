@@ -5,6 +5,9 @@
 ALTER TABLE public.jobs
   ADD COLUMN status_changed_on DATE;
 
+ALTER TABLE public.jobs
+  ADD COLUMN status_change_token UUID;
+
 CREATE TABLE application_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   job_id UUID REFERENCES jobs(id) ON DELETE CASCADE NOT NULL,
@@ -50,7 +53,7 @@ BEGIN
     -- not reuse a persisted transport value for out-of-band updates.
     event_occurred_on := CASE
       WHEN NEW.status_changed_on IS NOT NULL
-        AND NEW.status_changed_on IS DISTINCT FROM OLD.status_changed_on
+        AND NEW.status_change_token IS DISTINCT FROM OLD.status_change_token
         THEN NEW.status_changed_on
       ELSE CURRENT_DATE
     END;
