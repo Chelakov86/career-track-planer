@@ -1,15 +1,35 @@
 import React, { useMemo } from 'react';
-import { JobApplication, ApplicationStatus, Language } from '../types';
+import { ApplicationEvent, JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { buildRecentAddedEventSeries } from '../lib/analytics';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Activity, Target, TrendingUp } from 'lucide-react';
 
 interface DashboardProps {
   jobs: JobApplication[];
+  events: ApplicationEvent[];
+  eventsLoading: boolean;
+  eventsError: string | null;
   language: Language;
 }
 
-export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
+const formatWeekLabel = (bucket: string, language: Language) => {
+  const [year, month, day] = bucket.split('-').map(Number);
+  const date = new Date(year, month - 1, day);
+
+  return date.toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+};
+
+export const Dashboard: React.FC<DashboardProps> = ({
+  jobs,
+  events,
+  eventsLoading,
+  eventsError,
+  language,
+}) => {
   const t = TRANSLATIONS[language];
 
   // Compute stats
@@ -30,31 +50,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
     count: jobs.filter(j => j.status === status).length
   })).filter(d => d.count > 0);
 
-  // Weekly application data for area chart
-  const weeklyData = useMemo(() => {
-    const weeks: Record<string, number> = {};
-    jobs.forEach(job => {
-      const date = new Date(job.dateAdded);
-      const weekStart = new Date(date);
-      weekStart.setDate(date.getDate() - date.getDay());
-      const key = weekStart.toISOString().split('T')[0];
-      weeks[key] = (weeks[key] || 0) + 1;
-    });
-    return Object.entries(weeks)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-8)
-      .map(([week, count]) => ({
-        week: new Date(week).toLocaleDateString(language === 'de' ? 'de-DE' : 'en-US', { month: 'short', day: 'numeric' }),
-        count
-      }));
-  }, [jobs, language]);
+  const addedEventSeries = useMemo(() => (
+    buildRecentAddedEventSeries(events).map(bucket => ({
+      week: formatWeekLabel(bucket.bucket, language),
+      added: bucket.added,
+    }))
+  ), [events, language]);
 
   // Recent activity feed
   const recentActivity = useMemo(() => {
-    const events: { id: string; description: string; date: string; type: string }[] = [];
+    const recentEvents: { id: string; description: string; date: string; type: string }[] = [];
 
     jobs.forEach(job => {
-      events.push({
+      recentEvents.push({
         id: `job-${job.id}`,
         description: `${job.position} at ${job.company}`,
         date: job.dateAdded,
@@ -63,7 +71,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
 
       if (job.interviewRounds) {
         job.interviewRounds.forEach(round => {
-          events.push({
+          recentEvents.push({
             id: `interview-${round.id}`,
             description: `${round.roundName} - ${job.company}`,
             date: round.interviewDate,
@@ -73,7 +81,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
       }
     });
 
-    return events.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
+    return recentEvents.sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5);
   }, [jobs]);
 
   return (
@@ -133,17 +141,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ jobs, language }) => {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-lg border border-gray-200 dark:border-slate-700">
-          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">{t.dashboard.applicationsOverTime}</h3>
-          <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#6b7280' }} />
-              <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#6b7280' }} />
-              <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
-              <Area type="monotone" dataKey="count" stroke="#135bec" fill="#135bec" fillOpacity={0.1} strokeWidth={2} />
-            </AreaChart>
-          </ResponsiveContainer>
+        <div className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-lg border border-gray-200 dark:border-slate-700 min-h-[280px] md:min-h-[350px] transition-colors">
+          <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">{t.dashboard.applicationsAddedOverTime}</h3>
+          {eventsLoading ? (
+            <div className="h-[220px] flex items-center justify-center text-sm text-gray-400 dark:text-gray-500" role="status">
+              {t.dashboard.loadingAnalytics}
+            </div>
+          ) : eventsError ? (
+            <div className="h-[220px] flex items-center justify-center text-sm text-red-500 dark:text-red-400" role="alert">
+              {t.dashboard.analyticsError}
+            </div>
+          ) : events.length === 0 ? (
+            <div className="h-[220px] flex items-center justify-center text-sm text-gray-400 dark:text-gray-500">
+              {t.dashboard.noApplicationEvents}
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={addedEventSeries} margin={{ top: 5, right: 10, left: -15, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                <XAxis dataKey="week" tick={{ fontSize: 11, fill: '#6b7280' }} />
+                <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#6b7280' }} />
+                <Tooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+                <Bar dataKey="added" name={t.dashboard.added} fill="#135bec" radius={[4, 4, 0, 0]} barSize={24} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </div>
 

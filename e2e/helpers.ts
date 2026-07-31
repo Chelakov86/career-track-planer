@@ -52,7 +52,7 @@ export const DE = {
         active: 'Aktive Pipeline',
         interviews: 'Interviews',
         funnel: 'Bewerbungstrichter',
-        applicationsOverTime: 'Bewerbungen im Zeitverlauf',
+        applicationsAddedOverTime: 'Hinzugefügte Bewerbungen im Zeitverlauf',
         recentActivity: 'Letzte Aktivitäten',
     },
     timeline: {

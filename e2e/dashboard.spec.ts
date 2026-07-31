@@ -33,8 +33,8 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(DE.dashboard.funnel)).toBeVisible({ timeout: 10000 });
     });
 
-    test('should display applications over time chart', async ({ page }) => {
-        await expect(page.getByText(DE.dashboard.applicationsOverTime)).toBeVisible({ timeout: 10000 });
+    test('should display event-backed added series', async ({ page }) => {
+        await expect(page.getByText(DE.dashboard.applicationsAddedOverTime)).toBeVisible({ timeout: 10000 });
     });
 
     test('should display recent activity section', async ({ page }) => {

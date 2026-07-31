@@ -51,6 +51,15 @@ export interface JobApplication {
   interviewRounds?: InterviewRound[];
 }
 
+export interface ApplicationEvent {
+  id: string;
+  jobId: string;
+  fromStatus: ApplicationStatus | null;
+  toStatus: ApplicationStatus;
+  occurredOn: string; // ISO YYYY-MM-DD
+  backfilled: boolean;
+}
+
 export type TimelineEventType = 'job_added' | 'job_applied' | 'job_rejected' | 'status_changed' | 'interview_scheduled' | 'interview_completed' | 'interview_feedback';
 
 export interface TimelineEvent {

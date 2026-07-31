@@ -26,6 +26,7 @@
     "@vercel/node": "^5.5.22",
     "@vitejs/plugin-react": "^5.0.0",
     "dotenv": "^17.2.4",
+    "supabase": "^2.111.0",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }

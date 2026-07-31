@@ -6,6 +6,8 @@ import { supabase } from '../lib/supabase';
 export const useJobs = (user: User | null) => {
     const [jobs, setJobs] = useState<JobApplication[]>([]);
     const [loading, setLoading] = useState(false);
+    const [jobsRevision, setJobsRevision] = useState(0);
+    const markJobsPersisted = () => setJobsRevision(revision => revision + 1);
 
     const fetchJobs = async (currentUser: User) => {
         setLoading(true);
@@ -129,6 +131,7 @@ export const useJobs = (user: User | null) => {
         } else if (data) {
             // Replace temp ID with real ID
             setJobs(prev => prev.map(j => j.id === tempId ? { ...j, id: data.id } : j));
+            markJobsPersisted();
         }
     };
 
@@ -158,6 +161,8 @@ export const useJobs = (user: User | null) => {
             console.error('Error updating job:', error);
             setJobs(previousJobs);
             alert('Failed to update job. Please try again.');
+        } else {
+            markJobsPersisted();
         }
     };
 
@@ -177,6 +182,8 @@ export const useJobs = (user: User | null) => {
             console.error('Error updating status:', error);
             setJobs(previousJobs);
             alert('Failed to update status. Please try again.');
+        } else {
+            markJobsPersisted();
         }
     };
 
@@ -194,12 +201,15 @@ export const useJobs = (user: User | null) => {
         if (error) {
             console.error('Error deleting job:', error);
             setJobs(previousJobs); // Revert
+        } else {
+            markJobsPersisted();
         }
     };
 
     return {
         jobs,
         loading,
+        jobsRevision,
         addJob,
         editJob,
         updateStatus,
