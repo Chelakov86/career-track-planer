@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
@@ -20,6 +20,7 @@ import {
   PeriodRange,
   resolvePeriod,
 } from '../lib/analytics';
+import { getMillisecondsUntilNextLocalMidnight } from '../lib/date';
 import { useTheme } from '../contexts/ThemeContext';
 
 interface DashboardProps {
@@ -63,6 +64,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [periodPreset, setPeriodPreset] = useState<PeriodPreset>('last_8_weeks');
   const [grain, setGrain] = useState<Grain>('week');
   const [customRange, setCustomRange] = useState<PeriodRange>(getInitialCustomRange);
+  const [today, setToday] = useState(() => new Date());
+
+  useEffect(() => {
+    const now = new Date();
+    const timeout = window.setTimeout(
+      () => setToday(new Date()),
+      getMillisecondsUntilNextLocalMidnight(now)
+    );
+
+    return () => window.clearTimeout(timeout);
+  }, [today]);
 
   // Compute stats
   const totalApps = jobs.length;
@@ -90,10 +102,10 @@ export const Dashboard: React.FC<DashboardProps> = ({
     () => resolvePeriod(
       periodPreset,
       periodPreset === 'custom' ? customRange : null,
-      new Date(),
+      today,
       earliestDataDate
     ),
-    [periodPreset, customRange, earliestDataDate]
+    [periodPreset, customRange, today, earliestDataDate]
   );
   const customRangeIsInvalid = periodPreset === 'custom' && (
     !customRange.from ||

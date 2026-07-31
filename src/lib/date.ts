@@ -5,3 +5,9 @@ export const formatLocalDate = (date: Date = new Date()): string => {
 
   return `${year}-${month}-${day}`;
 };
+
+export const getMillisecondsUntilNextLocalMidnight = (date: Date = new Date()): number => {
+  const nextMidnight = new Date(date);
+  nextMidnight.setHours(24, 0, 0, 0);
+  return nextMidnight.getTime() - date.getTime();
+};

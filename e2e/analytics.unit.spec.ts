@@ -9,6 +9,7 @@ import {
   resolvePeriod,
 } from '../src/lib/analytics';
 import { ApplicationEvent, ApplicationStatus, InterviewRound, JobApplication } from '../src/types';
+import { getMillisecondsUntilNextLocalMidnight } from '../src/lib/date';
 
 const makeEvent = (overrides: Partial<ApplicationEvent> = {}): ApplicationEvent => ({
   id: 'event-1',
@@ -101,6 +102,10 @@ test.describe('analytics date helpers', () => {
     expect(bucketLabel('2026-07-27', 'week', 'de')).toContain('27');
     expect(bucketLabel('2026-07', 'month', 'en')).toContain('2026');
     expect(bucketLabel('2026-07', 'month', 'de')).toContain('2026');
+  });
+
+  test('calculates the delay until the next local midnight', () => {
+    expect(getMillisecondsUntilNextLocalMidnight(new Date(2026, 6, 31, 23, 59, 50))).toBe(10_000);
   });
 });
 
