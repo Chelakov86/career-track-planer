@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react';
 import { JobApplication, ApplicationStatus, User } from '../types';
 import { MOCK_JOBS } from '../constants';
 import { supabase } from '../lib/supabase';
+import { formatLocalDate } from '../lib/date';
 
 export const useJobs = (user: User | null) => {
     const [jobs, setJobs] = useState<JobApplication[]>([]);
     const [loading, setLoading] = useState(false);
+    const [jobsRevision, setJobsRevision] = useState(0);
+    const markJobsPersisted = () => setJobsRevision(revision => revision + 1);
 
     const fetchJobs = async (currentUser: User) => {
         setLoading(true);
@@ -88,9 +91,9 @@ export const useJobs = (user: User | null) => {
         fetchJobs(user);
     }, [user]);
 
-    const refetchJobs = () => {
+    const refetchJobs = async () => {
         if (user) {
-            fetchJobs(user);
+            await fetchJobs(user);
         }
     };
 
@@ -129,6 +132,7 @@ export const useJobs = (user: User | null) => {
         } else if (data) {
             // Replace temp ID with real ID
             setJobs(prev => prev.map(j => j.id === tempId ? { ...j, id: data.id } : j));
+            markJobsPersisted();
         }
     };
 
@@ -137,16 +141,25 @@ export const useJobs = (user: User | null) => {
 
         const previousJobs = [...jobs];
         setJobs(prev => prev.map(j => j.id === updatedJob.id ? updatedJob : j));
+        const existingJob = jobs.find(job => job.id === updatedJob.id);
+        const statusChanged = existingJob ? existingJob.status !== updatedJob.status : false;
+        const date = formatLocalDate();
+        const timezoneOffsetMinutes = new Date().getTimezoneOffset();
 
         const dbUpdate = {
             company: updatedJob.company,
             position: updatedJob.position,
             location: updatedJob.location,
             status: updatedJob.status,
-            last_updated: new Date().toISOString().split('T')[0],
+            last_updated: date,
             notes: updatedJob.notes,
             salary: updatedJob.salary,
-            link: updatedJob.link
+            link: updatedJob.link,
+            ...(statusChanged ? {
+                status_changed_on: date,
+                status_change_token: crypto.randomUUID(),
+                status_timezone_offset_minutes: timezoneOffsetMinutes
+            } : {})
         };
 
         const { error } = await supabase
@@ -158,6 +171,8 @@ export const useJobs = (user: User | null) => {
             console.error('Error updating job:', error);
             setJobs(previousJobs);
             alert('Failed to update job. Please try again.');
+        } else {
+            markJobsPersisted();
         }
     };
 
@@ -165,18 +180,27 @@ export const useJobs = (user: User | null) => {
         if (!user) return;
 
         const previousJobs = [...jobs];
-        const date = new Date().toISOString().split('T')[0];
+        const date = formatLocalDate();
+        const timezoneOffsetMinutes = new Date().getTimezoneOffset();
         setJobs(prev => prev.map(j => j.id === id ? { ...j, status, lastUpdated: date } : j));
 
         const { error } = await supabase
             .from('jobs')
-            .update({ status, last_updated: date })
+            .update({
+                status,
+                last_updated: date,
+                status_changed_on: date,
+                status_change_token: crypto.randomUUID(),
+                status_timezone_offset_minutes: timezoneOffsetMinutes
+            })
             .eq('id', id);
 
         if (error) {
             console.error('Error updating status:', error);
             setJobs(previousJobs);
             alert('Failed to update status. Please try again.');
+        } else {
+            markJobsPersisted();
         }
     };
 
@@ -194,12 +218,15 @@ export const useJobs = (user: User | null) => {
         if (error) {
             console.error('Error deleting job:', error);
             setJobs(previousJobs); // Revert
+        } else {
+            markJobsPersisted();
         }
     };
 
     return {
         jobs,
         loading,
+        jobsRevision,
         addJob,
         editJob,
         updateStatus,

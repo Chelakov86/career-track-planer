@@ -9,6 +9,7 @@ import { Layout } from './components/Layout';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useJobs } from './hooks/useJobs';
+import { useApplicationEvents } from './hooks/useApplicationEvents';
 import { getSchedule } from './constants';
 import { Language } from './types';
 
@@ -16,7 +17,20 @@ const AppContent: React.FC = () => {
   const { user, isLoading } = useAuth();
   const [language, setLanguage] = useState<Language>('de');
 
-  const { jobs, addJob, editJob, updateStatus, deleteJob, refetchJobs } = useJobs(user);
+  const {
+    jobs,
+    jobsRevision,
+    addJob,
+    editJob,
+    updateStatus,
+    deleteJob,
+    refetchJobs,
+  } = useJobs(user);
+  const {
+    events: applicationEvents,
+    loading: applicationEventsLoading,
+    error: applicationEventsError,
+  } = useApplicationEvents(user, jobs, jobsRevision);
 
   const currentSchedule = getSchedule(language);
 
@@ -79,6 +93,9 @@ const AppContent: React.FC = () => {
           element={
             <Dashboard
               jobs={jobs}
+              events={applicationEvents}
+              eventsLoading={applicationEventsLoading}
+              eventsError={applicationEventsError}
               language={language}
             />
           }

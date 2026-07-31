@@ -51,6 +51,26 @@ export interface JobApplication {
   interviewRounds?: InterviewRound[];
 }
 
+export interface ApplicationEvent {
+  id: string;
+  jobId: string;
+  fromStatus: ApplicationStatus | null;
+  toStatus: ApplicationStatus;
+  occurredOn: string; // ISO YYYY-MM-DD
+  backfilled: boolean;
+}
+
+export type Grain = 'day' | 'week' | 'month';
+
+export type PeriodPreset =
+  | 'this_week'
+  | 'last_4_weeks'
+  | 'last_8_weeks'
+  | 'last_3_months'
+  | 'this_year'
+  | 'all_time'
+  | 'custom';
+
 export type TimelineEventType = 'job_added' | 'job_applied' | 'job_rejected' | 'status_changed' | 'interview_scheduled' | 'interview_completed' | 'interview_feedback';
 
 export interface TimelineEvent {
