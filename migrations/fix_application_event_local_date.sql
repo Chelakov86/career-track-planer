@@ -30,6 +30,7 @@ BEGIN
     event_to_status := NEW.status;
     event_occurred_on := CASE
       WHEN NEW.status_changed_on IS NOT NULL
+        AND NEW.status_change_token IS NOT NULL
         AND NEW.status_change_token IS DISTINCT FROM OLD.status_change_token
         AND NEW.status_timezone_offset_minutes BETWEEN -840 AND 840
         AND NEW.status_changed_on = (
