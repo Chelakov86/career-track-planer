@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { DE, navigateTo } from './helpers';
+import { DE, EN, navigateTo } from './helpers';
 
 test.describe('Dashboard', () => {
     test.beforeEach(async ({ page }) => {
@@ -19,7 +19,7 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(DE.dashboard.active)).toBeVisible();
 
         // Interviews card
-        await expect(page.getByText(DE.dashboard.interviews)).toBeVisible();
+        await expect(page.getByText(DE.dashboard.interviews).first()).toBeVisible();
     });
 
     test('should display stat values as numbers', async ({ page }) => {
@@ -33,14 +33,43 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(DE.dashboard.funnel)).toBeVisible({ timeout: 10000 });
     });
 
-    test('should display event-backed added series', async ({ page }) => {
-        await expect(page.getByText(DE.dashboard.applicationsAddedOverTime)).toBeVisible({ timeout: 10000 });
+    test('should display the selected-period activity sections', async ({ page }) => {
+        await expect(page.getByText(DE.dashboard.activityTitle)).toBeVisible({ timeout: 10000 });
+        await expect(page.getByTestId('analytics-period')).toHaveValue('last_8_weeks');
+        await expect(page.getByTestId('analytics-grain-week')).toHaveAttribute('aria-pressed', 'true');
+        await expect(page.getByTestId('analytics-total-added')).toBeVisible();
+        await expect(page.getByTestId('analytics-total-applied')).toBeVisible();
+        await expect(page.getByTestId('analytics-total-rejected')).toBeVisible();
+        await expect(page.getByTestId('analytics-total-interviews')).toBeVisible();
+        await expect(page.getByText(DE.dashboard.rejectionDepth)).toBeVisible();
+    });
+
+    test('should update the selected period and grain controls', async ({ page }) => {
+        const period = page.getByTestId('analytics-period');
+        await period.selectOption('last_4_weeks');
+        await expect(period).toHaveValue('last_4_weeks');
+
+        await page.getByTestId('analytics-grain-day').click();
+        await expect(page.getByTestId('analytics-grain-day')).toHaveAttribute('aria-pressed', 'true');
+
+        await period.selectOption('custom');
+        await expect(page.getByLabel(DE.dashboard.from)).toBeVisible();
+        await expect(page.getByLabel(DE.dashboard.to)).toBeVisible();
+    });
+
+    test('should localize the replacement analytics section in English', async ({ page, isMobile }) => {
+        test.skip(isMobile, 'The desktop sidebar exposes the stable EN language control.');
+
+        await page.getByRole('button', { name: 'EN', exact: true }).click();
+        await expect(page.getByText(EN.dashboard.title)).toBeVisible();
+        await expect(page.getByText(EN.dashboard.activityTitle)).toBeVisible();
+        await expect(page.getByTestId('analytics-period')).toHaveValue('last_8_weeks');
     });
 
     test('should update the added series after creating a Job Application', async ({ page, isMobile }) => {
         test.skip(isMobile, 'The mutation flow is covered on the desktop dashboard path.');
 
-        const chart = page.getByTestId('added-event-chart');
+        const chart = page.getByTestId('activity-chart');
         await expect(chart).toBeVisible({ timeout: 10000 });
         const initialCount = Number(await chart.getAttribute('data-added-count'));
         const company = `Analytics Smoke ${Date.now()}`;
@@ -53,7 +82,7 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
 
         await navigateTo(page, '/stats');
-        const updatedChart = page.getByTestId('added-event-chart');
+        const updatedChart = page.getByTestId('activity-chart');
         await expect.poll(
             async () => Number(await updatedChart.getAttribute('data-added-count')),
             { timeout: 10000 }
