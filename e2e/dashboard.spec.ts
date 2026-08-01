@@ -85,6 +85,7 @@ test.describe('Dashboard', () => {
         await page.getByRole('button', { name: 'EN', exact: true }).click();
         await expect(page.getByText(EN.dashboard.title)).toBeVisible();
         await expect(page.getByText(EN.dashboard.analyticsTitle)).toBeVisible();
+        await expect(page.getByText(EN.dashboard.jobsInPeriod)).toBeVisible();
         await expect(page.getByTestId('analytics-period')).toHaveValue('last_8_weeks');
     });
 
@@ -116,6 +117,161 @@ test.describe('Dashboard', () => {
         await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
         await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
         await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
+    });
+
+    test('should list a newly created Job Application with an Added badge', async ({ page, isMobile }) => {
+        test.skip(isMobile, 'The mutation flow is covered on the desktop dashboard path.');
+
+        await navigateTo(page, '/stats');
+        await expect(page.getByText(DE.dashboard.jobsInPeriod)).toBeVisible({ timeout: 10000 });
+        await expect(page.getByTestId('analytics-job-list')).toBeVisible({ timeout: 10000 });
+
+        const company = `Analytics Job ${Date.now()}`;
+        await navigateTo(page, '/');
+        await page.getByRole('button', { name: DE.board.addJob }).click();
+        await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
+        await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Analytics Row Test');
+        await page.getByRole('button', { name: DE.board.save }).click();
+        await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
+
+        await navigateTo(page, '/stats');
+        const row = page.getByTestId('analytics-job-row').filter({ hasText: company });
+        await expect(row).toBeVisible({ timeout: 10000 });
+        await expect(row.getByTestId('analytics-badge-added')).toBeVisible();
+
+        await navigateTo(page, '/');
+        const board = page.locator('div.hidden.sm\\:block').first();
+        const jobCard = board.locator('.job-card').filter({ hasText: company });
+        await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
+        await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
+        await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
+    });
+
+    test('should filter the analytics job list via period-total cards', async ({ page, isMobile }) => {
+        test.skip(isMobile, 'The mutation flow is covered on the desktop dashboard path.');
+
+        const company = `Analytics Filter ${Date.now()}`;
+        await navigateTo(page, '/');
+        await page.getByRole('button', { name: DE.board.addJob }).click();
+        await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
+        await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Analytics Filter Test');
+        await page.getByRole('button', { name: DE.board.save }).click();
+        await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
+
+        await navigateTo(page, '/stats');
+        const row = page.getByTestId('analytics-job-row').filter({ hasText: company });
+        await expect(row).toBeVisible({ timeout: 10000 });
+
+        const rejectedCard = page.getByTestId('analytics-total-rejected');
+        const addedCard = page.getByTestId('analytics-total-added');
+        await expect(addedCard).toHaveAttribute('aria-pressed', 'false');
+
+        // Filter to a type the created job does not have: the row disappears.
+        await rejectedCard.click();
+        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'true');
+        await expect(addedCard).toHaveAttribute('aria-pressed', 'false');
+        await expect(row).toHaveCount(0);
+
+        // Click the active card again to clear the filter: the row returns.
+        await rejectedCard.click();
+        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'false');
+        await expect(row).toBeVisible();
+
+        // Switch to a matching filter: the row stays visible under that filter.
+        await addedCard.click();
+        await expect(addedCard).toHaveAttribute('aria-pressed', 'true');
+        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'false');
+        await expect(row).toBeVisible();
+
+        await navigateTo(page, '/');
+        const board = page.locator('div.hidden.sm\\:block').first();
+        const jobCard = board.locator('.job-card').filter({ hasText: company });
+        await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
+        await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
+        await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
+    });
+
+    test('should keep the filter active across period changes and not change card values', async ({ page }) => {
+        await navigateTo(page, '/stats');
+        // Pin a custom range with no data so card values are stable and free of
+        // cross-project interference (concurrent tests share the test user's board).
+        await page.getByTestId('analytics-period').selectOption('custom');
+        await page.getByLabel(DE.dashboard.from).fill('2020-01-01');
+        await page.getByLabel(DE.dashboard.to).fill('2020-01-02');
+        await expect(page.getByTestId('activity-chart')).toBeVisible({ timeout: 10000 });
+
+        const addedCard = page.getByTestId('analytics-total-added');
+        const rejectedCard = page.getByTestId('analytics-total-rejected');
+
+        // Card values are unchanged by filtering: 0 stays 0 after a filter is applied.
+        await expect(addedCard.locator('p.text-xl')).toHaveText('0');
+        await rejectedCard.click();
+        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'true');
+        await expect(addedCard).toHaveAttribute('aria-pressed', 'false');
+        await expect(addedCard.locator('p.text-xl')).toHaveText('0');
+
+        // The filter persists across a Selected Period preset change.
+        await page.getByTestId('analytics-period').selectOption('this_week');
+        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'true');
+
+        // With the filter still active, an invalid custom range yields no matches -> empty state.
+        await page.getByTestId('analytics-period').selectOption('custom');
+        await page.getByLabel(DE.dashboard.from).fill('2026-01-10');
+        await page.getByLabel(DE.dashboard.to).fill('2026-01-01');
+        await expect(page.getByTestId('analytics-job-list-empty')).toBeVisible({ timeout: 10000 });
+        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    test('should open a read-only job details modal from the analytics job list', async ({ page, isMobile }) => {
+        test.skip(isMobile, 'The mutation flow is covered on the desktop dashboard path.');
+
+        const company = `Analytics Modal ${Date.now()}`;
+        await navigateTo(page, '/');
+        await page.getByRole('button', { name: DE.board.addJob }).click();
+        await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
+        await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Analytics Modal Test');
+        await page.getByRole('button', { name: DE.board.save }).click();
+        await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
+
+        await navigateTo(page, '/stats');
+        const row = page.getByTestId('analytics-job-row').filter({ hasText: company });
+        await expect(row).toBeVisible({ timeout: 10000 });
+
+        const modal = page.locator('.fixed.inset-0');
+
+        // Row click opens the job details modal in view mode.
+        await row.click();
+        await expect(modal.getByText(DE.board.viewJob)).toBeVisible({ timeout: 10000 });
+        // No edit action is offered from analytics.
+        await expect(modal.getByRole('button', { name: DE.board.edit })).toHaveCount(0);
+
+        // Escape dismisses.
+        await page.keyboard.press('Escape');
+        await expect(modal.getByText(DE.board.viewJob)).toHaveCount(0);
+
+        // Reopen and dismiss via the Close button.
+        await row.click();
+        await expect(modal.getByText(DE.board.viewJob)).toBeVisible({ timeout: 10000 });
+        await modal.getByRole('button', { name: DE.board.close }).click();
+        await expect(modal.getByText(DE.board.viewJob)).toHaveCount(0);
+
+        await navigateTo(page, '/');
+        const board = page.locator('div.hidden.sm\\:block').first();
+        const jobCard = board.locator('.job-card').filter({ hasText: company });
+        await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
+        await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
+        await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
+    });
+
+    test('should show the job-list empty state for an invalid custom range', async ({ page }) => {
+        await navigateTo(page, '/stats');
+        await page.getByTestId('analytics-period').selectOption('custom');
+        // Invalid range (to before from) resolves to an empty period deterministically.
+        await page.getByLabel(DE.dashboard.from).fill('2026-01-10');
+        await page.getByLabel(DE.dashboard.to).fill('2026-01-01');
+        const empty = page.getByTestId('analytics-job-list-empty');
+        await expect(empty).toBeVisible({ timeout: 10000 });
+        await expect(empty).toContainText(DE.dashboard.noApplicationDataInPeriod);
     });
 
     test('should display recent activity section', async ({ page }) => {
