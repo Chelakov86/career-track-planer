@@ -66,6 +66,7 @@ test.describe('Dashboard', () => {
         await page.getByRole('button', { name: 'EN', exact: true }).click();
         await expect(page.getByText(EN.dashboard.title)).toBeVisible();
         await expect(page.getByText(EN.dashboard.analyticsTitle)).toBeVisible();
+        await page.getByTestId('analytics-total-added').click();
         await expect(page.getByText(EN.dashboard.jobsInPeriod)).toBeVisible();
         await expect(page.getByTestId('analytics-period')).toHaveValue('last_8_weeks');
     });
@@ -100,12 +101,8 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
     });
 
-    test('should list a newly created Job Application with an Added badge', async ({ page, isMobile }) => {
+    test('should list a newly created Job Application when filtered and omit activity badges', async ({ page, isMobile }) => {
         test.skip(isMobile, 'The mutation flow is covered on the desktop dashboard path.');
-
-        await navigateTo(page, '/stats');
-        await expect(page.getByText(DE.dashboard.jobsInPeriod)).toBeVisible({ timeout: 10000 });
-        await expect(page.getByTestId('analytics-job-list')).toBeVisible({ timeout: 10000 });
 
         const company = `Analytics Job ${Date.now()}`;
         await navigateTo(page, '/');
@@ -116,9 +113,13 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
 
         await navigateTo(page, '/stats');
+        await page.getByTestId('analytics-total-added').click();
+        await expect(page.getByText(DE.dashboard.jobsInPeriod)).toBeVisible({ timeout: 10000 });
+        await expect(page.getByTestId('analytics-job-list')).toBeVisible({ timeout: 10000 });
+
         const row = page.getByTestId('analytics-job-row').filter({ hasText: company });
         await expect(row).toBeVisible({ timeout: 10000 });
-        await expect(row.getByTestId('analytics-badge-added')).toBeVisible();
+        await expect(row.getByTestId('analytics-badge-added')).toHaveCount(0);
 
         await navigateTo(page, '/');
         const board = page.locator('div.hidden.sm\\:block').first();
@@ -140,29 +141,26 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
 
         await navigateTo(page, '/stats');
+        await expect(page.getByTestId('analytics-jobs')).toHaveCount(0);
+
+        const addedCard = page.getByTestId('analytics-total-added');
+        const rejectedCard = page.getByTestId('analytics-total-rejected');
+
+        await addedCard.click();
+        await expect(addedCard).toHaveAttribute('aria-pressed', 'true');
         const row = page.getByTestId('analytics-job-row').filter({ hasText: company });
         await expect(row).toBeVisible({ timeout: 10000 });
 
-        const rejectedCard = page.getByTestId('analytics-total-rejected');
-        const addedCard = page.getByTestId('analytics-total-added');
-        await expect(addedCard).toHaveAttribute('aria-pressed', 'false');
-
-        // Filter to a type the created job does not have: the row disappears.
+        // Switch to rejected filter: job without rejection disappears
         await rejectedCard.click();
         await expect(rejectedCard).toHaveAttribute('aria-pressed', 'true');
         await expect(addedCard).toHaveAttribute('aria-pressed', 'false');
         await expect(row).toHaveCount(0);
 
-        // Click the active card again to clear the filter: the row returns.
+        // Click active card again to clear filter: list hides
         await rejectedCard.click();
         await expect(rejectedCard).toHaveAttribute('aria-pressed', 'false');
-        await expect(row).toBeVisible();
-
-        // Switch to a matching filter: the row stays visible under that filter.
-        await addedCard.click();
-        await expect(addedCard).toHaveAttribute('aria-pressed', 'true');
-        await expect(rejectedCard).toHaveAttribute('aria-pressed', 'false');
-        await expect(row).toBeVisible();
+        await expect(page.getByTestId('analytics-jobs')).toHaveCount(0);
 
         await navigateTo(page, '/');
         const board = page.locator('div.hidden.sm\\:block').first();
@@ -215,6 +213,7 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
 
         await navigateTo(page, '/stats');
+        await page.getByTestId('analytics-total-added').click();
         const row = page.getByTestId('analytics-job-row').filter({ hasText: company });
         await expect(row).toBeVisible({ timeout: 10000 });
 
@@ -253,6 +252,33 @@ test.describe('Dashboard', () => {
         const empty = page.getByTestId('analytics-job-list-empty');
         await expect(empty).toBeVisible({ timeout: 10000 });
         await expect(empty).toContainText(DE.dashboard.noApplicationDataInPeriod);
+    });
+
+    test('should allow toggling rejection depth cards and opening job details modal from rejection job list', async ({ page }) => {
+        await navigateTo(page, '/stats');
+        await expect(page.getByTestId('rejection-depth')).toBeVisible({ timeout: 10000 });
+
+        const zeroCard = page.getByTestId('rejection-depth-total-zero');
+        const oneCard = page.getByTestId('rejection-depth-total-one');
+
+        await expect(zeroCard).toHaveAttribute('aria-pressed', 'false');
+        await expect(oneCard).toHaveAttribute('aria-pressed', 'false');
+        await expect(page.getByTestId('rejection-depth-jobs')).toHaveCount(0);
+
+        // Click zero rounds card to toggle on
+        await zeroCard.click();
+        await expect(zeroCard).toHaveAttribute('aria-pressed', 'true');
+        await expect(page.getByTestId('rejection-depth-jobs')).toBeVisible({ timeout: 10000 });
+
+        // Switch to one round card
+        await oneCard.click();
+        await expect(oneCard).toHaveAttribute('aria-pressed', 'true');
+        await expect(zeroCard).toHaveAttribute('aria-pressed', 'false');
+
+        // Click active card again to deselect
+        await oneCard.click();
+        await expect(oneCard).toHaveAttribute('aria-pressed', 'false');
+        await expect(page.getByTestId('rejection-depth-jobs')).toHaveCount(0);
     });
 
     test('should display recent activity section', async ({ page }) => {

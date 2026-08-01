@@ -50,13 +50,14 @@ export const AnalyticsJobList: React.FC<AnalyticsJobListProps> = ({
   return (
     <ul className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar" data-testid="analytics-job-list">
       {visibleItems.map(item => {
+  const showBadges = !activeFilter;
         const allBadges: { type: ActivityType; count: number }[] = [
           { type: 'added', count: item.added },
           { type: 'applied', count: item.applied },
           { type: 'rejected', count: item.rejected },
           { type: 'interviews', count: item.interviews },
         ];
-        const badges = allBadges.filter(badge => badge.count > 0);
+        const badges = showBadges ? allBadges.filter(badge => badge.count > 0) : [];
 
         return (
           <li key={item.job.id}>
