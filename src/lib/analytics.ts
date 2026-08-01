@@ -279,6 +279,46 @@ export const computeRejectionDepth = (
   return depth;
 };
 
+export interface RejectionDepthJob {
+  job: JobApplication;
+  rejectionDate: string;
+  roundsReached: number;
+}
+
+export type RejectionDepthBucketKey = 'zero' | 'one' | 'two' | 'threePlus';
+
+export const listRejectionDepthJobs = (
+  events: ApplicationEvent[],
+  jobs: JobApplication[],
+  period: PeriodRange,
+  bucket: RejectionDepthBucketKey
+): RejectionDepthJob[] => {
+  const jobsById = new Map(jobs.map(job => [job.id, job]));
+  const results: RejectionDepthJob[] = [];
+
+  events.forEach(event => {
+    if (event.toStatus !== ApplicationStatus.REJECTED || !isInPeriod(event.occurredOn, period)) return;
+
+    const job = jobsById.get(event.jobId);
+    if (!job) return;
+
+    const roundsReached = job.interviewRounds?.filter(round => {
+      return isValidDateString(round.interviewDate) && round.interviewDate <= event.occurredOn;
+    }).length || 0;
+
+    let itemBucket: RejectionDepthBucketKey = 'zero';
+    if (roundsReached === 1) itemBucket = 'one';
+    else if (roundsReached === 2) itemBucket = 'two';
+    else if (roundsReached >= 3) itemBucket = 'threePlus';
+
+    if (itemBucket === bucket) {
+      results.push({ job, rejectionDate: event.occurredOn, roundsReached });
+    }
+  });
+
+  return results.sort((a, b) => b.rejectionDate.localeCompare(a.rejectionDate));
+};
+
 export const findEarliestDataDate = (
   events: ApplicationEvent[],
   jobs: JobApplication[]
