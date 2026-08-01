@@ -11,24 +11,6 @@ test.describe('Dashboard', () => {
         await expect(page.getByText(DE.dashboard.subtitle)).toBeVisible();
     });
 
-    test('should display stat cards', async ({ page }) => {
-        // Total Applications card
-        await expect(page.getByText(DE.dashboard.total)).toBeVisible({ timeout: 10000 });
-
-        // Active Pipeline card
-        await expect(page.getByText(DE.dashboard.active)).toBeVisible();
-
-        // Interviews card
-        await expect(page.getByText(DE.dashboard.interviews).first()).toBeVisible();
-    });
-
-    test('should display stat values as numbers', async ({ page }) => {
-        // Each stat card has an h3 with a number
-        const statValues = page.locator('h3.text-2xl');
-        await expect(statValues.first()).toBeVisible({ timeout: 10000 });
-        expect(await statValues.count()).toBeGreaterThanOrEqual(3);
-    });
-
     test('should display funnel chart section', async ({ page }) => {
         await expect(page.getByText(DE.dashboard.funnel)).toBeVisible({ timeout: 10000 });
     });
@@ -61,7 +43,6 @@ test.describe('Dashboard', () => {
         await period.selectOption('custom');
         await expect(page.getByLabel(DE.dashboard.from)).toBeVisible();
         await expect(page.getByLabel(DE.dashboard.to)).toBeVisible();
-        await expect(page.getByText(DE.dashboard.total)).toBeVisible();
         await expect(page.getByText(DE.dashboard.funnel)).toBeVisible();
         await expect(page.getByText(DE.dashboard.recentActivity)).toBeVisible();
     });

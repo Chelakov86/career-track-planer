@@ -9,7 +9,6 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
-import { Activity, Target, TrendingUp } from 'lucide-react';
 import { ApplicationEvent, ApplicationStatus, Grain, JobApplication, Language, PeriodPreset } from '../types';
 import { TRANSLATIONS } from '../constants';
 import {
@@ -80,18 +79,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
     return () => window.clearTimeout(timeout);
   }, [today]);
-
-  // Compute stats
-  const totalApps = jobs.length;
-  const interviews = jobs.filter(j => j.status === ApplicationStatus.INTERVIEW).length;
-  const active = jobs.filter(j => [ApplicationStatus.TO_APPLY, ApplicationStatus.APPLIED, ApplicationStatus.INTERVIEW].includes(j.status)).length;
-
-  const thisWeekCount = jobs.filter(j => {
-    const added = new Date(j.dateAdded);
-    const weekAgo = new Date();
-    weekAgo.setDate(weekAgo.getDate() - 7);
-    return added >= weekAgo;
-  }).length;
 
   // Data for Funnel Chart
   const funnelData = Object.values(ApplicationStatus).map(status => ({
@@ -208,39 +195,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{t.dashboard.title}</h2>
         <p className="text-gray-500 dark:text-gray-400 text-sm">{t.dashboard.subtitle}</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-gray-200 dark:border-slate-700 flex items-center gap-4 transition-colors">
-          <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400">
-            <Target className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{t.dashboard.total}</p>
-            <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{totalApps}</h3>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{thisWeekCount} {t.dashboard.thisWeek}</p>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-gray-200 dark:border-slate-700 flex items-center gap-4 transition-colors">
-          <div className="p-3 bg-green-50 dark:bg-green-900/30 rounded-lg text-green-600 dark:text-green-400">
-            <Activity className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{t.dashboard.active}</p>
-            <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{active}</h3>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{thisWeekCount} {t.dashboard.thisWeek}</p>
-          </div>
-        </div>
-        <div className="bg-white dark:bg-slate-800 p-6 rounded-lg border border-gray-200 dark:border-slate-700 flex items-center gap-4 transition-colors">
-          <div className="p-3 bg-purple-50 dark:bg-purple-900/30 rounded-lg text-purple-600 dark:text-purple-400">
-            <TrendingUp className="w-6 h-6" />
-          </div>
-          <div>
-            <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{t.dashboard.interviews}</p>
-            <h3 className="text-2xl font-bold text-gray-800 dark:text-white">{interviews}</h3>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{thisWeekCount} {t.dashboard.thisWeek}</p>
-          </div>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
