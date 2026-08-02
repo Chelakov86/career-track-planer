@@ -17,6 +17,8 @@ import {
   computeRejectionDepth,
   findEarliestDataDate,
   listJobActivities,
+  listRejectionDepthJobs,
+  RejectionDepthBucketKey,
   PeriodRange,
   resolvePeriod,
 } from '../lib/analytics';
@@ -68,6 +70,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const [customRange, setCustomRange] = useState<PeriodRange>(getInitialCustomRange);
   const [today, setToday] = useState(() => new Date());
   const [activityFilter, setActivityFilter] = useState<ActivityType | null>(null);
+  const [rejectionDepthFilter, setRejectionDepthFilter] = useState<RejectionDepthBucketKey | null>(null);
   const [viewingJob, setViewingJob] = useState<JobApplication | null>(null);
 
   useEffect(() => {
@@ -133,6 +136,12 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const jobActivities = useMemo(
     () => listJobActivities(events, jobs, analyticsPeriod),
     [events, jobs, analyticsPeriod.from, analyticsPeriod.to]
+  );
+  const filteredRejectionJobs = useMemo(
+    () => rejectionDepthFilter
+      ? listRejectionDepthJobs(events, jobs, analyticsPeriod, rejectionDepthFilter)
+      : [],
+    [events, jobs, analyticsPeriod.from, analyticsPeriod.to, rejectionDepthFilter]
   );
   const chartTextColor = theme === 'dark' ? '#94a3b8' : '#6b7280';
   const chartGridColor = theme === 'dark' ? '#334155' : '#e5e7eb';
@@ -361,18 +370,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
             )}
           </div>
 
-          <div className="mt-5 border-t border-gray-100 dark:border-slate-700 pt-4" data-testid="analytics-jobs">
-            <div className="flex items-center justify-between mb-3">
-              <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t.dashboard.jobsInPeriod}</h4>
-              <span className="text-xs text-gray-400 dark:text-gray-500">{jobActivities.length}</span>
+          {activityFilter && (
+            <div className="mt-5 border-t border-gray-100 dark:border-slate-700 pt-4" data-testid="analytics-jobs">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t.dashboard.jobsInPeriod}</h4>
+                <span className="text-xs text-gray-400 dark:text-gray-500">
+                  {jobActivities.filter(item => item[activityFilter] > 0).length}
+                </span>
+              </div>
+              <AnalyticsJobList
+                items={jobActivities}
+                activeFilter={activityFilter}
+                onSelectJob={setViewingJob}
+                language={language}
+              />
             </div>
-            <AnalyticsJobList
-              items={jobActivities}
-              activeFilter={activityFilter}
-              onSelectJob={setViewingJob}
-              language={language}
-            />
-          </div>
+          )}
         </section>
       </div>
 
@@ -385,17 +398,73 @@ export const Dashboard: React.FC<DashboardProps> = ({
               { key: 'one', label: t.dashboard.oneRound, value: rejectionDepth.one, color: 'text-indigo-600 dark:text-indigo-400' },
               { key: 'two', label: t.dashboard.twoRounds, value: rejectionDepth.two, color: 'text-purple-600 dark:text-purple-400' },
               { key: 'threePlus', label: t.dashboard.threePlusRounds, value: rejectionDepth.threePlus, color: 'text-red-600 dark:text-red-400' },
-            ].map(bucket => (
-              <div key={bucket.key} className="rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/40 p-3 text-center">
-                <p className="text-xs text-gray-500 dark:text-gray-400">{bucket.label}</p>
-                <p className={`text-2xl font-bold mt-1 ${bucket.color}`}>{bucket.value}</p>
-              </div>
-            ))}
+            ].map(bucket => {
+              const key = bucket.key as RejectionDepthBucketKey;
+              const isActive = rejectionDepthFilter === key;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  data-testid={`rejection-depth-total-${key}`}
+                  aria-pressed={isActive}
+                  onClick={() => setRejectionDepthFilter(isActive ? null : key)}
+                  className={`rounded-lg border p-3 text-center transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 ${
+                    isActive
+                      ? 'border-primary dark:border-primary bg-primary/10 dark:bg-primary/20 ring-1 ring-primary'
+                      : 'border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/40 hover:bg-gray-100 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{bucket.label}</p>
+                  <p className={`text-2xl font-bold mt-1 ${bucket.color}`}>{bucket.value}</p>
+                </button>
+              );
+            })}
           </div>
           {rejectionTotal === 0 && (
             <p className="text-sm text-gray-400 dark:text-gray-500 mt-4" data-testid="rejection-depth-empty">
               {t.dashboard.noRejectionsInPeriod}
             </p>
+          )}
+
+          {rejectionDepthFilter && (
+            <div className="mt-5 border-t border-gray-100 dark:border-slate-700 pt-4" data-testid="rejection-depth-jobs">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  {t.dashboard.jobsInPeriod}
+                </h4>
+                <span className="text-xs text-gray-400 dark:text-gray-500">{filteredRejectionJobs.length}</span>
+              </div>
+              {filteredRejectionJobs.length === 0 ? (
+                <p className="text-sm text-gray-400 dark:text-gray-500" data-testid="rejection-depth-jobs-empty">
+                  {t.dashboard.noApplicationDataInPeriod}
+                </p>
+              ) : (
+                <ul className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar" data-testid="rejection-depth-job-list">
+                  {filteredRejectionJobs.map(item => (
+                    <li key={`${item.job.id}-${item.rejectionDate}`}>
+                      <button
+                        type="button"
+                        data-testid="rejection-depth-job-row"
+                        onClick={() => setViewingJob(item.job)}
+                        className="w-full flex items-center gap-3 text-left p-2 rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-700/40 hover:border-primary/40 dark:hover:border-primary/40 hover:bg-white dark:hover:bg-slate-700 transition-colors"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
+                            {item.job.position}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            {item.job.company}
+                          </p>
+                        </div>
+                        <span className="text-xs text-gray-400 dark:text-gray-500 flex-shrink-0">
+                          {item.rejectionDate}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           )}
         </section>
 
