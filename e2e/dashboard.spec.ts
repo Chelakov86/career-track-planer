@@ -245,6 +245,7 @@ test.describe('Dashboard', () => {
 
     test('should show the job-list empty state for an invalid custom range', async ({ page }) => {
         await navigateTo(page, '/stats');
+        await page.getByTestId('analytics-total-added').click();
         await page.getByTestId('analytics-period').selectOption('custom');
         // Invalid range (to before from) resolves to an empty period deterministically.
         await page.getByLabel(DE.dashboard.from).fill('2026-01-10');
@@ -254,7 +255,18 @@ test.describe('Dashboard', () => {
         await expect(empty).toContainText(DE.dashboard.noApplicationDataInPeriod);
     });
 
-    test('should allow toggling rejection depth cards and opening job details modal from rejection job list', async ({ page }) => {
+    test('should allow toggling rejection depth cards and opening job details modal from rejection job list', async ({ page, isMobile }) => {
+        test.skip(isMobile, 'The mutation flow is covered on the desktop dashboard path.');
+
+        const company = `Rejection Depth Modal ${Date.now()}`;
+        await navigateTo(page, '/');
+        await page.getByRole('button', { name: DE.board.addJob }).click();
+        await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
+        await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Rejection Depth Test');
+        await page.getByRole('combobox').selectOption('REJECTED');
+        await page.getByRole('button', { name: DE.board.save }).click();
+        await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
+
         await navigateTo(page, '/stats');
         await expect(page.getByTestId('rejection-depth')).toBeVisible({ timeout: 10000 });
 
@@ -270,6 +282,17 @@ test.describe('Dashboard', () => {
         await expect(zeroCard).toHaveAttribute('aria-pressed', 'true');
         await expect(page.getByTestId('rejection-depth-jobs')).toBeVisible({ timeout: 10000 });
 
+        // Verify job row appears in rejection list and opens read-only JobModal when clicked
+        const row = page.getByTestId('rejection-depth-job-row').filter({ hasText: company });
+        await expect(row).toBeVisible({ timeout: 10000 });
+
+        const modal = page.locator('.fixed.inset-0');
+        await row.click();
+        await expect(modal.getByText(DE.board.viewJob)).toBeVisible({ timeout: 10000 });
+        await expect(modal.getByRole('button', { name: DE.board.edit })).toHaveCount(0);
+        await modal.getByRole('button', { name: DE.board.close }).click();
+        await expect(modal.getByText(DE.board.viewJob)).toHaveCount(0);
+
         // Switch to one round card
         await oneCard.click();
         await expect(oneCard).toHaveAttribute('aria-pressed', 'true');
@@ -279,6 +302,14 @@ test.describe('Dashboard', () => {
         await oneCard.click();
         await expect(oneCard).toHaveAttribute('aria-pressed', 'false');
         await expect(page.getByTestId('rejection-depth-jobs')).toHaveCount(0);
+
+        // Clean up created job
+        await navigateTo(page, '/');
+        const board = page.locator('div.hidden.sm\\:block').first();
+        const jobCard = board.locator('.job-card').filter({ hasText: company });
+        await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
+        await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
+        await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
     });
 
     test('should display recent activity section', async ({ page }) => {

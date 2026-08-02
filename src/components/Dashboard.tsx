@@ -393,20 +393,21 @@ export const Dashboard: React.FC<DashboardProps> = ({
         <section className="bg-white dark:bg-slate-800 p-4 md:p-6 rounded-lg border border-gray-200 dark:border-slate-700 min-h-[220px] transition-colors" data-testid="rejection-depth">
           <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">{t.dashboard.rejectionDepth}</h3>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {([
+            {[
               { key: 'zero', label: t.dashboard.zeroRounds, value: rejectionDepth.zero, color: 'text-slate-600 dark:text-slate-300' },
               { key: 'one', label: t.dashboard.oneRound, value: rejectionDepth.one, color: 'text-indigo-600 dark:text-indigo-400' },
               { key: 'two', label: t.dashboard.twoRounds, value: rejectionDepth.two, color: 'text-purple-600 dark:text-purple-400' },
               { key: 'threePlus', label: t.dashboard.threePlusRounds, value: rejectionDepth.threePlus, color: 'text-red-600 dark:text-red-400' },
-            ] as { key: RejectionDepthBucketKey; label: string; value: number; color: string }[]).map(bucket => {
-              const isActive = rejectionDepthFilter === bucket.key;
+            ].map(bucket => {
+              const key = bucket.key as RejectionDepthBucketKey;
+              const isActive = rejectionDepthFilter === key;
               return (
                 <button
-                  key={bucket.key}
+                  key={key}
                   type="button"
-                  data-testid={`rejection-depth-total-${bucket.key}`}
+                  data-testid={`rejection-depth-total-${key}`}
                   aria-pressed={isActive}
-                  onClick={() => setRejectionDepthFilter(isActive ? null : bucket.key)}
+                  onClick={() => setRejectionDepthFilter(isActive ? null : key)}
                   className={`rounded-lg border p-3 text-center transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 ${
                     isActive
                       ? 'border-primary dark:border-primary bg-primary/10 dark:bg-primary/20 ring-1 ring-primary'
