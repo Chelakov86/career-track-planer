@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-03T10:23:11+02:00",
+  "title": "Design System: CareerTrack Planer",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Signal Blue",
+        "canonical": "#135bec",
+        "tonalRamp": [
+          "oklch(18% 0.12 264)",
+          "oklch(28% 0.16 264)",
+          "oklch(38% 0.19 264)",
+          "oklch(48% 0.21 264)",
+          "oklch(58% 0.20 264)",
+          "oklch(70% 0.15 264)",
+          "oklch(82% 0.10 264)",
+          "oklch(94% 0.04 264)"
+        ]
+      },
+      "canvas-light": {
+        "role": "neutral",
+        "displayName": "Cool Paper",
+        "canonical": "#f6f6f8",
+        "tonalRamp": [
+          "oklch(15% 0.01 260)",
+          "oklch(25% 0.012 260)",
+          "oklch(38% 0.012 260)",
+          "oklch(52% 0.012 260)",
+          "oklch(66% 0.010 260)",
+          "oklch(78% 0.008 260)",
+          "oklch(89% 0.006 260)",
+          "oklch(97% 0.004 260)"
+        ]
+      },
+      "canvas-dark": {
+        "role": "neutral",
+        "displayName": "Night Slate",
+        "canonical": "#101622",
+        "tonalRamp": [
+          "oklch(13% 0.02 255)",
+          "oklch(19% 0.025 255)",
+          "oklch(27% 0.028 255)",
+          "oklch(36% 0.028 255)",
+          "oklch(48% 0.025 255)",
+          "oklch(62% 0.020 255)",
+          "oklch(76% 0.014 255)",
+          "oklch(90% 0.008 255)"
+        ]
+      },
+      "danger": {
+        "role": "tertiary",
+        "displayName": "Signal Red",
+        "canonical": "#dc2626",
+        "tonalRamp": [
+          "oklch(18% 0.10 27)",
+          "oklch(28% 0.14 27)",
+          "oklch(38% 0.17 27)",
+          "oklch(48% 0.19 27)",
+          "oklch(58% 0.19 27)",
+          "oklch(70% 0.15 27)",
+          "oklch(82% 0.10 27)",
+          "oklch(94% 0.04 27)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Authentication title only — the largest text in the product." },
+      "headline": { "displayName": "Headline", "purpose": "Sidebar brand and page-level titles." },
+      "title": { "displayName": "Title", "purpose": "Card titles, job positions, section names." },
+      "body": { "displayName": "Body", "purpose": "Default UI text: nav labels, inputs, buttons, descriptions." },
+      "label": { "displayName": "Label", "purpose": "Meta lines, timestamps, pills, helper text." },
+      "micro": { "displayName": "Micro", "purpose": "Uppercase fact-tags only: salary, remote, status counts." }
+    },
+    "shadows": [
+      { "name": "rest", "value": "0 1px 2px 0 rgba(0,0,0,0.05)", "purpose": "Cards, buttons, and sidebar chips at rest." },
+      { "name": "hover", "value": "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1)", "purpose": "Cards under the pointer; login submit button." },
+      { "name": "overlay", "value": "0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)", "purpose": "Modals and dropdown menus." },
+      { "name": "airborne", "value": "0 25px 50px -12px rgba(0,0,0,0.25)", "purpose": "Dragged card ghost and the glass FAB." },
+      { "name": "backdrop", "value": "background rgba(0,0,0,0.2) + blur(4px); dark: rgba(0,0,0,0.5)", "purpose": "Modal scrim behind overlays." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.4, 0, 0.2, 1)", "purpose": "Default easing (Tailwind transition-in-out) for color, shadow, and transform states." },
+      { "name": "duration-fast", "value": "150ms", "purpose": "Hover tints, pill state changes, icon reveals." },
+      { "name": "duration-base", "value": "300ms", "purpose": "Sidebar slide-over, filter panel collapse, card expansion." },
+      { "name": "fab-press", "value": "scale(1.05) hover / scale(0.95) active", "purpose": "Glass FAB tactile feedback." },
+      { "name": "drag-ghost", "value": "rotate(3deg) + ring 2px primary + opacity 0.9", "purpose": "Card lifted for drag-and-drop." },
+      { "name": "fade-in", "value": "opacity 0 -> 1 (animate-fadeIn)", "purpose": "Page, modal, and panel entrances." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" },
+      { "name": "2xl", "value": "1536px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one filled action per region. Signal Blue fill, white label.",
+      "html": "<button class=\"ds-btn-primary\">Save changes</button>",
+      "css": ".ds-btn-primary { background: #135bec; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; line-height: 1.5; padding: 8px 16px; border: none; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); cursor: pointer; transition: background-color 150ms cubic-bezier(0.4,0,0.2,1), box-shadow 150ms; } .ds-btn-primary:hover { background: #1d4ed8; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px rgba(19,91,236,0.5); } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Hairline-bordered neutral action; tints on hover.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { background: #ffffff; color: #374151; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; line-height: 1.5; padding: 8px 16px; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: background-color 150ms cubic-bezier(0.4,0,0.2,1), border-color 150ms; } .ds-btn-secondary:hover { background: #f9fafb; border-color: #d1d5db; } .ds-btn-secondary:focus-visible { outline: none; box-shadow: 0 0 0 2px rgba(19,91,236,0.5); }"
+    },
+    {
+      "name": "Danger Button",
+      "kind": "button",
+      "refersTo": "button-danger",
+      "description": "Destructive confirmation action; the only red fill allowed.",
+      "html": "<button class=\"ds-btn-danger\">Delete</button>",
+      "css": ".ds-btn-danger { background: #dc2626; color: #ffffff; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; line-height: 1.5; padding: 8px 16px; border: none; border-radius: 8px; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); cursor: pointer; transition: background-color 150ms cubic-bezier(0.4,0,0.2,1); } .ds-btn-danger:hover { background: #b91c1c; } .ds-btn-danger:focus-visible { outline: none; box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px rgba(220,38,38,0.4); }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input-text",
+      "description": "Form field with Signal Blue focus ring and transparent border on focus.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"e.g. Frontend Engineer\" />",
+      "css": ".ds-input { width: 100%; box-sizing: border-box; background: #ffffff; color: #111827; font-family: 'Inter', sans-serif; font-size: 14px; line-height: 1.5; padding: 8px 12px; border: 1px solid #d1d5db; border-radius: 8px; outline: none; transition: border-color 150ms cubic-bezier(0.4,0,0.2,1), box-shadow 150ms; } .ds-input::placeholder { color: #9ca3af; } .ds-input:focus { border-color: transparent; box-shadow: 0 0 0 2px rgba(19,91,236,0.5); }"
+    },
+    {
+      "name": "Job Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The log entry: avatar, position, company line, fact-tags, status accent. Lifts on hover.",
+      "html": "<div class=\"ds-jobcard\"><div class=\"ds-jobcard-top\"><div class=\"ds-avatar\">T</div><span class=\"ds-tag-remote\">REMOTE</span></div><h3 class=\"ds-jobcard-title\">Senior Frontend Engineer</h3><p class=\"ds-jobcard-company\">TechCorp GmbH &middot; Berlin</p><div class=\"ds-jobcard-tags\"><span class=\"ds-tag-salary\">&euro;85,000</span></div></div>",
+      "css": ".ds-jobcard { background: #ffffff; border: 1px solid #e2e8f0; border-left: 4px solid #135bec; border-radius: 12px; padding: 12px; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); font-family: 'Inter', sans-serif; transition: box-shadow 150ms cubic-bezier(0.4,0,0.2,1); max-width: 320px; cursor: grab; } .ds-jobcard:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); } .ds-jobcard-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; } .ds-avatar { width: 32px; height: 32px; border-radius: 8px; background: #3b82f6; border: 1px solid #60a5fa; color: #ffffff; font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; } .ds-jobcard-title { margin: 0 0 4px; font-size: 14px; font-weight: 700; color: #0f172a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-jobcard-company { margin: 0 0 8px; font-size: 14px; color: #64748b; } .ds-jobcard-tags { display: flex; gap: 8px; flex-wrap: wrap; } .ds-tag-salary { background: #ecfdf5; color: #059669; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; } .ds-tag-remote { background: rgba(19,91,236,0.1); color: #135bec; font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(19,91,236,0.2); }"
+    },
+    {
+      "name": "Nav Item (Active)",
+      "kind": "nav",
+      "refersTo": "nav-item-active",
+      "description": "Sidebar navigation row; active state is a primary tint, idle rows tint neutral on hover.",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav-item ds-nav-item-active\" href=\"#\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect width=\"7\" height=\"9\" x=\"3\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"5\" x=\"14\" y=\"3\" rx=\"1\"/><rect width=\"7\" height=\"9\" x=\"14\" y=\"12\" rx=\"1\"/><rect width=\"7\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\"/></svg>Board</a><a class=\"ds-nav-item\" href=\"#\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"12\" cy=\"12\" r=\"10\"/><polyline points=\"12 6 12 12 16 14\"/></svg>Timeline</a></nav>",
+      "css": ".ds-nav { display: flex; flex-direction: column; gap: 8px; font-family: 'Inter', sans-serif; padding: 8px; } .ds-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; font-size: 14px; font-weight: 500; color: #4b5563; text-decoration: none; border-radius: 8px; transition: background-color 150ms cubic-bezier(0.4,0,0.2,1), color 150ms; } .ds-nav-item:hover { background: #f9fafb; } .ds-nav-item-active { background: rgba(19,91,236,0.1); color: #135bec; } .ds-nav-item-active:hover { background: rgba(19,91,236,0.15); }"
+    },
+    {
+      "name": "Status Pill",
+      "kind": "chip",
+      "refersTo": "pill-status",
+      "description": "Classification language: tinted background from the closed status set with darker same-family text.",
+      "html": "<div class=\"ds-pills\"><span class=\"ds-pill ds-pill-interview\">Interview</span><span class=\"ds-pill ds-pill-offer\">Offer</span><span class=\"ds-pill ds-pill-rejected\">Rejected</span><span class=\"ds-pill ds-pill-awaiting\">Awaiting Feedback</span></div>",
+      "css": ".ds-pills { display: flex; gap: 8px; flex-wrap: wrap; font-family: 'Inter', sans-serif; } .ds-pill { display: inline-flex; align-items: center; padding: 2px 10px; font-size: 12px; font-weight: 500; border-radius: 9999px; border: 1px solid transparent; } .ds-pill-interview { background: #faf5ff; color: #7e22ce; border-color: #e9d5ff; } .ds-pill-offer { background: #f0fdf4; color: #15803d; border-color: #bbf7d0; } .ds-pill-rejected { background: #fef2f2; color: #b91c1c; border-color: #fecaca; } .ds-pill-awaiting { background: #fefce8; color: #a16207; border-color: #fde68a; }"
+    },
+    {
+      "name": "Glass FAB",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Mobile-only floating add button: frosted Signal Blue, the single expressive object in the system.",
+      "html": "<button class=\"ds-fab\"><span class=\"ds-fab-badge\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\"><path d=\"M5 12h14\"/><path d=\"M12 5v14\"/></svg></span>New Application</button>",
+      "css": ".ds-fab { display: inline-flex; align-items: center; gap: 12px; padding: 16px 24px 16px 16px; background: rgba(19,91,236,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); color: #ffffff; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; border: none; border-radius: 9999px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); cursor: pointer; transition: transform 150ms cubic-bezier(0.4,0,0.2,1); } .ds-fab:hover { transform: scale(1.05); } .ds-fab:active { transform: scale(0.95); } .ds-fab-badge { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 9999px; background: rgba(255,255,255,0.2); transition: background-color 150ms; } .ds-fab:hover .ds-fab-badge { background: rgba(255,255,255,0.3); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Mission Log",
+    "overview": "CareerTrack Planer reads like the flight log of a job search: every application recorded, every transition entered once and never rewritten, every view a calm instrument panel reporting the facts. The system keeps its voice down so the record can speak. One committed blue — Signal Blue — carries every action, active state, and focus signal; everything else is neutral canvas, hairline borders, and small tinted pills that classify without shouting.\n\nDensity is honest and scannable: compact cards, 14px UI text, uppercase micro-tags for the facts that matter at a glance. Surfaces are flat at rest and separated by borders, not blur or gradient. Depth arrives only as a consequence of interaction — a hovered card lifts, a dragged card tilts and casts a heavy shadow, the floating action button glows through frosted glass. Dark mode is not an inversion but a second uniform: Night Slate canvas, slate surfaces, the same Signal Blue.",
+    "keyCharacteristics": [
+      "One accent (Signal Blue #135bec) over neutral light/dark canvases; all other hue is semantic status.",
+      "Inter only, weights 300–700; hierarchy by weight and size, never by font family.",
+      "Flat-by-default surfaces with hairline borders; shadows escalate only with state.",
+      "Gently curved corners: 8px controls, 12px cards, pills fully round.",
+      "Status communicated by tinted pills and 4px left-edge accents.",
+      "Bilingual EN/DE, dark mode, and responsive behavior on every component."
+    ],
+    "rules": [
+      { "name": "The One Signal Rule", "body": "Signal Blue is reserved for action, activation, and focus. If blue is present, the user can act there. Decorative blue is forbidden — use neutrals.", "section": "colors" },
+      { "name": "The Closed Status Set Rule", "body": "Status hue comes only from the six semantic families: gray Research, blue To Apply, amber Applied/Awaiting, purple Interview, green Offer/Completed, red Rejected/Danger. New features classify into the existing set rather than introducing new hues.", "section": "colors" },
+      { "name": "The Inter-Only Rule", "body": "No second family, no display serif, no monospace accent. Weight does all the talking.", "section": "typography" },
+      { "name": "The 14px Floor Rule", "body": "Readable UI text never drops below 12px; 10px and 9px sizes exist only for uppercase micro-tags that carry one fact each.", "section": "typography" },
+      { "name": "The Depth Means State Rule", "body": "A surface at rest never exceeds shadow-sm. If a shadow is heavier, the user must be able to answer why: hovering, dragging, or an overlay is open.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do add dark-mode variants and both EN/DE strings for every new component — they are standing requirements, not follow-ups.",
+      "Do keep surfaces flat at rest with hairline borders; reach for border before shadow.",
+      "Do use the tinted-pill pattern (50/900 background, 600/300 text) for any new status or category.",
+      "Do use focus:ring-2 ring-primary/50 focus treatment on all interactive controls.",
+      "Do give immediate optimistic feedback for user actions, with rollback on error.",
+      "Do keep Signal Blue for action and state only — its rarity is the point."
+    ],
+    "donts": [
+      "Don't introduce gradients, glassmorphism (except the FAB), or heavy shadows on resting surfaces.",
+      "Don't add new accent hues; classify into the closed status set.",
+      "Don't use filled background colors for board columns — columns stay transparent over the canvas.",
+      "Don't mix radii: 8px controls, 12px cards, pills round; 16px belongs to empty-state silhouettes only.",
+      "Don't use uppercase + tracking anywhere except micro fact-tags.",
+      "Don't ship a component that works in only one theme or one language."
+    ]
+  }
+}
