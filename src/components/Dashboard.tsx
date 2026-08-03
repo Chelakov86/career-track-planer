@@ -214,7 +214,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     <div className="space-y-6 animate-fadeIn">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{t.dashboard.title}</h2>
-        <p className="text-gray-500 dark:text-gray-400 text-sm">{t.dashboard.subtitle}</p>
+        <p className="text-gray-600 dark:text-gray-400 text-sm">{t.dashboard.subtitle}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -284,7 +284,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 </div>
               )}
 
-              <div role="group" aria-label={t.dashboard.grain} className="flex rounded-lg border border-gray-200 dark:border-slate-600 p-1 self-start xl:self-end">
+              <div role="group" aria-label={t.dashboard.grain} className="flex rounded-lg bg-gray-100 dark:bg-slate-700/40 p-1 self-start xl:self-end">
                 {GRAINS.map(option => (
                   <button
                     key={option}

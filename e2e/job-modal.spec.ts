@@ -26,9 +26,9 @@ test.describe('Job Modal - CRUD Operations', () => {
     async function ensureCardsVisible(page: import('@playwright/test').Page, isMobile: boolean) {
         if (isMobile) {
             const board = visibleBoard(page, isMobile);
-            // Click all collapsed accordion sections
+            // Click all collapsed accordion sections (empty columns are hidden on mobile)
             for (let i = 0; i < 6; i++) {
-                const collapsed = board.locator('button[aria-expanded="false"]').first();
+                const collapsed = board.locator('button[aria-expanded="false"]:visible').first();
                 if (await collapsed.count() > 0) {
                     await collapsed.click();
                     await page.waitForTimeout(300);

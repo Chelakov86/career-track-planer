@@ -229,7 +229,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{t.timeline.title}</h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
               {t.timeline.eventCount.replace('{count}', String(filteredEvents.length))}
             </p>
           </div>

@@ -101,7 +101,7 @@ test.describe('JobCard Responsive Behavior', () => {
 
         await expect(tag).toBeVisible();
         const className = await tag.getAttribute('class');
-        expect(className).toContain('text-[10px]');
+        expect(className).toContain('text-[11px]');
     });
 });
 

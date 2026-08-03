@@ -48,7 +48,7 @@ typography:
     lineHeight: 1.4
   micro:
     fontFamily: "Inter, sans-serif"
-    fontSize: "0.625rem"
+    fontSize: "0.6875rem"
     fontWeight: 700
     letterSpacing: "0.05em"
 rounded:
@@ -138,7 +138,7 @@ A near-monochrome working palette with a single committed accent and a closed se
 
 ### Semantic Status (closed set)
 - Gray = Research, Blue = To Apply, Yellow/Amber = Applied/Awaiting, Purple = Interview, Green/Emerald = Offer/Completed, Red = Rejected/Danger. Each appears as a tinted pill (bg *-50 light / *-900 at 20–40% dark, text *-600|700 light / *-300|400 dark) with an optional matching border. Card left-edge accents use primary (Applied), amber-400 (Interview), emerald-500 (Offer).
-- **Company Avatars** use a fixed hash palette of eight 500-level hues (blue, emerald, purple, orange, pink, teal, cyan, rose) with a one-step-lighter border; assignment by first character of company name, stable per company.
+- **Company Avatars** use a fixed hash palette of eight 700-level hues (blue, emerald, purple, orange, pink, teal, cyan, rose) with a 600-level border — deep enough that the white letter holds AA contrast — assignment by first character of company name, stable per company.
 
 ### Named Rules
 **The One Signal Rule.** Signal Blue is reserved for action, activation, and focus. If blue is present, the user can act there. Decorative blue is forbidden — use neutrals.
@@ -156,11 +156,11 @@ A near-monochrome working palette with a single committed accent and a closed se
 - **Title** (700, 14px, 1.4): card titles, job positions, section names.
 - **Body** (400–500, 14px, 1.5): default UI text — nav labels, inputs, buttons, descriptions.
 - **Label** (500, 12px, 1.4): meta lines, timestamps, pills, helper text.
-- **Micro** (700, 10px, tracking 0.05em, UPPERCASE): fact tags — salary, remote, status counts. The only place uppercase tracking belongs.
+- **Micro** (700, 11px, tracking 0.05em, UPPERCASE): fact tags — salary, remote, status counts. The only place uppercase tracking belongs.
 
 ### Named Rules
 **The Inter-Only Rule.** No second family, no display serif, no monospace accent. Weight does all the talking.
-**The 14px Floor Rule.** Readable UI text never drops below 12px; 10px and 9px sizes exist only for uppercase micro-tags that carry one fact each.
+**The 14px Floor Rule.** Readable UI text never drops below 12px; 11px exists only for uppercase micro-tags that carry one fact each.
 
 ## Layout
 

@@ -632,9 +632,9 @@ export const STATUS_COUNT_COLORS: Record<ApplicationStatus, string> = {
   [ApplicationStatus.RESEARCH]: 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
   [ApplicationStatus.TO_APPLY]: 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
   [ApplicationStatus.APPLIED]: 'bg-primary/20 text-primary dark:border dark:border-primary/30',
-  [ApplicationStatus.INTERVIEW]: 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400',
-  [ApplicationStatus.OFFER]: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400',
-  [ApplicationStatus.REJECTED]: 'bg-slate-200 dark:bg-slate-800 text-slate-500',
+  [ApplicationStatus.INTERVIEW]: 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400',
+  [ApplicationStatus.OFFER]: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400',
+  [ApplicationStatus.REJECTED]: 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
 };
 
 export const INTERVIEW_ROUND_STATUS_COLORS: Record<InterviewRoundStatus, string> = {

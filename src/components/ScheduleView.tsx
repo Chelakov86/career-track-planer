@@ -96,7 +96,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, language }
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{t.schedule.title}</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">{t.schedule.subtitle}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">{t.schedule.subtitle}</p>
         </div>
         <button
           onClick={handleExportCalendar}
@@ -114,7 +114,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, language }
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {block.startTime} - {block.endTime}
                   </span>
                   <span className={`text-xs px-2 py-1 rounded-full border ${
@@ -130,7 +130,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, language }
                   <CategoryIcon category={block.category} />
                   {block.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{block.description}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed max-w-prose">{block.description}</p>
 
                 {advice[block.id] && advice[block.id].error && (
                   <div

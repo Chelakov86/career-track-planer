@@ -938,7 +938,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">{t.board.title}</h1>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">{t.board.subtitle}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">{t.board.subtitle}</p>
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -1188,7 +1188,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
         {/* Filters bar (desktop) */}
         <div
-          className={`hidden sm:flex bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex-col overflow-hidden transition-all duration-300 ${showFilters ? 'p-4 opacity-100' : 'h-0 p-0 opacity-0 border-none'
+          className={`hidden sm:flex rounded-xl border flex-col overflow-hidden transition-all duration-300 ${showFilters
+            ? 'p-4 bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 shadow-sm opacity-100'
+            : 'h-0 opacity-0 border-transparent bg-transparent'
             }`}
         >
           {filtersPanelContent}
@@ -1220,7 +1222,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       {/* Unified board (horizontal columns on desktop, stacked accordion on mobile) */}
       <div
         data-testid="job-board"
-        className={`relative flex-1 sm:overflow-x-auto sm:overflow-y-hidden pb-4 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
+        className={`relative flex-1 sm:overflow-x-auto sm:overflow-y-hidden pb-4 sm:px-2 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
         ref={scrollContainerRef}
         onScroll={updateScrollFades}
         onDragOver={handleContainerDragOver} // Track drag over globally in container
@@ -1245,7 +1247,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 }`}
               >
                 <span>{t.board.status[status]}</span>
-                <span className={`px-1.5 py-0.2 text-[10px] rounded-full font-bold ${
+                <span className={`px-1.5 py-0.2 text-[11px] rounded-full font-bold ${
                   isActive ? 'bg-white/20 text-white' : STATUS_COUNT_COLORS[status]
                 }`}>
                   {statusCounts[status]}
@@ -1276,7 +1278,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 onDragLeave={handleDragLeave}
                 className={`flex-1 flex flex-col min-w-[220px] md:min-w-[240px] 2xl:min-w-[250px] transition-all duration-200 ${dragOverColumn === status
                   ? 'bg-primary/5 dark:bg-primary/10 rounded-xl border-2 border-dashed border-primary/40 sm:scale-[1.01]'
-                  : 'sm:bg-transparent sm:border-0 rounded-xl border border-slate-200 dark:border-slate-800'
+                  : ''
                   } ${statusCounts[status] === 0 && visibleJobs.length > 0 ? 'max-sm:hidden' : ''}`}
               >
                 {/* Mobile accordion header */}
@@ -1295,7 +1297,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 </button>
 
                 {/* Desktop column header */}
-                <div className="hidden sm:flex items-center justify-between mb-4 sticky top-0 bg-background-light/80 dark:bg-background-dark/90 backdrop-blur-sm py-2 z-10">
+                <div className="hidden sm:flex items-center justify-between mb-4 sticky top-0 bg-background-light/80 dark:bg-background-dark/90 backdrop-blur-sm py-2 px-2 z-10">
                   <h2 className="font-bold text-lg flex items-center gap-2 text-slate-900 dark:text-slate-100">
                     {t.board.status[status]}
                     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_COUNT_COLORS[status]}`}>

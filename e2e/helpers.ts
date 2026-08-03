@@ -12,6 +12,7 @@ export const DE = {
         emailPlaceholder: 'E-Mail-Adresse eingeben',
         securedBy: 'Gesichert durch Supabase Auth',
         footer: 'Geschützt durch CareerTrack Security',
+        languageLabel: 'Sprache',
     },
     nav: {
         board: 'Bewerbungen',

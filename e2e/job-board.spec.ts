@@ -43,13 +43,13 @@ test.describe('Job Board', () => {
         const filterButton = page.getByTitle(DE.board.filter).first();
         if (isMobile) {
             // On mobile the filter sheet only exists in the DOM once opened
-            await expect(page.locator('button.rounded-full:visible').filter({ hasText: 'Recherche' })).toHaveCount(0);
+            await expect(page.locator('.fixed.inset-0 button.rounded-full:visible').filter({ hasText: 'Recherche' })).toHaveCount(0);
             await filterButton.click();
-            await expect(page.locator('button.rounded-full:visible').filter({ hasText: 'Recherche' })).toHaveCount(1);
+            await expect(page.locator('.fixed.inset-0 button.rounded-full:visible').filter({ hasText: 'Recherche' })).toHaveCount(1);
             await page.keyboard.press('Escape');
         } else {
             // On desktop the panel is always in the DOM; collapsed it has zero height
-            const panel = page.locator('div.hidden.sm\\:flex.bg-white.rounded-xl').first();
+            const panel = page.locator('div.hidden.sm\\:flex.rounded-xl.flex-col').first();
             expect(await panel.evaluate((el) => el.getBoundingClientRect().height)).toBeLessThan(5);
             await filterButton.click();
             await expect
