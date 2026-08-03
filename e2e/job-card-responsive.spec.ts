@@ -8,15 +8,9 @@ test.describe('JobCard Responsive Behavior', () => {
         await expect(page.getByText(DE.board.title)).toBeVisible({ timeout: 10000 });
     });
 
-    /** Helper to get the visible board section depending on viewport */
+    /** Helper to get the board container (single responsive board) */
     function visibleBoard(page: import('@playwright/test').Page) {
-        // If width < 640px (sm), it's mobile
-        const viewport = page.viewportSize();
-        if (viewport && viewport.width < 640) {
-            return page.locator('div.sm\\:hidden').first();
-        } else {
-            return page.locator('div.hidden.sm\\:block').first();
-        }
+        return page.locator('div.flex-1.overflow-x-auto').first();
     }
 
     /** Helper to ensure cards are visible — expand accordion sections on mobile */

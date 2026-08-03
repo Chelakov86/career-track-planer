@@ -94,7 +94,7 @@ test.describe('Dashboard', () => {
         ).toBeGreaterThanOrEqual(initialCount + 1);
 
         await navigateTo(page, '/');
-        const board = page.locator('div.hidden.sm\\:block').first();
+        const board = page.locator('div.flex-1.overflow-x-auto').first();
         const jobCard = board.locator('.job-card').filter({ hasText: company });
         await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
         await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
@@ -122,7 +122,7 @@ test.describe('Dashboard', () => {
         await expect(row.getByTestId('analytics-badge-added')).toHaveCount(0);
 
         await navigateTo(page, '/');
-        const board = page.locator('div.hidden.sm\\:block').first();
+        const board = page.locator('div.flex-1.overflow-x-auto').first();
         const jobCard = board.locator('.job-card').filter({ hasText: company });
         await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
         await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
@@ -163,7 +163,7 @@ test.describe('Dashboard', () => {
         await expect(page.getByTestId('analytics-jobs')).toHaveCount(0);
 
         await navigateTo(page, '/');
-        const board = page.locator('div.hidden.sm\\:block').first();
+        const board = page.locator('div.flex-1.overflow-x-auto').first();
         const jobCard = board.locator('.job-card').filter({ hasText: company });
         await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
         await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
@@ -236,7 +236,7 @@ test.describe('Dashboard', () => {
         await expect(modal.getByText(DE.board.viewJob)).toHaveCount(0);
 
         await navigateTo(page, '/');
-        const board = page.locator('div.hidden.sm\\:block').first();
+        const board = page.locator('div.flex-1.overflow-x-auto').first();
         const jobCard = board.locator('.job-card').filter({ hasText: company });
         await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
         await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
@@ -305,7 +305,7 @@ test.describe('Dashboard', () => {
 
         // Clean up created job
         await navigateTo(page, '/');
-        const board = page.locator('div.hidden.sm\\:block').first();
+        const board = page.locator('div.flex-1.overflow-x-auto').first();
         const jobCard = board.locator('.job-card').filter({ hasText: company });
         await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
         await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();

@@ -146,7 +146,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                                 e.stopPropagation();
                                 onEdit(job);
                             }}
-                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-primary p-1 rounded transition-all"
+                            className="card-actions text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary p-2 -m-1 sm:p-1 sm:m-0 rounded-lg sm:rounded transition-all"
                             title={t.board.editJob}
                             aria-label={t.board.editJob}
                         >
@@ -157,7 +157,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                                 e.stopPropagation();
                                 onDelete(job);
                             }}
-                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-500 p-1 rounded transition-all"
+                            className="card-actions text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-2 -m-1 sm:p-1 sm:m-0 rounded-lg sm:rounded transition-all"
                             title={t.board.confirmDelete || 'Delete'}
                             aria-label={t.board.confirmDelete || 'Delete'}
                         >
@@ -288,7 +288,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                             e.stopPropagation();
                             onNextStatus(job);
                         }}
-                        className="p-1 rounded-full hover:bg-primary/10 dark:hover:bg-slate-700 text-slate-400 dark:text-slate-500 hover:text-primary dark:hover:text-primary transition-colors"
+                        className="p-2 -m-1 sm:p-1 sm:m-0 rounded-full hover:bg-primary/10 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors"
                         title={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
                         aria-label={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
                     >

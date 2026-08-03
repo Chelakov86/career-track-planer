@@ -1055,144 +1055,97 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         </div>
       )}
 
-      {/* Desktop board */}
+      {/* Unified board (horizontal columns on desktop, stacked accordion on mobile) */}
       <div
-        className={`hidden sm:block flex-1 overflow-x-auto overflow-y-hidden pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
+        className={`flex-1 overflow-x-auto sm:overflow-y-hidden pb-4 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
         ref={scrollContainerRef}
         onDragOver={handleContainerDragOver} // Track drag over globally in container
       >
-        <div className="flex gap-4 min-w-full h-full pb-2">
-          {columnsForDesktop.map(status => (
-            <div
-              key={status}
-              data-column-id={status}
-              onDragOver={(e) => handleDragOver(e, status)}
-              onDrop={(e) => handleDrop(e, status)}
-              onDragLeave={handleDragLeave}
-              className={`flex-1 flex flex-col min-w-[260px] md:min-w-[280px] 2xl:min-w-[300px] 2xl:min-w-0 transition-all duration-200 ${dragOverColumn === status
-                ? 'bg-primary/5 dark:bg-primary/10 rounded-xl border-2 border-dashed border-primary/40 scale-[1.01]'
-                : ''
-                } ${status === ApplicationStatus.REJECTED ? 'opacity-60 grayscale-[0.5] dark:opacity-50 dark:grayscale-[0.3]' : ''}`}
-            >
-              <div className="flex items-center justify-between mb-4 sticky top-0 bg-[#f6f6f8]/80 dark:bg-[#101622]/90 backdrop-blur-sm py-2 z-10">
-                <h2 className="font-bold text-lg flex items-center gap-2 text-slate-900 dark:text-slate-100">
-                  {t.board.status[status]}
-                  <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_COUNT_COLORS[status]}`}>
-                    {statusCounts[status]}
-                  </span>
-                </h2>
-              </div>
-
-              <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar p-2">
-                {jobsByStatus[status].length === 0 && !dragOverColumn ? (
-                  <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-8 opacity-50 dark:opacity-40">
-                    <div className="w-16 h-16 bg-slate-200 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 dark:border dark:border-slate-800">
-                      <SearchX className="w-8 h-8 text-slate-400 dark:text-slate-600" />
-                    </div>
-                    <p className="text-sm font-medium text-slate-400 dark:text-slate-500 text-center">{t.board.emptyColumns[status]}</p>
-                  </div>
-                ) : (
-                  <>
-                    {jobsByStatus[status].map(job => (
-                      <JobCard
-                        key={job.id}
-                        job={job}
-                        language={language}
-                        draggedItemId={draggedItemId}
-                        onView={openViewModal}
-                        onEdit={openEditModal}
-                        onDelete={handleDeleteRequest}
-                        onNextStatus={getNextStatus(job.status) ? handleNextStatus : undefined}
-                        nextStatusLabel={(() => {
-                          const next = getNextStatus(job.status);
-                          return next ? t.board.status[next] : undefined;
-                        })()}
-                        onDragStart={handleDragStart}
-                        onDragEnd={handleDragEnd}
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                      />
-                    ))}
-                    {/* Visual Placeholder for drop zone */}
-                    {dragOverColumn === status && (
-                      <div className="h-24 rounded-lg border-2 border-dashed border-primary/30 dark:border-primary/30 bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary text-xs font-medium animate-pulse">
-                        Drop Here
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Mobile board (stacked) */}
-      < div
-        className={`sm:hidden flex-1 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
-      >
-        <div className="flex flex-col gap-3 pb-28">
-          {columns.map(status => (
-            <div
-              key={status}
-              data-column-id={status}
-              onDragOver={(e) => handleDragOver(e, status)}
-              onDrop={(e) => handleDrop(e, status)}
-              onDragLeave={handleDragLeave}
-              className={`rounded-xl border transition-all ${dragOverColumn === status
-                ? 'bg-primary/10 dark:bg-primary/20 border-primary/40 border-dashed'
-                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
-                } ${status === ApplicationStatus.REJECTED ? 'opacity-60' : ''}`}
-            >
-              <button
-                onClick={() => toggleMobileStatus(status)}
-                className="column-accordion-button w-full flex items-center justify-between px-3 py-2 text-sm font-semibold"
-                aria-expanded={mobileOpenStatuses.includes(status)}
+        <div className="flex flex-col sm:flex-row gap-4 min-w-full pb-28 sm:h-full sm:pb-2">
+          {columnsForDesktop.map(status => {
+            const isOpen = mobileOpenStatuses.includes(status);
+            return (
+              <section
+                key={status}
+                data-column-id={status}
+                onDragOver={(e) => handleDragOver(e, status)}
+                onDrop={(e) => handleDrop(e, status)}
+                onDragLeave={handleDragLeave}
+                className={`flex-1 flex flex-col min-w-[260px] md:min-w-[280px] 2xl:min-w-[300px] 2xl:min-w-0 transition-all duration-200 ${dragOverColumn === status
+                  ? 'bg-primary/5 dark:bg-primary/10 rounded-xl border-2 border-dashed border-primary/40 sm:scale-[1.01]'
+                  : 'sm:bg-transparent sm:border-0 rounded-xl border border-slate-200 dark:border-slate-800'
+                  } ${status === ApplicationStatus.REJECTED ? 'opacity-60 grayscale-[0.5] dark:opacity-50 dark:grayscale-[0.3]' : ''}`}
               >
-                <span className="text-slate-700 dark:text-slate-200">{t.board.status[status]}</span>
-                <span className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COUNT_COLORS[status]}`}>
-                    {statusCounts[status]}
+                {/* Mobile accordion header */}
+                <button
+                  onClick={() => toggleMobileStatus(status)}
+                  className="column-accordion-button sm:hidden w-full flex items-center justify-between px-3 py-2 text-sm font-semibold"
+                  aria-expanded={isOpen}
+                >
+                  <span className="text-slate-700 dark:text-slate-200">{t.board.status[status]}</span>
+                  <span className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COUNT_COLORS[status]}`}>
+                      {statusCounts[status]}
+                    </span>
+                    {isOpen ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
                   </span>
-                  {mobileOpenStatuses.includes(status) ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
-                </span>
-              </button>
+                </button>
 
-              {mobileOpenStatuses.includes(status) && (
-                <div className="p-2 space-y-3">
-                  {jobsByStatus[status].map(job => (
-                    <JobCard
-                      key={job.id}
-                      job={job}
-                      language={language}
-                      draggedItemId={draggedItemId}
-                      onView={openViewModal}
-                      onEdit={openEditModal}
-                      onDelete={handleDeleteRequest}
-                      onNextStatus={getNextStatus(job.status) ? handleNextStatus : undefined}
-                      nextStatusLabel={(() => {
-                        const next = getNextStatus(job.status);
-                        return next ? t.board.status[next] : undefined;
-                      })()}
-                      onDragStart={handleDragStart}
-                      onDragEnd={handleDragEnd}
-                      onTouchStart={handleTouchStart}
-                      onTouchMove={handleTouchMove}
-                      onTouchEnd={handleTouchEnd}
-                    />
-                  ))}
-                  {dragOverColumn === status && (
-                    <div className="h-20 rounded-lg border-2 border-dashed border-primary/30 dark:border-primary/30 bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary text-xs font-medium animate-pulse">
-                      Drop Here
+                {/* Desktop column header */}
+                <div className="hidden sm:flex items-center justify-between mb-4 sticky top-0 bg-[#f6f6f8]/80 dark:bg-[#101622]/90 backdrop-blur-sm py-2 z-10">
+                  <h2 className="font-bold text-lg flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                    {t.board.status[status]}
+                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_COUNT_COLORS[status]}`}>
+                      {statusCounts[status]}
+                    </span>
+                  </h2>
+                </div>
+
+                <div className={`p-2 space-y-3 sm:space-y-4 sm:flex-1 sm:overflow-y-auto sm:pr-2 sm:custom-scrollbar ${isOpen ? 'block' : 'hidden'} sm:block`}>
+                  {jobsByStatus[status].length === 0 && !dragOverColumn ? (
+                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-8 opacity-50 dark:opacity-40">
+                      <div className="w-16 h-16 bg-slate-200 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 dark:border dark:border-slate-800">
+                        <SearchX className="w-8 h-8 text-slate-400 dark:text-slate-600" />
+                      </div>
+                      <p className="text-sm font-medium text-slate-400 dark:text-slate-500 text-center">{t.board.emptyColumns[status]}</p>
                     </div>
+                  ) : (
+                    <>
+                      {jobsByStatus[status].map(job => (
+                        <JobCard
+                          key={job.id}
+                          job={job}
+                          language={language}
+                          draggedItemId={draggedItemId}
+                          onView={openViewModal}
+                          onEdit={openEditModal}
+                          onDelete={handleDeleteRequest}
+                          onNextStatus={getNextStatus(job.status) ? handleNextStatus : undefined}
+                          nextStatusLabel={(() => {
+                            const next = getNextStatus(job.status);
+                            return next ? t.board.status[next] : undefined;
+                          })()}
+                          onDragStart={handleDragStart}
+                          onDragEnd={handleDragEnd}
+                          onTouchStart={handleTouchStart}
+                          onTouchMove={handleTouchMove}
+                          onTouchEnd={handleTouchEnd}
+                        />
+                      ))}
+                      {/* Visual Placeholder for drop zone */}
+                      {dragOverColumn === status && (
+                        <div className="h-20 sm:h-24 rounded-lg border-2 border-dashed border-primary/30 dark:border-primary/30 bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary text-xs font-medium animate-pulse">
+                          Drop Here
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
-              )}
-            </div>
-          ))}
+              </section>
+            );
+          })}
         </div>
-      </div >
+      </div>
       {/* Floating Action Button */}
       <button
         onClick={openAddModal}
