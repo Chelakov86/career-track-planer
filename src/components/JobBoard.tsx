@@ -567,34 +567,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   }, []);
 
   const filtersPanelContent = (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-      {/* Search */}
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <Search className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              {t.board.filters?.search || 'Search'}
-            </span>
-          </div>
-          <div className="relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t.board.filters?.searchPlaceholder || 'Search company, position, location, notes...'}
-              className="w-full px-3 py-1.5 pr-8 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50/60 focus:border-primary"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
         {/* Status filters with colored chips */}
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
@@ -828,6 +801,26 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         </div>
 
         <div className="flex flex-wrap gap-2">
+          <div className="relative order-first w-full sm:w-56">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t.board.filters?.searchPlaceholder || 'Search company, position, location, notes...'}
+              className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent"
+              aria-label={t.board.filters?.search || 'Search'}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1"
+                aria-label={t.board.filters?.searchClear || 'Clear search'}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
           <button
             onClick={() => {
               setShowFilters(!showFilters);
@@ -869,35 +862,62 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             </button>
 
             {showSort && (
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 py-2 animate-in fade-in zoom-in duration-200">
+              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 py-2">
                 {[
-                  { value: 'dateAdded_desc', label: t.board.filters?.sortOptions?.dateAddedDesc || 'Date added (newest)' },
-                  { value: 'dateAdded_asc', label: t.board.filters?.sortOptions?.dateAddedAsc || 'Date added (oldest)' },
-                  { value: 'lastUpdated_desc', label: t.board.filters?.sortOptions?.lastUpdatedDesc || 'Last updated (newest)' },
-                  { value: 'lastUpdated_asc', label: t.board.filters?.sortOptions?.lastUpdatedAsc || 'Last updated (oldest)' },
-                  { value: 'company_asc', label: t.board.filters?.sortOptions?.companyAsc || 'Company (A–Z)' },
-                  { value: 'company_desc', label: t.board.filters?.sortOptions?.companyDesc || 'Company (Z–A)' },
-                  { value: 'position_asc', label: t.board.filters?.sortOptions?.positionAsc || 'Position (A–Z)' },
-                  { value: 'position_desc', label: t.board.filters?.sortOptions?.positionDesc || 'Position (Z–A)' }
-                ].map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => {
-                      const [field, dir] = opt.value.split('_') as [typeof sortField, typeof sortDirection];
-                      setSortField(field);
-                      setSortDirection(dir);
-                      setShowSort(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${`${sortField}_${sortDirection}` === opt.value
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary font-medium'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                      }`}
-                  >
-                    {opt.label}
-                    {`${sortField}_${sortDirection}` === opt.value && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    )}
-                  </button>
+                  {
+                    label: t.board.labels.dateAdded,
+                    options: [
+                      { value: 'dateAdded_desc', label: t.board.filters?.sortOptions?.dateAddedDesc || 'Date added (newest)' },
+                      { value: 'dateAdded_asc', label: t.board.filters?.sortOptions?.dateAddedAsc || 'Date added (oldest)' }
+                    ]
+                  },
+                  {
+                    label: t.board.labels.lastUpdated,
+                    options: [
+                      { value: 'lastUpdated_desc', label: t.board.filters?.sortOptions?.lastUpdatedDesc || 'Last updated (newest)' },
+                      { value: 'lastUpdated_asc', label: t.board.filters?.sortOptions?.lastUpdatedAsc || 'Last updated (oldest)' }
+                    ]
+                  },
+                  {
+                    label: t.board.filters?.sortGroupCompany || 'Company',
+                    options: [
+                      { value: 'company_asc', label: t.board.filters?.sortOptions?.companyAsc || 'Company (A–Z)' },
+                      { value: 'company_desc', label: t.board.filters?.sortOptions?.companyDesc || 'Company (Z–A)' }
+                    ]
+                  },
+                  {
+                    label: t.board.filters?.sortGroupPosition || 'Position',
+                    options: [
+                      { value: 'position_asc', label: t.board.filters?.sortOptions?.positionAsc || 'Position (A–Z)' },
+                      { value: 'position_desc', label: t.board.filters?.sortOptions?.positionDesc || 'Position (Z–A)' }
+                    ]
+                  }
+                ].map((group) => (
+                  <div key={group.label}>
+                    <div className="px-4 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                      {group.label}
+                    </div>
+                    {group.options.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => {
+                          const [field, dir] = opt.value.split('_') as [typeof sortField, typeof sortDirection];
+                          setSortField(field);
+                          setSortDirection(dir);
+                          setShowSort(false);
+                        }}
+                        className={`w-full text-left px-4 py-1.5 text-sm transition-colors flex items-center justify-between ${`${sortField}_${sortDirection}` === opt.value
+                          ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary font-medium'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                          }`}
+                      >
+                        {opt.label}
+                        {`${sortField}_${sortDirection}` === opt.value && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 ))}
               </div>
             )}
@@ -1057,7 +1077,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
       {/* Unified board (horizontal columns on desktop, stacked accordion on mobile) */}
       <div
-        className={`flex-1 overflow-x-auto sm:overflow-y-hidden pb-4 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
+        data-testid="job-board"
+        className={`flex-1 sm:overflow-x-auto sm:overflow-y-hidden pb-4 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
         ref={scrollContainerRef}
         onDragOver={handleContainerDragOver} // Track drag over globally in container
       >
@@ -1074,7 +1095,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 className={`flex-1 flex flex-col min-w-[260px] md:min-w-[280px] 2xl:min-w-[300px] 2xl:min-w-0 transition-all duration-200 ${dragOverColumn === status
                   ? 'bg-primary/5 dark:bg-primary/10 rounded-xl border-2 border-dashed border-primary/40 sm:scale-[1.01]'
                   : 'sm:bg-transparent sm:border-0 rounded-xl border border-slate-200 dark:border-slate-800'
-                  } ${status === ApplicationStatus.REJECTED ? 'opacity-60 grayscale-[0.5] dark:opacity-50 dark:grayscale-[0.3]' : ''}`}
+                  } ${status === ApplicationStatus.REJECTED ? 'opacity-60 grayscale-[0.5] dark:opacity-50 dark:grayscale-[0.3]' : ''} ${statusCounts[status] === 0 && visibleJobs.length > 0 ? 'max-sm:hidden' : ''}`}
               >
                 {/* Mobile accordion header */}
                 <button

@@ -89,6 +89,7 @@ export const TRANSLATIONS = {
         allStatuses: 'All',
         search: 'Search',
         searchPlaceholder: 'Search company, position, location, notes...',
+        searchClear: 'Clear search',
         sortBy: 'Sort by',
         sortOptions: {
           dateAddedDesc: 'Date added (newest)',
@@ -100,6 +101,8 @@ export const TRANSLATIONS = {
           positionAsc: 'Position (A–Z)',
           positionDesc: 'Position (Z–A)'
         },
+        sortGroupCompany: 'Company',
+        sortGroupPosition: 'Position',
         reset: 'Reset all filters',
         clearAll: 'Clear all filters',
         activeFilters: 'Active filters:',
@@ -328,6 +331,7 @@ export const TRANSLATIONS = {
         allStatuses: 'Alle',
         search: 'Suche',
         searchPlaceholder: 'Suche nach Firma, Position, Ort, Notizen...',
+        searchClear: 'Suche löschen',
         sortBy: 'Sortieren nach',
         sortOptions: {
           dateAddedDesc: 'Hinzugefügt (neueste)',
@@ -339,6 +343,8 @@ export const TRANSLATIONS = {
           positionAsc: 'Position (A–Z)',
           positionDesc: 'Position (Z–A)'
         },
+        sortGroupCompany: 'Firma',
+        sortGroupPosition: 'Position',
         reset: 'Alle Filter zurücksetzen',
         clearAll: 'Alle Filter löschen',
         activeFilters: 'Aktive Filter:',

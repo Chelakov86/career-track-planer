@@ -10,7 +10,7 @@ test.describe('JobCard Responsive Behavior', () => {
 
     /** Helper to get the board container (single responsive board) */
     function visibleBoard(page: import('@playwright/test').Page) {
-        return page.locator('div.flex-1.overflow-x-auto').first();
+        return page.locator('[data-testid="job-board"]').first();
     }
 
     /** Helper to ensure cards are visible — expand accordion sections on mobile */
@@ -30,67 +30,75 @@ test.describe('JobCard Responsive Behavior', () => {
         }
     }
 
-    /** Ensure at least one job with notes and tags exists */
-    async function ensureTestJobExists(page: import('@playwright/test').Page) {
-        await ensureCardsVisible(page);
-        const board = visibleBoard(page);
-        const hasNotes = await board.locator('p.line-clamp-2').count() > 0;
-        
-        if (!hasNotes) {
-            // Create a job with notes and tags
-            const viewport = page.viewportSize();
-            const isMobile = viewport && viewport.width < 640;
-            
-            if (isMobile) {
-                await page.getByLabel(DE.board.addJob).click();
-            } else {
-                await page.getByRole('button', { name: DE.board.addJob }).click();
-            }
-            
-            await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill('ResponsiveTest Co');
-            await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('QA Engineer');
-            await page.getByRole('textbox', { name: DE.board.placeholders.salary, exact: true }).fill('100k');
-            await page.getByRole('textbox', { name: DE.board.placeholders.location, exact: true }).fill('Remote');
-            await page.getByRole('textbox', { name: DE.board.placeholders.notes, exact: true }).fill('This is a test note for responsive behavior verification.');
-            await page.getByRole('button', { name: DE.board.save }).click();
-            await page.waitForTimeout(1000);
-            await ensureCardsVisible(page);
+    /** Create a job with notes and return its card locator */
+    async function createJobWithNotes(page: import('@playwright/test').Page, company: string) {
+        const viewport = page.viewportSize();
+        const isMobile = viewport && viewport.width < 640;
+
+        if (isMobile) {
+            await page.getByLabel(DE.board.addJob).click();
+        } else {
+            await page.getByRole('button', { name: DE.board.addJob }).click();
         }
+
+        await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
+        await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('QA Engineer');
+        await page.getByRole('textbox', { name: DE.board.placeholders.salary, exact: true }).fill('100k');
+        await page.getByRole('textbox', { name: DE.board.placeholders.location, exact: true }).fill('Remote');
+        await page.getByRole('textbox', { name: DE.board.placeholders.notes, exact: true }).fill('This is a test note for responsive behavior verification.');
+        await page.getByRole('button', { name: DE.board.save }).click();
+        await page.waitForTimeout(1000);
+        await ensureCardsVisible(page);
+
+        const board = visibleBoard(page);
+        return board.locator('.job-card').filter({ hasText: company }).first();
     }
 
-    test('desktop view: should show notes by default', async ({ page }) => {
+    test('desktop view: card stays slim below 2xl, notes expand on wide screens', async ({ page }) => {
         await page.setViewportSize({ width: 1280, height: 800 });
-        await ensureTestJobExists(page);
-        
-        const board = visibleBoard(page);
-        const jobCard = board.locator('.job-card').first();
+
+        const jobCard = await createJobWithNotes(page, `Responsive Desktop ${Date.now()}`);
         await expect(jobCard).toBeVisible();
-        
-        // Notes should be visible by default on desktop
+
+        // Notes are hidden at rest below the 2xl expansion breakpoint
+        await expect(jobCard.locator('p.line-clamp-2').first()).toBeHidden();
+
+        // The dossier expands on 2xl screens
+        await page.setViewportSize({ width: 1600, height: 1000 });
+        await page.waitForTimeout(300);
         const notes = jobCard.locator('p.line-clamp-2').first();
         await expect(notes).toBeVisible();
     });
 
-    test('mobile view: should show notes by default', async ({ page }) => {
+    test('mobile view: notes live behind the view modal', async ({ page }) => {
         await page.setViewportSize({ width: 375, height: 667 });
-        await ensureTestJobExists(page);
 
-        const board = visibleBoard(page);
-        const jobCard = board.locator('.job-card').first();
+        const jobCard = await createJobWithNotes(page, `Responsive Mobile ${Date.now()}`);
         await expect(jobCard).toBeVisible();
-        
-        const notes = jobCard.locator('p.line-clamp-2').first();
-        await expect(notes).toBeVisible();
+
+        // Notes are not on the at-rest card
+        await expect(jobCard.locator('p.line-clamp-2').first()).toBeHidden();
+
+        // The view modal shows the notes
+        await jobCard.getByText(DE.board.viewDetails).click();
+        await expect(page.getByText(DE.board.viewJob)).toBeVisible({ timeout: 5000 });
+        const modal = page.locator('.fixed.inset-0');
+        await expect(modal.getByText('This is a test note for responsive behavior verification.')).toBeVisible({ timeout: 5000 });
+        await page.getByRole('button', { name: DE.board.close }).click();
     });
 
     test('mobile view: should have smaller tags', async ({ page }) => {
         await page.setViewportSize({ width: 375, height: 667 });
-        await ensureTestJobExists(page);
+        await ensureCardsVisible(page);
 
         const board = visibleBoard(page);
-        const jobCard = board.locator('.job-card').first();
-        const tag = jobCard.locator('span.font-bold.uppercase').first();
-        
+        let taggedCard = board.locator('.job-card').filter({ has: page.locator('span.bg-emerald-50').first() }).first();
+        if (await taggedCard.count() === 0) {
+            await createJobWithNotes(page, `Responsive Tag ${Date.now()}`);
+            taggedCard = board.locator('.job-card').filter({ has: page.locator('span.bg-emerald-50').first() }).first();
+        }
+        const tag = taggedCard.locator('span.font-bold.uppercase').first();
+
         await expect(tag).toBeVisible();
         const className = await tag.getAttribute('class');
         expect(className).toContain('text-[9px]');

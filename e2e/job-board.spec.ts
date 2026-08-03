@@ -36,17 +36,25 @@ test.describe('Job Board', () => {
     });
 
     test('should toggle filter panel', async ({ page, isMobile }) => {
-        const filterButton = page.getByTitle(DE.board.filter).first();
-        await filterButton.click();
-
-        // Both mobile and desktop filter panels render the search input
-        // Use :visible CSS pseudo-class to target the visible one
+        // Search lives on the toolbar and is visible without opening the panel
         const searchInput = page.locator('input[placeholder*="Suche nach Firma"]:visible').first();
         await expect(searchInput).toBeVisible({ timeout: 5000 });
 
+        const filterButton = page.getByTitle(DE.board.filter).first();
         if (isMobile) {
+            // On mobile the filter sheet only exists in the DOM once opened
+            await expect(page.locator('button.rounded-full:visible').filter({ hasText: 'Recherche' })).toHaveCount(0);
+            await filterButton.click();
+            await expect(page.locator('button.rounded-full:visible').filter({ hasText: 'Recherche' })).toHaveCount(1);
             await page.keyboard.press('Escape');
         } else {
+            // On desktop the panel is always in the DOM; collapsed it has zero height
+            const panel = page.locator('div.hidden.sm\\:flex.bg-white.rounded-xl').first();
+            expect(await panel.evaluate((el) => el.getBoundingClientRect().height)).toBeLessThan(5);
+            await filterButton.click();
+            await expect
+                .poll(() => panel.evaluate((el) => el.getBoundingClientRect().height))
+                .toBeGreaterThan(100);
             await filterButton.click();
         }
         await page.waitForTimeout(400);
