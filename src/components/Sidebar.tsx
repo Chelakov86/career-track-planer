@@ -42,7 +42,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <NavLink
                     to="/"
                     onClick={closeMobileMenu}
-                    className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${isActive
+                    className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 ${isActive
                         ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
                         : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-slate-800'
                         }`}
@@ -54,7 +54,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <NavLink
                     to="/timeline"
                     onClick={closeMobileMenu}
-                    className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${isActive
+                    className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 ${isActive
                         ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
                         : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-slate-800'
                         }`}
@@ -65,7 +65,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <NavLink
                     to="/schedule"
                     onClick={closeMobileMenu}
-                    className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${isActive
+                    className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 ${isActive
                         ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
                         : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-slate-800'
                         }`}
@@ -76,7 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <NavLink
                     to="/stats"
                     onClick={closeMobileMenu}
-                    className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${isActive
+                    className={({ isActive }) => `flex items-center gap-3 w-full px-4 py-3 text-sm font-medium rounded-lg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900 ${isActive
                         ? 'bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary'
                         : 'text-gray-600 hover:bg-gray-50 dark:text-gray-400 dark:hover:bg-slate-800'
                         }`}
@@ -94,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <p className="text-xs font-bold text-gray-800 dark:text-gray-200 truncate">{user.name}</p>
                         <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
                     </div>
-                    <button onClick={logout} aria-label={t.nav.logout} className="text-gray-400 hover:text-red-500 transition-colors p-2 -m-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50" title={t.nav.logout}>
+                    <button onClick={logout} aria-label={t.nav.logout} className="text-gray-400 hover:text-red-500 transition-colors p-2 -m-2 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900" title={t.nav.logout}>
                         <LogOut className="w-4 h-4" />
                     </button>
                 </div>
@@ -104,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {/* Theme Toggle */}
                     <button
                         onClick={toggleTheme}
-                        className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900"
                         title={t.toggleTheme}
                         aria-label={t.toggleTheme}
                     >

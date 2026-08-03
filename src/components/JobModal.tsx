@@ -201,9 +201,9 @@ export const JobModal: React.FC<JobModalProps> = ({
 
     return (
         <div className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div ref={dialogRef} className="bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="job-modal-title" className="bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-4 border-b border-gray-200 dark:border-slate-800 flex justify-between items-center">
-                    <h3 className="font-bold text-gray-800 dark:text-white">
+                    <h3 id="job-modal-title" className="font-bold text-gray-800 dark:text-white">
                         {mode === 'view' ? t.board.viewJob : (formData.id ? t.board.editJob : t.board.newOpp)}
                     </h3>
                     <button onClick={onCancel} aria-label={t.board.closeDialog} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">

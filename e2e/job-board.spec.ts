@@ -117,4 +117,44 @@ test.describe('Job Board', () => {
             await page.waitForTimeout(300);
         }
     });
+
+    test('date presets should produce the expected from/to range', async ({ page }) => {
+        const filterButton = page.getByTitle(DE.board.filter).first();
+        await filterButton.click();
+
+        const fromInput = page.locator('input[aria-label="Hinzugefügt Von"]:visible').first();
+        const toInput = page.locator('input[aria-label="Hinzugefügt Bis"]:visible').first();
+        await expect(fromInput).toBeVisible({ timeout: 5000 });
+
+        await page.getByRole('button', { name: 'Letzte 7 Tage' }).first().click();
+
+        const formatLocal = (date: Date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        const today = new Date();
+        const to = formatLocal(today);
+        const from = formatLocal(new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000));
+
+        await expect(fromInput).toHaveValue(from);
+        await expect(toInput).toHaveValue(to);
+    });
+
+    test('move-to sheet should offer all six statuses', async ({ page, isMobile }) => {
+        test.skip(isMobile, 'Move-to sheet is exercised on desktop paths');
+
+        const firstCard = page.locator('[data-testid="job-board"] .job-card').first();
+        await expect(firstCard).toBeVisible({ timeout: 10000 });
+        await firstCard.getByRole('button', { name: 'Verschieben nach...' }).first().click();
+
+        const sheet = page.getByRole('dialog', { name: 'Verschieben nach...' });
+        await expect(sheet).toBeVisible();
+        for (const column of DE.board.columns) {
+            await expect(sheet.getByRole('button', { name: column })).toHaveCount(1);
+        }
+        await page.keyboard.press('Escape');
+        await expect(sheet).not.toBeVisible();
+    });
 });

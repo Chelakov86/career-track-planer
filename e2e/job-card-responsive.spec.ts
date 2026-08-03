@@ -87,7 +87,7 @@ test.describe('JobCard Responsive Behavior', () => {
         await page.getByRole('button', { name: DE.board.close, exact: true }).click();
     });
 
-    test('mobile view: should have smaller tags', async ({ page }) => {
+    test('tags live behind the view layer and expand on wide screens', async ({ page }) => {
         await page.setViewportSize({ width: 375, height: 667 });
         await ensureCardsVisible(page);
 
@@ -99,6 +99,12 @@ test.describe('JobCard Responsive Behavior', () => {
         }
         const tag = taggedCard.locator('span.font-bold.uppercase').first();
 
+        // Salary/remote tags are hidden at rest below the 2xl dossier layer
+        await expect(tag).toBeHidden();
+
+        // The tags expand with the dossier on 2xl screens
+        await page.setViewportSize({ width: 1600, height: 1000 });
+        await page.waitForTimeout(300);
         await expect(tag).toBeVisible();
         const className = await tag.getAttribute('class');
         expect(className).toContain('text-[11px]');

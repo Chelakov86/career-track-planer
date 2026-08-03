@@ -25,19 +25,48 @@ interface AdviceState {
   error: boolean;
 }
 
+const ADVICE_STORAGE_KEY = (lang: Language) => `careertrack.advice.${lang}`;
+
+const readStoredAdvice = (lang: Language): Record<string, AdviceState> => {
+  try {
+    const raw = localStorage.getItem(ADVICE_STORAGE_KEY(lang));
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    if (parsed.date !== new Date().toISOString().split('T')[0]) return {};
+    return parsed.advice ?? {};
+  } catch {
+    return {};
+  }
+};
+
+const writeStoredAdvice = (lang: Language, advice: Record<string, AdviceState>) => {
+  localStorage.setItem(ADVICE_STORAGE_KEY(lang), JSON.stringify({
+    date: new Date().toISOString().split('T')[0],
+    advice,
+  }));
+};
+
 export const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, language }) => {
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [advice, setAdvice] = useState<Record<string, AdviceState>>({});
+  const [advice, setAdvice] = useState<Record<string, AdviceState>>(() => readStoredAdvice(language));
   const t = TRANSLATIONS[language];
 
   const handleGetAdvice = async (block: ScheduleBlock) => {
     setLoadingId(block.id);
     try {
       const result = await generateTaskAdvice(block, language);
-      setAdvice(prev => ({ ...prev, [block.id]: { text: result, error: false } }));
+      setAdvice(prev => {
+        const next = { ...prev, [block.id]: { text: result, error: false } };
+        writeStoredAdvice(language, next);
+        return next;
+      });
     } catch (error) {
       console.error('Error generating advice:', error);
-      setAdvice(prev => ({ ...prev, [block.id]: { text: '', error: true } }));
+      setAdvice(prev => {
+        const next = { ...prev, [block.id]: { text: '', error: true } };
+        writeStoredAdvice(language, next);
+        return next;
+      });
     } finally {
       setLoadingId(null);
     }

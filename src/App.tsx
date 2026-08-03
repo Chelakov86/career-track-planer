@@ -25,6 +25,7 @@ const AppContent: React.FC = () => {
     updateStatus,
     deleteJob,
     refetchJobs,
+    loading,
   } = useJobs(user);
   const {
     events: applicationEvents,
@@ -72,6 +73,7 @@ const AppContent: React.FC = () => {
               onDeleteJob={deleteJob}
               onRefetchJobs={refetchJobs}
               language={language}
+              loading={loading}
             />
           }
         />

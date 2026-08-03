@@ -29,6 +29,7 @@ interface JobCardProps {
     onDelete: (job: JobApplication) => void;
     onNextStatus?: (job: JobApplication) => void;
     nextStatusLabel?: string;
+    onMoveTo?: (job: JobApplication) => void;
 
     onDragStart: (e: React.DragEvent, id: string) => void;
     onDragEnd: () => void;
@@ -48,6 +49,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
     onDelete,
     onNextStatus,
     nextStatusLabel,
+    onMoveTo,
     onDragStart,
     onDragEnd,
     onTouchStart,
@@ -147,22 +149,22 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                                 e.stopPropagation();
                                 onEdit(job);
                             }}
-                            className="card-actions text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary p-2 -m-1 sm:p-1 sm:m-0 rounded-lg sm:rounded transition-colors"
+                            className="card-actions text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary p-2 -m-1 sm:p-1 sm:m-0 rounded-lg sm:rounded transition-colors min-w-[44px] min-h-[44px] sm:min-w-9 sm:min-h-9 flex items-center justify-center"
                             title={t.board.editJob}
                             aria-label={t.board.editJob}
                         >
-                            <Pencil className="w-3.5 h-3.5" />
+                            <Pencil className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                         </button>
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onDelete(job);
                             }}
-                            className="card-actions text-gray-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-2 -m-1 sm:p-1 sm:m-0 rounded-lg sm:rounded transition-colors"
+                            className="card-actions text-gray-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-2 -m-1 sm:p-1 sm:m-0 rounded-lg sm:rounded transition-colors min-w-[44px] min-h-[44px] sm:min-w-9 sm:min-h-9 flex items-center justify-center"
                             title={t.board.deleteJob}
                             aria-label={t.board.deleteJob}
                         >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4 sm:w-3.5 sm:h-3.5" />
                         </button>
                     </div>
                 )}
@@ -196,8 +198,8 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                 {job.company}{job.location ? ` · ${job.location}` : ''}
             </p>
 
-            {/* Tags */}
-            <div className="flex flex-wrap gap-2 mb-2 2xl:mb-3">
+            {/* Tags - dossier content expands on wide screens */}
+            <div className="hidden 2xl:flex flex-wrap gap-2 mb-2 2xl:mb-3">
                 {job.salary && (
                     <span className="px-1.5 py-0.5 md:px-2 md:py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[11px] font-bold uppercase tracking-wider rounded">
                         {job.salary}
@@ -279,19 +281,34 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                     {t.board.labels.lastUpdated}: {job.lastUpdated}
                 </span>
 
-                {!isGhost && onNextStatus && (
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onNextStatus(job);
-                        }}
-                        className="p-2 -m-1 sm:p-1 sm:m-0 rounded-full hover:bg-primary/10 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors"
-                        title={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
-                        aria-label={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
-                    >
-                        <ChevronRight className="w-4 h-4" />
-                    </button>
-                )}
+                <div className="flex items-center">
+                    {!isGhost && onMoveTo && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onMoveTo(job);
+                            }}
+                            className="min-h-[44px] sm:min-h-8 px-2 -mx-2 sm:mx-0 sm:px-2.5 text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg sm:py-1"
+                            title={t.board.moveTo}
+                            aria-label={t.board.moveTo}
+                        >
+                            {t.board.moveTo}
+                        </button>
+                    )}
+                    {!isGhost && onNextStatus && (
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onNextStatus(job);
+                            }}
+                            className="p-2 -m-1 sm:p-1 sm:m-0 rounded-full hover:bg-primary/10 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors min-w-[44px] min-h-[44px] sm:min-w-8 sm:min-h-8 flex items-center justify-center"
+                            title={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
+                            aria-label={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
+                        >
+                            <ChevronRight className="w-4 h-4 sm:w-4 sm:h-4" />
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
