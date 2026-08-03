@@ -73,6 +73,17 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const sortRef = useRef<HTMLDivElement>(null);
   const didInitMobileOpen = useRef(false);
 
+  // Horizontal scroll affordance (edge fades)
+  const [showLeftFade, setShowLeftFade] = useState(false);
+  const [showRightFade, setShowRightFade] = useState(false);
+
+  const updateScrollFades = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    setShowLeftFade(el.scrollLeft > 4);
+    setShowRightFade(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
+
   const t = TRANSLATIONS[language];
   const columns = useMemo(() => Object.values(ApplicationStatus), []);
 
@@ -458,6 +469,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     if (showEmptyColumns || visibleJobs.length === 0) return columns;
     return columns.filter((status) => statusCounts[status] > 0);
   }, [columns, showEmptyColumns, statusCounts, visibleJobs.length]);
+
+  // Re-measure scroll affordance whenever the board layout changes
+  useEffect(() => {
+    updateScrollFades();
+    window.addEventListener('resize', updateScrollFades);
+    return () => window.removeEventListener('resize', updateScrollFades);
+  }, [updateScrollFades, visibleJobs, columnsForDesktop]);
 
   useEffect(() => {
     if (didInitMobileOpen.current) return;
@@ -1078,10 +1096,20 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       {/* Unified board (horizontal columns on desktop, stacked accordion on mobile) */}
       <div
         data-testid="job-board"
-        className={`flex-1 sm:overflow-x-auto sm:overflow-y-hidden pb-4 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
+        className={`relative flex-1 sm:overflow-x-auto sm:overflow-y-hidden pb-4 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
         ref={scrollContainerRef}
+        onScroll={updateScrollFades}
         onDragOver={handleContainerDragOver} // Track drag over globally in container
       >
+        {/* Edge fades signal horizontal scrollability */}
+        <div
+          className={`hidden sm:block absolute left-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-[#f6f6f8] dark:from-[#101622] to-transparent transition-opacity duration-200 ${showLeftFade ? 'opacity-100' : 'opacity-0'}`}
+          aria-hidden="true"
+        />
+        <div
+          className={`hidden sm:block absolute right-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-transparent to-[#f6f6f8] dark:to-[#101622] transition-opacity duration-200 ${showRightFade ? 'opacity-100' : 'opacity-0'}`}
+          aria-hidden="true"
+        />
         <div className="flex flex-col sm:flex-row gap-4 min-w-full pb-28 sm:h-full sm:pb-2">
           {columnsForDesktop.map(status => {
             const isOpen = mobileOpenStatuses.includes(status);
@@ -1092,7 +1120,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 onDragOver={(e) => handleDragOver(e, status)}
                 onDrop={(e) => handleDrop(e, status)}
                 onDragLeave={handleDragLeave}
-                className={`flex-1 flex flex-col min-w-[260px] md:min-w-[280px] 2xl:min-w-[300px] 2xl:min-w-0 transition-all duration-200 ${dragOverColumn === status
+                className={`flex-1 flex flex-col min-w-[220px] md:min-w-[240px] 2xl:min-w-[250px] transition-all duration-200 ${dragOverColumn === status
                   ? 'bg-primary/5 dark:bg-primary/10 rounded-xl border-2 border-dashed border-primary/40 sm:scale-[1.01]'
                   : 'sm:bg-transparent sm:border-0 rounded-xl border border-slate-200 dark:border-slate-800'
                   } ${status === ApplicationStatus.REJECTED ? 'opacity-60 grayscale-[0.5] dark:opacity-50 dark:grayscale-[0.3]' : ''} ${statusCounts[status] === 0 && visibleJobs.length > 0 ? 'max-sm:hidden' : ''}`}
