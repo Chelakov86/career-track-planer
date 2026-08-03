@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Trash2 } from 'lucide-react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 
 interface DeleteConfirmModalProps {
     language: Language;
     jobName: { company: string; position: string };
+    hasRounds?: boolean;
     onConfirm: () => void;
     onCancel: () => void;
 }
@@ -13,14 +15,18 @@ interface DeleteConfirmModalProps {
 export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
     language,
     jobName,
+    hasRounds = false,
     onConfirm,
     onCancel
 }) => {
     const t = TRANSLATIONS[language];
+    const dialogRef = useRef<HTMLDivElement>(null);
+    useFocusTrap(dialogRef, true);
 
     return (
         <div className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
             <div
+                ref={dialogRef}
                 className="bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-800 max-w-sm w-full p-6"
                 onClick={e => e.stopPropagation()}
             >
@@ -39,6 +45,11 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
                             <strong className="text-gray-700 dark:text-gray-300">{jobName.company}</strong>
                             {t.board.deleteMessage.split('{company}')[1]}
                         </p>
+                        {hasRounds && (
+                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
+                                {t.board.deleteRoundsWarning}
+                            </p>
+                        )}
                     </div>
                     <div className="flex gap-3 w-full mt-2">
                         <button

@@ -128,7 +128,7 @@ export const useJobs = (user: User | null) => {
             console.error('Error adding job:', error);
             // Revert optimistic update
             setJobs(prev => prev.filter(j => j.id !== tempId));
-            alert('Failed to save job. Please try again.');
+            throw new Error(error.message);
         } else if (data) {
             // Replace temp ID with real ID
             setJobs(prev => prev.map(j => j.id === tempId ? { ...j, id: data.id } : j));
@@ -170,7 +170,7 @@ export const useJobs = (user: User | null) => {
         if (error) {
             console.error('Error updating job:', error);
             setJobs(previousJobs);
-            alert('Failed to update job. Please try again.');
+            throw new Error(error.message);
         } else {
             markJobsPersisted();
         }
@@ -198,7 +198,7 @@ export const useJobs = (user: User | null) => {
         if (error) {
             console.error('Error updating status:', error);
             setJobs(previousJobs);
-            alert('Failed to update status. Please try again.');
+            throw new Error(error.message);
         } else {
             markJobsPersisted();
         }
@@ -218,6 +218,7 @@ export const useJobs = (user: User | null) => {
         if (error) {
             console.error('Error deleting job:', error);
             setJobs(previousJobs); // Revert
+            throw new Error(error.message);
         } else {
             markJobsPersisted();
         }

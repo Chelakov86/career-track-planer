@@ -49,6 +49,7 @@ export const TRANSLATIONS = {
       edit: "Edit",
       deleteTitle: "Delete Job?",
       deleteMessage: "Are you sure you want to permanently delete the application for {position} at {company}?",
+      deleteRoundsWarning: "Interview rounds for this application will also be deleted.",
       confirmDelete: "Delete",
       interview: "interview",
       interviews: "interviews",
@@ -118,6 +119,10 @@ export const TRANSLATIONS = {
         showEmptyColumns: 'Show empty columns'
       },
       viewDetails: 'View Details',
+      undo: 'Undo',
+      errorSave: 'Could not save the job. Please try again.',
+      errorStatusUpdate: 'Could not update the status. Please try again.',
+      errorDelete: 'Could not delete the job. Please try again.',
       emptyColumns: {
         RESEARCH: 'Start exploring opportunities!',
         TO_APPLY: 'Add jobs you want to apply for.',
@@ -291,6 +296,7 @@ export const TRANSLATIONS = {
       edit: "Bearbeiten",
       deleteTitle: "Job löschen?",
       deleteMessage: "Möchtest du die Bewerbung für {position} bei {company} wirklich unwiderruflich löschen?",
+      deleteRoundsWarning: "Auch die Interview-Runden zu dieser Bewerbung werden gelöscht.",
       confirmDelete: "Löschen",
       interview: "Interview",
       interviews: "Interviews",
@@ -360,6 +366,10 @@ export const TRANSLATIONS = {
         showEmptyColumns: 'Leere Spalten anzeigen'
       },
       viewDetails: 'Details anzeigen',
+      undo: 'Rückgängig',
+      errorSave: 'Speichern fehlgeschlagen. Bitte versuche es erneut.',
+      errorStatusUpdate: 'Status konnte nicht aktualisiert werden. Bitte versuche es erneut.',
+      errorDelete: 'Löschen fehlgeschlagen. Bitte versuche es erneut.',
       emptyColumns: {
         RESEARCH: 'Entdecke neue Möglichkeiten!',
         TO_APPLY: 'Füge Jobs hinzu, auf die du dich bewerben willst.',

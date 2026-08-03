@@ -62,6 +62,20 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
 
+  // Toast + undo for status moves
+  const [toast, setToast] = useState<{
+    kind: 'info' | 'error';
+    text: string;
+    actionLabel?: string;
+    onAction?: () => void;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
   // Auto-scroll Refs
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const pointerRef = useRef<{ x: number, y: number } | null>(null);
@@ -199,42 +213,74 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const handleSaveJob = async (data: Partial<JobApplication>) => {
     const today = formatLocalDate();
 
-    if (data.id) {
-      // Edit existing
-      await onEditJob({
-        ...data,
-        lastUpdated: today,
-        // Preserve link field - convert empty string to undefined for optional field
-        link: data.link && data.link.trim() ? data.link.trim() : undefined
-      } as JobApplication);
-      await onRefetchJobs?.();
-    } else {
-      // Create new
-      const job: JobApplication = {
-        id: Math.random().toString(36).substr(2, 9),
-        company: data.company!,
-        position: data.position!,
-        location: data.location?.trim() || '',
-        status: data.status || ApplicationStatus.RESEARCH,
-        dateAdded: today,
-        lastUpdated: today,
-        notes: data.notes || '',
-        salary: data.salary,
-        // Preserve link field - convert empty string to undefined for optional field
-        link: data.link && data.link.trim() ? data.link.trim() : undefined
-      };
-      await onAddJob(job);
-      await onRefetchJobs?.();
+    try {
+      if (data.id) {
+        // Edit existing
+        await onEditJob({
+          ...data,
+          lastUpdated: today,
+          // Preserve link field - convert empty string to undefined for optional field
+          link: data.link && data.link.trim() ? data.link.trim() : undefined
+        } as JobApplication);
+        await onRefetchJobs?.();
+      } else {
+        // Create new
+        const job: JobApplication = {
+          id: Math.random().toString(36).substr(2, 9),
+          company: data.company!,
+          position: data.position!,
+          location: data.location?.trim() || '',
+          status: data.status || ApplicationStatus.RESEARCH,
+          dateAdded: today,
+          lastUpdated: today,
+          notes: data.notes || '',
+          salary: data.salary,
+          // Preserve link field - convert empty string to undefined for optional field
+          link: data.link && data.link.trim() ? data.link.trim() : undefined
+        };
+        await onAddJob(job);
+        await onRefetchJobs?.();
+      }
+      setShowModal(false);
+    } catch {
+      setToast({ kind: 'error', text: t.board.errorSave });
     }
-    setShowModal(false);
   };
 
-  const confirmDelete = () => {
-    if (jobToDelete) {
-      onDeleteJob(jobToDelete.id);
+  const confirmDelete = async () => {
+    if (!jobToDelete) return;
+    try {
+      await onDeleteJob(jobToDelete.id);
       setJobToDelete(null);
+    } catch {
+      setToast({ kind: 'error', text: t.board.errorDelete });
     }
   };
+
+  const recordMove = useCallback(async (jobId: string, to: ApplicationStatus) => {
+    const job = jobs.find(j => j.id === jobId);
+    if (!job || job.status === to) return;
+    try {
+      await onUpdateStatus(jobId, to);
+      const move = { jobId, from: job.status, to, company: job.company };
+      setToast({
+        kind: 'info',
+        text: `${job.company} → ${t.board.status[to]}`,
+        actionLabel: t.board.undo,
+        onAction: () => undoLastMove(move)
+      });
+    } catch {
+      setToast({ kind: 'error', text: t.board.errorStatusUpdate });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobs, onUpdateStatus, t]);
+
+  const undoLastMove = useCallback((move: { jobId: string; from: ApplicationStatus }) => {
+    setToast(null);
+    onUpdateStatus(move.jobId, move.from).catch(() => {
+      setToast({ kind: 'error', text: t.board.errorStatusUpdate });
+    });
+  }, [onUpdateStatus, t]);
 
   const handleExportCSV = () => {
     const csvContent = generateJobsCSV(jobs, language);
@@ -290,7 +336,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     if (jobId) {
       const job = jobs.find(j => j.id === jobId);
       if (job && job.status !== status) {
-        onUpdateStatus(jobId, status);
+        recordMove(jobId, status);
       }
     }
   };
@@ -351,7 +397,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
     if (isTouchDragging) {
       if (draggedItemId && dragOverColumn) {
-        onUpdateStatus(draggedItemId, dragOverColumn);
+        recordMove(draggedItemId, dragOverColumn);
       }
       // Reset
       document.body.style.overflow = '';
@@ -376,9 +422,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const handleNextStatus = useCallback((job: JobApplication) => {
     const next = getNextStatus(job.status);
     if (next) {
-      onUpdateStatus(job.id, next);
+      recordMove(job.id, next);
     }
-  }, [getNextStatus, onUpdateStatus]);
+  }, [getNextStatus, recordMove]);
   const visibleJobs = useMemo(() => {
     let result = [...jobs];
 
@@ -608,6 +654,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   key={status}
                   type="button"
                   onClick={() => toggleStatusInFilter(status)}
+                  aria-pressed={isSelected}
                   className={`px-2 py-1 text-[10px] rounded-full border transition-colors ${isSelected
                     ? STATUS_COLORS[status]
                     : 'bg-gray-50 dark:bg-slate-900/50 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-slate-800 hover:text-gray-600 dark:hover:text-gray-300'
@@ -786,9 +833,36 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         <DeleteConfirmModal
           language={language}
           jobName={{ company: jobToDelete.company, position: jobToDelete.position }}
+          hasRounds={(jobToDelete.interviewRounds?.length ?? 0) > 0}
           onConfirm={confirmDelete}
           onCancel={() => setJobToDelete(null)}
         />
+      )}
+
+      {/* Toast (status moves, undo, errors) */}
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed left-1/2 -translate-x-1/2 bottom-24 sm:bottom-6 z-[60] flex items-center gap-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl px-4 py-3 max-w-[calc(100vw-2rem)] sm:max-w-md"
+        >
+          <span className="text-sm text-gray-700 dark:text-gray-200 truncate">{toast.text}</span>
+          {toast.kind === 'info' && toast.onAction && (
+            <button
+              onClick={toast.onAction}
+              className="text-sm font-medium text-primary dark:text-primary hover:underline shrink-0"
+            >
+              {toast.actionLabel}
+            </button>
+          )}
+          <button
+            onClick={() => setToast(null)}
+            aria-label={t.board.close || 'Close'}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 shrink-0 p-1"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       )}
 
       {/* Add/Edit/View Job Modal */}
@@ -1123,7 +1197,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 className={`flex-1 flex flex-col min-w-[220px] md:min-w-[240px] 2xl:min-w-[250px] transition-all duration-200 ${dragOverColumn === status
                   ? 'bg-primary/5 dark:bg-primary/10 rounded-xl border-2 border-dashed border-primary/40 sm:scale-[1.01]'
                   : 'sm:bg-transparent sm:border-0 rounded-xl border border-slate-200 dark:border-slate-800'
-                  } ${status === ApplicationStatus.REJECTED ? 'opacity-60 grayscale-[0.5] dark:opacity-50 dark:grayscale-[0.3]' : ''} ${statusCounts[status] === 0 && visibleJobs.length > 0 ? 'max-sm:hidden' : ''}`}
+                  } ${statusCounts[status] === 0 && visibleJobs.length > 0 ? 'max-sm:hidden' : ''}`}
               >
                 {/* Mobile accordion header */}
                 <button
