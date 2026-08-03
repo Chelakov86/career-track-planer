@@ -8,6 +8,7 @@ interface DeleteConfirmModalProps {
     language: Language;
     jobName: { company: string; position: string };
     hasRounds?: boolean;
+    roundsCount?: number;
     onConfirm: () => void;
     onCancel: () => void;
 }
@@ -16,6 +17,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
     language,
     jobName,
     hasRounds = false,
+    roundsCount = 0,
     onConfirm,
     onCancel
 }) => {
@@ -59,9 +61,12 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
                             {t.board.deleteMessage.split('{company}')[1]}
                         </p>
                         {hasRounds && (
-                            <p className="text-gray-500 dark:text-gray-400 text-sm mt-2">
-                                {t.board.deleteRoundsWarning}
-                            </p>
+                            <div className="mt-3 flex items-start gap-2.5 w-full text-left rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-900/20 px-3 py-2.5">
+                                <Trash2 className="w-4 h-4 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
+                                <p className="text-sm text-red-700 dark:text-red-300 leading-relaxed">
+                                    {t.board.deleteRoundsWarningCount.replace('{count}', String(roundsCount))}
+                                </p>
+                            </div>
                         )}
                     </div>
                     <div className="flex gap-3 w-full mt-2">

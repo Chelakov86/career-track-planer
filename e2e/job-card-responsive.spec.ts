@@ -84,7 +84,7 @@ test.describe('JobCard Responsive Behavior', () => {
         await expect(page.getByText(DE.board.viewJob)).toBeVisible({ timeout: 5000 });
         const modal = page.locator('.fixed.inset-0');
         await expect(modal.getByText('This is a test note for responsive behavior verification.')).toBeVisible({ timeout: 5000 });
-        await page.getByRole('button', { name: DE.board.close }).click();
+        await page.getByRole('button', { name: DE.board.close, exact: true }).click();
     });
 
     test('mobile view: should have smaller tags', async ({ page }) => {
@@ -101,8 +101,7 @@ test.describe('JobCard Responsive Behavior', () => {
 
         await expect(tag).toBeVisible();
         const className = await tag.getAttribute('class');
-        expect(className).toContain('text-[9px]');
-        expect(className).toContain('md:text-[10px]');
+        expect(className).toContain('text-[10px]');
     });
 });
 

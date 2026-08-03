@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import { Pencil, Trash2, Calendar, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 import { JobApplication, ApplicationStatus, Language } from '../types';
-import { TRANSLATIONS } from '../constants';
+import { TRANSLATIONS, INTERVIEW_ROUND_STATUS_COLORS } from '../constants';
 
 const AVATAR_PALETTES = [
     'bg-blue-500 border-blue-400',
@@ -156,8 +156,8 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                                 onDelete(job);
                             }}
                             className="card-actions text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-2 -m-1 sm:p-1 sm:m-0 rounded-lg sm:rounded transition-all"
-                            title={t.board.confirmDelete || 'Delete'}
-                            aria-label={t.board.confirmDelete || 'Delete'}
+                            title={t.board.deleteJob}
+                            aria-label={t.board.deleteJob}
                         >
                             <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -196,12 +196,12 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
             {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-2 2xl:mb-3">
                 {job.salary && (
-                    <span className="px-1.5 py-0.5 md:px-2 md:py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[9px] md:text-[10px] font-bold uppercase tracking-wider rounded">
+                    <span className="px-1.5 py-0.5 md:px-2 md:py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[10px] font-bold uppercase tracking-wider rounded">
                         {job.salary}
                     </span>
                 )}
                 {job.location && job.location.toLowerCase().includes('remote') && (
-                    <span className="px-1.5 py-0.5 md:px-2 md:py-1 bg-primary/10 text-primary dark:text-blue-400 text-[9px] md:text-[10px] font-bold uppercase tracking-wider rounded dark:border dark:border-primary/20">
+                    <span className="px-1.5 py-0.5 md:px-2 md:py-1 bg-primary/10 text-primary dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider rounded dark:border dark:border-primary/20">
                         Remote
                     </span>
                 )}
@@ -237,21 +237,17 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                     {showInterviews && (
                         <div className="mt-2 space-y-1 pl-4 border-l-2 border-slate-200 dark:border-slate-700">
                             {job.interviewRounds.map(round => {
-                                const statusColors = {
-                                    scheduled: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
-                                    completed: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
-                                    awaiting_feedback: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300'
-                                };
+                                const statusColor = INTERVIEW_ROUND_STATUS_COLORS[round.status];
 
                                 return (
                                     <div key={round.id} className="text-xs py-1">
                                         <div className="flex items-center justify-between gap-2">
                                             <span className="text-slate-700 dark:text-slate-300 font-medium truncate">{round.roundName}</span>
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-medium whitespace-nowrap ${statusColors[round.status]}`}>
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-medium whitespace-nowrap ${statusColor}`}>
                                                 {t.interviewRound.statuses[round.status]}
                                             </span>
                                         </div>
-                                        <div className="text-slate-500 dark:text-slate-500 text-[10px] mt-0.5">
+                                        <div className="text-slate-500 dark:text-slate-400 text-[10px] mt-0.5">
                                             {round.interviewDate}
                                         </div>
                                     </div>

@@ -3,6 +3,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Legend,
   ResponsiveContainer,
   Tooltip,
@@ -10,7 +11,7 @@ import {
   YAxis,
 } from 'recharts';
 import { ApplicationEvent, ApplicationStatus, Grain, JobApplication, Language, PeriodPreset } from '../types';
-import { TRANSLATIONS } from '../constants';
+import { TRANSLATIONS, formatPositionAtCompany } from '../constants';
 import {
   buildActivitySeries,
   bucketLabel,
@@ -56,6 +57,15 @@ interface ActivityTotals {
   interviews: number;
 }
 
+const FUNNEL_FILLS: Record<ApplicationStatus, string> = {
+  [ApplicationStatus.RESEARCH]: '#64748b',
+  [ApplicationStatus.TO_APPLY]: '#135bec',
+  [ApplicationStatus.APPLIED]: '#f59e0b',
+  [ApplicationStatus.INTERVIEW]: '#a855f7',
+  [ApplicationStatus.OFFER]: '#10b981',
+  [ApplicationStatus.REJECTED]: '#ef4444',
+};
+
 export const Dashboard: React.FC<DashboardProps> = ({
   jobs,
   events,
@@ -85,6 +95,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
   // Data for Funnel Chart
   const funnelData = Object.values(ApplicationStatus).map(status => ({
+    status,
     name: t.board.status[status],
     count: jobs.filter(j => j.status === status).length,
   })).filter(d => d.count > 0);
@@ -147,7 +158,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const chartGridColor = theme === 'dark' ? '#334155' : '#e5e7eb';
   const chartTooltipStyle = {
     borderRadius: '8px',
-    border: `1px solid ${theme === 'dark' ? '#475569' : '#e5e7eb'}`,
+    border: `1px solid ${theme === 'dark' ? '#334155' : '#e5e7eb'}`,
     backgroundColor: theme === 'dark' ? '#1e293b' : '#ffffff',
     color: theme === 'dark' ? '#f8fafc' : '#111827',
     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
@@ -160,7 +171,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     jobs.forEach(job => {
       recentEvents.push({
         id: `job-${job.id}`,
-        description: `${job.position} at ${job.company}`,
+        description: formatPositionAtCompany(job.position, job.company, language),
         date: job.dateAdded,
         type: 'job_added',
       });
@@ -218,7 +229,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 cursor={{fill: 'transparent'}}
                 contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
               />
-              <Bar dataKey="count" fill="#135bec" radius={[0, 4, 4, 0]} barSize={20} />
+              <Bar dataKey="count" name={t.dashboard.funnel} radius={[0, 4, 4, 0]} barSize={20}>
+                {funnelData.map(entry => (
+                  <Cell key={entry.status} fill={FUNNEL_FILLS[entry.status]} />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -297,7 +312,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" aria-label={t.dashboard.periodTotals}>
                 {([
                   { key: 'added', label: t.dashboard.added, value: activityTotals.added, color: 'text-blue-600 dark:text-blue-400' },
-                  { key: 'applied', label: t.dashboard.applied, value: activityTotals.applied, color: 'text-indigo-600 dark:text-indigo-400' },
+                  { key: 'applied', label: t.dashboard.applied, value: activityTotals.applied, color: 'text-amber-600 dark:text-amber-400' },
                   { key: 'rejected', label: t.dashboard.rejected, value: activityTotals.rejected, color: 'text-red-600 dark:text-red-400' },
                   { key: 'interviews', label: t.dashboard.interviewsSeries, value: activityTotals.interviews, color: 'text-purple-600 dark:text-purple-400' },
                 ] as { key: ActivityType; label: string; value: number; color: string }[]).map(total => {
@@ -355,7 +370,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <Tooltip contentStyle={chartTooltipStyle} />
                         <Legend wrapperStyle={{ color: chartTextColor, fontSize: '12px' }} />
                         <Bar dataKey="added" name={t.dashboard.added} fill="#135bec" radius={[4, 4, 0, 0]} maxBarSize={18} />
-                        <Bar dataKey="applied" name={t.dashboard.applied} fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={18} />
+                        <Bar dataKey="applied" name={t.dashboard.applied} fill="#fbbf24" radius={[4, 4, 0, 0]} maxBarSize={18} />
                         <Bar dataKey="rejected" name={t.dashboard.rejected} fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={18} />
                         <Bar dataKey="interviews" name={t.dashboard.interviewsSeries} fill="#a855f7" radius={[4, 4, 0, 0]} maxBarSize={18} />
                       </BarChart>
@@ -395,7 +410,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {[
               { key: 'zero', label: t.dashboard.zeroRounds, value: rejectionDepth.zero, color: 'text-slate-600 dark:text-slate-300' },
-              { key: 'one', label: t.dashboard.oneRound, value: rejectionDepth.one, color: 'text-indigo-600 dark:text-indigo-400' },
+              { key: 'one', label: t.dashboard.oneRound, value: rejectionDepth.one, color: 'text-amber-600 dark:text-amber-400' },
               { key: 'two', label: t.dashboard.twoRounds, value: rejectionDepth.two, color: 'text-purple-600 dark:text-purple-400' },
               { key: 'threePlus', label: t.dashboard.threePlusRounds, value: rejectionDepth.threePlus, color: 'text-red-600 dark:text-red-400' },
             ].map(bucket => {

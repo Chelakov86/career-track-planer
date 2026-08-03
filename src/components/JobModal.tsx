@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ExternalLink, ChevronDown, ChevronRight, Calendar } from 'lucide-react';
 import { JobApplication, ApplicationStatus, Language, InterviewRound } from '../types';
-import { TRANSLATIONS } from '../constants';
+import { TRANSLATIONS, INTERVIEW_ROUND_STATUS_COLORS } from '../constants';
 import { useInterviewRounds } from '../hooks/useInterviewRounds';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { InterviewRoundItem } from './InterviewRoundItem';
@@ -206,7 +206,7 @@ export const JobModal: React.FC<JobModalProps> = ({
                     <h3 className="font-bold text-gray-800 dark:text-white">
                         {mode === 'view' ? t.board.viewJob : (formData.id ? t.board.editJob : t.board.newOpp)}
                     </h3>
-                    <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <button onClick={onCancel} aria-label={t.board.closeDialog} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -271,10 +271,7 @@ export const JobModal: React.FC<JobModalProps> = ({
                                                             <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
                                                                 {round.roundName || <span className="text-gray-400 dark:text-gray-500 italic">{t.interviewRound.roundNamePlaceholder}</span>}
                                                             </span>
-                                                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${round.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                                                                    round.status === 'awaiting_feedback' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
-                                                                        'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                                                                }`}>
+                                                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${INTERVIEW_ROUND_STATUS_COLORS[round.status]}`}>
                                                                 {t.interviewRound.statuses[round.status]}
                                                             </span>
                                                         </div>

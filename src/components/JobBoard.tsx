@@ -265,9 +265,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
   const confirmDelete = async () => {
     if (!jobToDelete) return;
+    const where = jobToDelete.company
+      ? `${jobToDelete.company}: ${t.board.deleted}`
+      : t.board.deleted;
     try {
       await onDeleteJob(jobToDelete.id);
       setJobToDelete(null);
+      setToast({ kind: 'info', text: where });
     } catch {
       setToast({ kind: 'error', text: t.board.errorDelete });
     }
@@ -671,7 +675,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   type="button"
                   onClick={() => toggleStatusInFilter(status)}
                   aria-pressed={isSelected}
-                  className={`px-2 py-1 text-[10px] rounded-full border transition-colors ${isSelected
+                  className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${isSelected
                     ? STATUS_COLORS[status]
                     : 'bg-gray-50 dark:bg-slate-900/50 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-slate-800 hover:text-gray-600 dark:hover:text-gray-300'
                     }`}
@@ -734,21 +738,21 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <button
               type="button"
               onClick={() => setDatePreset('last7Days', 'dateAdded')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.last7Days || 'Last 7 days'}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('last30Days', 'dateAdded')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.last30Days || 'Last 30 days'}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('thisMonth', 'dateAdded')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.thisMonth || 'This month'}
             </button>
@@ -805,21 +809,21 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <button
               type="button"
               onClick={() => setDatePreset('last7Days', 'lastUpdated')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.last7Days || 'Last 7 days'}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('last30Days', 'lastUpdated')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.last30Days || 'Last 30 days'}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('thisMonth', 'lastUpdated')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.thisMonth || 'This month'}
             </button>
@@ -878,6 +882,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           language={language}
           jobName={{ company: jobToDelete.company, position: jobToDelete.position }}
           hasRounds={(jobToDelete.interviewRounds?.length ?? 0) > 0}
+          roundsCount={jobToDelete.interviewRounds?.length ?? 0}
           onConfirm={confirmDelete}
           onCancel={() => setJobToDelete(null)}
         />
@@ -1077,6 +1082,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         </div>
       </div>
 
+
       {/* Active Filter Chips */}
       {hasActiveFilters && !showFilters && (
         <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -1092,25 +1098,25 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             </span>
           )}
           {debouncedSearchQuery.trim() && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700">
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/30">
               {t.board.filters?.search || 'Search'}: "{debouncedSearchQuery}"
-              <button onClick={() => removeFilter('search')} className="hover:text-blue-900 dark:hover:text-white">
+              <button onClick={() => removeFilter('search')} aria-label={`${t.board.filters?.search || 'Search'} ${t.board.filters?.searchClear || ''}`} className="hover:text-primary dark:hover:text-white">
                 <X className="w-3 h-3" />
               </button>
             </span>
           )}
           {(dateAddedFrom || dateAddedTo) && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700">
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/30">
               {t.board.labels.dateAdded}: {dateAddedFrom || '...'} - {dateAddedTo || '...'}
-              <button onClick={() => removeFilter('dateAdded')} className="hover:text-green-900 dark:hover:text-white">
+              <button onClick={() => removeFilter('dateAdded')} className="hover:text-primary dark:hover:text-white">
                 <X className="w-3 h-3" />
               </button>
             </span>
           )}
           {(lastUpdatedFrom || lastUpdatedTo) && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-yellow-50 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700">
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/30">
               {t.board.labels.lastUpdated}: {lastUpdatedFrom || '...'} - {lastUpdatedTo || '...'}
-              <button onClick={() => removeFilter('lastUpdated')} className="hover:text-yellow-900 dark:hover:text-white">
+              <button onClick={() => removeFilter('lastUpdated')} className="hover:text-primary dark:hover:text-white">
                 <X className="w-3 h-3" />
               </button>
             </span>
@@ -1330,11 +1336,11 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                         />
                       ))}
                       {/* Visual Placeholder for drop zone */}
-                      {dragOverColumn === status && (
-                        <div className="h-20 sm:h-24 rounded-lg border-2 border-dashed border-primary/30 dark:border-primary/30 bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary text-xs font-medium animate-pulse">
-                          Drop Here
-                        </div>
-                      )}
+          {dragOverColumn === status && (
+            <div className="h-20 sm:h-24 rounded-lg border-2 border-dashed border-primary/30 dark:border-primary/30 bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary text-xs font-medium animate-pulse">
+              {t.board.dropHere}
+            </div>
+          )}
                     </>
                   )}
                 </div>
