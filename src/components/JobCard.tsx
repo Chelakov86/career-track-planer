@@ -196,12 +196,12 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
             {/* Tags */}
             <div className="flex flex-wrap gap-2 mb-2 2xl:mb-3">
                 {job.salary && (
-                    <span className="px-1.5 py-0.5 md:px-2 md:py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 text-[9px] md:text-[10px] font-bold uppercase tracking-wider rounded">
+                    <span className="px-1.5 py-0.5 md:px-2 md:py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 text-[9px] md:text-[10px] font-bold uppercase tracking-wider rounded">
                         {job.salary}
                     </span>
                 )}
                 {job.location && job.location.toLowerCase().includes('remote') && (
-                    <span className="px-1.5 py-0.5 md:px-2 md:py-1 bg-primary/10 text-primary text-[9px] md:text-[10px] font-bold uppercase tracking-wider rounded dark:border dark:border-primary/20">
+                    <span className="px-1.5 py-0.5 md:px-2 md:py-1 bg-primary/10 text-primary dark:text-blue-400 text-[9px] md:text-[10px] font-bold uppercase tracking-wider rounded dark:border dark:border-primary/20">
                         Remote
                     </span>
                 )}
@@ -276,7 +276,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
             )}
 
             <div className="flex justify-between items-center pt-2 border-t border-slate-50 dark:border-slate-700">
-                <span className="text-[10px] text-slate-400 dark:text-slate-500">
+                <span className="text-[10px] text-slate-500 dark:text-slate-400">
                     {t.board.labels.lastUpdated}: {job.lastUpdated}
                 </span>
 

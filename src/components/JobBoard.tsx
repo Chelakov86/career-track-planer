@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS, STATUS_COLORS, STATUS_COUNT_COLORS } from '../constants';
-import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search, X, Calendar, SearchX } from 'lucide-react';
+import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search, X, Calendar, SearchX, Inbox } from 'lucide-react';
 import { JobCard } from './JobCard';
 import { JobModal } from './JobModal';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
@@ -888,7 +888,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{t.board.title}</h2>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">{t.board.title}</h1>
           <p className="text-gray-500 dark:text-gray-400 text-sm">{t.board.subtitle}</p>
         </div>
 
@@ -1075,13 +1075,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             onClick={resetFilters}
             className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:underline"
           >
-            {t.board.filters?.clearAll || 'Clear all'}
+            {t.board.filters?.reset || 'Reset all filters'}
           </button>
         </div>
       )}
 
       {/* Results count */}
-      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 shrink-0">
+      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 shrink-0">
         <span>
           {t.board.filters?.showing || 'Showing'} <span className="font-semibold text-gray-700 dark:text-gray-200">{visibleJobs.length}</span> {t.board.filters?.of || 'of'} <span className="font-semibold text-gray-700 dark:text-gray-200">{jobs.length}</span> {t.board.filters?.applications || 'applications'}
         </span>
@@ -1161,7 +1161,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               className="inline-flex items-center gap-2 px-4 py-2 bg-primary dark:bg-primary text-white rounded-lg hover:bg-blue-700 dark:hover:bg-primary transition-colors text-sm font-medium"
             >
               <X className="w-4 h-4" />
-              {t.board.filters?.clearAll || 'Clear all filters'}
+              {t.board.filters?.reset || 'Reset all filters'}
             </button>
           </div>
         </div>
@@ -1177,11 +1177,11 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       >
         {/* Edge fades signal horizontal scrollability */}
         <div
-          className={`hidden sm:block absolute left-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-[#f6f6f8] dark:from-[#101622] to-transparent transition-opacity duration-200 ${showLeftFade ? 'opacity-100' : 'opacity-0'}`}
+          className={`hidden sm:block absolute left-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-background-light dark:from-background-dark to-transparent transition-opacity duration-200 ${showLeftFade ? 'opacity-100' : 'opacity-0'}`}
           aria-hidden="true"
         />
         <div
-          className={`hidden sm:block absolute right-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-transparent to-[#f6f6f8] dark:to-[#101622] transition-opacity duration-200 ${showRightFade ? 'opacity-100' : 'opacity-0'}`}
+          className={`hidden sm:block absolute right-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-transparent to-background-light dark:to-background-dark transition-opacity duration-200 ${showRightFade ? 'opacity-100' : 'opacity-0'}`}
           aria-hidden="true"
         />
         <div className="flex flex-col sm:flex-row gap-4 min-w-full pb-28 sm:h-full sm:pb-2">
@@ -1215,7 +1215,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 </button>
 
                 {/* Desktop column header */}
-                <div className="hidden sm:flex items-center justify-between mb-4 sticky top-0 bg-[#f6f6f8]/80 dark:bg-[#101622]/90 backdrop-blur-sm py-2 z-10">
+                <div className="hidden sm:flex items-center justify-between mb-4 sticky top-0 bg-background-light/80 dark:bg-background-dark/90 backdrop-blur-sm py-2 z-10">
                   <h2 className="font-bold text-lg flex items-center gap-2 text-slate-900 dark:text-slate-100">
                     {t.board.status[status]}
                     <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_COUNT_COLORS[status]}`}>
@@ -1224,13 +1224,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   </h2>
                 </div>
 
-                <div className={`p-2 space-y-3 sm:space-y-4 sm:flex-1 sm:overflow-y-auto sm:pr-2 sm:custom-scrollbar ${isOpen ? 'block' : 'hidden'} sm:block`}>
+                <div className={`p-2 space-y-3 sm:space-y-4 sm:flex-1 sm:overflow-y-auto sm:pr-2 ${isOpen ? 'block' : 'hidden'} sm:block`}>
                   {jobsByStatus[status].length === 0 && !dragOverColumn ? (
-                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-8 opacity-50 dark:opacity-40">
+                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-8">
                       <div className="w-16 h-16 bg-slate-200 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 dark:border dark:border-slate-800">
-                        <SearchX className="w-8 h-8 text-slate-400 dark:text-slate-600" />
+                        <Inbox className="w-8 h-8 text-slate-400 dark:text-slate-600" />
                       </div>
-                      <p className="text-sm font-medium text-slate-400 dark:text-slate-500 text-center">{t.board.emptyColumns[status]}</p>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 text-center">{t.board.emptyColumns[status]}</p>
                     </div>
                   ) : (
                     <>

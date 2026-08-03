@@ -29,7 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex items-center gap-2">
                 <button
                     onClick={toggleTheme}
-                    className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg"
+                    className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50"
                     title={t.toggleTheme}
                     aria-label={t.toggleTheme}
                 >

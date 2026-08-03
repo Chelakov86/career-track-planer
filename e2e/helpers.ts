@@ -25,7 +25,7 @@ export const DE = {
         title: 'Bewerbungstracker',
         subtitle: 'Visualisiere deinen Bewerbungsprozess.',
         addJob: 'Job hinzufügen',
-        exportCSV: 'Excel Export',
+        exportCSV: 'CSV-Export',
         save: 'Speichern',
         cancel: 'Abbrechen',
         close: 'Schließen',

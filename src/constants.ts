@@ -288,7 +288,7 @@ export const TRANSLATIONS = {
       viewJob: "Job anzeigen",
       moveStage: "In nächste Phase verschieben",
       openLink: "Link öffnen",
-      exportCSV: "Excel Export",
+      exportCSV: "CSV-Export",
       newOpp: "Neue Chance hinzufügen",
       save: "Speichern",
       cancel: "Abbrechen",

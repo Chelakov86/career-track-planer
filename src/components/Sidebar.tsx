@@ -33,7 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex items-center gap-3">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold shadow-sm">CT</div>
                 <div>
-                    <h1 className="font-bold text-gray-900 dark:text-white text-lg">CareerTrack</h1>
+                    <div className="font-bold text-gray-900 dark:text-white text-lg">CareerTrack</div>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{t.nav.subtitle}</p>
                 </div>
             </div>
@@ -104,7 +104,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     {/* Theme Toggle */}
                     <button
                         onClick={toggleTheme}
-                        className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors shadow-sm"
+                        className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                         title={t.toggleTheme}
                         aria-label={t.toggleTheme}
                     >
