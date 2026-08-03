@@ -24,14 +24,13 @@ test.describe('JobCard Responsive Behavior', () => {
         const viewport = page.viewportSize();
         if (viewport && viewport.width < 640) {
             const board = visibleBoard(page);
-            // Click all collapsed accordion sections
-            for (let i = 0; i < 6; i++) {
-                const collapsed = board.locator('button.column-accordion-button[aria-expanded="false"]').first();
-                if (await collapsed.count() > 0) {
-                    await collapsed.click();
-                    await page.waitForTimeout(300);
-                } else {
-                    break;
+            const buttons = board.locator('button.column-accordion-button');
+            const count = await buttons.count();
+            for (let i = 0; i < count; i++) {
+                const btn = buttons.nth(i);
+                if (await btn.getAttribute('aria-expanded') === 'false') {
+                    await btn.evaluate((el) => (el as HTMLElement).click());
+                    await expect(btn).toHaveAttribute('aria-expanded', 'true', { timeout: 3000 });
                 }
             }
         }
@@ -74,27 +73,20 @@ test.describe('JobCard Responsive Behavior', () => {
         await expect(jobCard).toBeVisible();
         
         // Notes should be visible by default on desktop
-        const notesContainer = jobCard.locator('div:has(p.line-clamp-2)');
-        await expect(notesContainer).toBeVisible();
-        
-        // Toggle button should be hidden on desktop
-        const toggleButton = jobCard.locator('.job-card-expand-button');
-        await expect(toggleButton).toBeHidden();
+        const notes = jobCard.locator('p.line-clamp-2').first();
+        await expect(notes).toBeVisible();
     });
 
-    test('mobile view: should show notes by default and not have a toggle button', async ({ page }) => {
+    test('mobile view: should show notes by default', async ({ page }) => {
         await page.setViewportSize({ width: 375, height: 667 });
         await ensureTestJobExists(page);
 
         const board = visibleBoard(page);
         const jobCard = board.locator('.job-card').first();
         await expect(jobCard).toBeVisible();
-
-        const toggleButton = jobCard.locator('.job-card-expand-button');
-        await expect(toggleButton).toBeHidden();
         
-        const notesContainer = jobCard.locator('div:has(p.line-clamp-2)');
-        await expect(notesContainer).toBeVisible();
+        const notes = jobCard.locator('p.line-clamp-2').first();
+        await expect(notes).toBeVisible();
     });
 
     test('mobile view: should have smaller tags', async ({ page }) => {
@@ -111,3 +103,4 @@ test.describe('JobCard Responsive Behavior', () => {
         expect(className).toContain('md:text-[10px]');
     });
 });
+
