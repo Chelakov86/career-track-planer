@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CareerTrack Scheduler</title>
+    <title>CareerTrack Planer</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
       tailwind.config = {
@@ -43,6 +43,25 @@
         backdrop-filter: blur(12px);
         -webkit-backdrop-filter: blur(12px);
         background-color: rgba(19, 91, 236, 0.85);
+      }
+
+      /* Card quick actions: hidden until hover/focus on fine pointers, always visible on touch */
+      @media (pointer: fine) {
+        .card-actions { opacity: 0; }
+        .group:hover .card-actions,
+        .card-actions:focus-visible { opacity: 1; }
+      }
+      .card-actions:focus-visible {
+        box-shadow: 0 0 0 2px rgba(19, 91, 236, 0.5);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
       }
     </style>
   <script type="importmap">

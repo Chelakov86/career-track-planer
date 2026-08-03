@@ -66,7 +66,8 @@ test.describe('Mobile View', () => {
         await navigateTo(page, '/');
         await expect(page.getByText(DE.board.title)).toBeVisible({ timeout: 10000 });
 
-        const accordionButtons = page.locator('button.column-accordion-button');
+        // Zero-count sections are hidden on mobile; only visible sections toggle
+        const accordionButtons = page.locator('button.column-accordion-button:visible');
         const count = await accordionButtons.count();
 
         if (count > 1) {

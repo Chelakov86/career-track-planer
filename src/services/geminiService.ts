@@ -32,28 +32,24 @@ const callGeminiAPI = async (prompt: string, config?: any): Promise<string> => {
 };
 
 export const generateTaskAdvice = async (block: ScheduleBlock, lang: Language): Promise<string> => {
-  const errorMsg = lang === 'de' ? "KI-Dienst nicht verfügbar." : "AI service unavailable.";
+  const prompt = `
+    You are an expert Career Coach for someone looking for a job.
 
-  try {
-    const prompt = `
-      You are an expert Career Coach for someone looking for a job.
+    The user is currently in this time block:
+    Title: ${block.title}
+    Description: ${block.description}
+    Category: ${block.category}
 
-      The user is currently in this time block:
-      Title: ${block.title}
-      Description: ${block.description}
-      Category: ${block.category}
+    Provide a bulleted list of 3 highly specific, actionable, and productive tasks they should do right now during this hour to maximize their chances of getting hired.
+    ${lang === 'de' ? 'Answer in German.' : 'Answer in English.'}
+    Keep it brief, encouraging, and professional.
+  `;
 
-      Provide a bulleted list of 3 highly specific, actionable, and productive tasks they should do right now during this hour to maximize their chances of getting hired.
-      ${lang === 'de' ? 'Answer in German.' : 'Answer in English.'}
-      Keep it brief, encouraging, and professional.
-    `;
-
-    const text = await callGeminiAPI(prompt);
-    return text || (lang === 'de' ? "Kein Ratschlag generiert." : "No advice generated.");
-  } catch (error) {
-    console.error("Error generating advice:", error);
-    return lang === 'de' ? "Ratschlag konnte momentan nicht generiert werden." : "Could not generate advice at this time.";
+  const text = await callGeminiAPI(prompt);
+  if (!text) {
+    throw new Error(lang === 'de' ? "Kein Ratschlag generiert." : "No advice generated.");
   }
+  return text;
 };
 
 export const analyzeJobDescription = async (description: string, lang: Language): Promise<string> => {

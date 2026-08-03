@@ -7,13 +7,9 @@ test.describe('Job Modal - CRUD Operations', () => {
         await expect(page.getByText(DE.board.title)).toBeVisible({ timeout: 10000 });
     });
 
-    /** Helper to get the visible board section depending on viewport */
-    function visibleBoard(page: import('@playwright/test').Page, isMobile: boolean) {
-        if (isMobile) {
-            return page.locator('div.sm\\:hidden').first();
-        } else {
-            return page.locator('div.hidden.sm\\:block').first();
-        }
+    /** Helper to get the board container (single responsive board) */
+    function visibleBoard(page: import('@playwright/test').Page, _isMobile: boolean) {
+        return page.locator('[data-testid="job-board"]').first();
     }
 
     /** Helper to open the add job modal regardless of viewport */
@@ -30,9 +26,9 @@ test.describe('Job Modal - CRUD Operations', () => {
     async function ensureCardsVisible(page: import('@playwright/test').Page, isMobile: boolean) {
         if (isMobile) {
             const board = visibleBoard(page, isMobile);
-            // Click all collapsed accordion sections
+            // Click all collapsed accordion sections (empty columns are hidden on mobile)
             for (let i = 0; i < 6; i++) {
-                const collapsed = board.locator('button[aria-expanded="false"]').first();
+                const collapsed = board.locator('button[aria-expanded="false"]:visible').first();
                 if (await collapsed.count() > 0) {
                     await collapsed.click();
                     await page.waitForTimeout(300);

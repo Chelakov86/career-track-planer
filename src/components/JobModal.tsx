@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, ExternalLink, ChevronDown, ChevronRight, Calendar } from 'lucide-react';
 import { JobApplication, ApplicationStatus, Language, InterviewRound } from '../types';
-import { TRANSLATIONS } from '../constants';
+import { TRANSLATIONS, INTERVIEW_ROUND_STATUS_COLORS } from '../constants';
 import { useInterviewRounds } from '../hooks/useInterviewRounds';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { InterviewRoundItem } from './InterviewRoundItem';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleCalendarImportPicker } from './GoogleCalendarImportPicker';
@@ -50,6 +51,8 @@ export const JobModal: React.FC<JobModalProps> = ({
 
     const [formData, setFormData] = useState<Partial<JobApplication>>(() => initializeFormData(initialData));
     const isInitialMount = useRef(true);
+    const dialogRef = useRef<HTMLDivElement>(null);
+    useFocusTrap(dialogRef, true);
     const t = TRANSLATIONS[language];
     const columns = Object.values(ApplicationStatus);
 
@@ -197,13 +200,13 @@ export const JobModal: React.FC<JobModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fadeIn">
-            <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="job-modal-title" className="bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-800 w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
                 <div className="p-4 border-b border-gray-200 dark:border-slate-800 flex justify-between items-center">
-                    <h3 className="font-bold text-gray-800 dark:text-white">
+                    <h3 id="job-modal-title" className="font-bold text-gray-800 dark:text-white">
                         {mode === 'view' ? t.board.viewJob : (formData.id ? t.board.editJob : t.board.newOpp)}
                     </h3>
-                    <button onClick={onCancel} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <button onClick={onCancel} aria-label={t.board.closeDialog} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
@@ -268,10 +271,7 @@ export const JobModal: React.FC<JobModalProps> = ({
                                                             <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
                                                                 {round.roundName || <span className="text-gray-400 dark:text-gray-500 italic">{t.interviewRound.roundNamePlaceholder}</span>}
                                                             </span>
-                                                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${round.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
-                                                                    round.status === 'awaiting_feedback' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' :
-                                                                        'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                                                                }`}>
+                                                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${INTERVIEW_ROUND_STATUS_COLORS[round.status]}`}>
                                                                 {t.interviewRound.statuses[round.status]}
                                                             </span>
                                                         </div>

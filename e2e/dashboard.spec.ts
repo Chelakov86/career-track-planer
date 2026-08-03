@@ -94,9 +94,9 @@ test.describe('Dashboard', () => {
         ).toBeGreaterThanOrEqual(initialCount + 1);
 
         await navigateTo(page, '/');
-        const board = page.locator('div.hidden.sm\\:block').first();
+        const board = page.locator('[data-testid="job-board"]').first();
         const jobCard = board.locator('.job-card').filter({ hasText: company });
-        await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
+        await jobCard.getByRole('button', { name: DE.board.deleteJob }).click();
         await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
         await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
     });
@@ -122,9 +122,9 @@ test.describe('Dashboard', () => {
         await expect(row.getByTestId('analytics-badge-added')).toHaveCount(0);
 
         await navigateTo(page, '/');
-        const board = page.locator('div.hidden.sm\\:block').first();
+        const board = page.locator('[data-testid="job-board"]').first();
         const jobCard = board.locator('.job-card').filter({ hasText: company });
-        await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
+        await jobCard.getByRole('button', { name: DE.board.deleteJob }).click();
         await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
         await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
     });
@@ -163,9 +163,9 @@ test.describe('Dashboard', () => {
         await expect(page.getByTestId('analytics-jobs')).toHaveCount(0);
 
         await navigateTo(page, '/');
-        const board = page.locator('div.hidden.sm\\:block').first();
+        const board = page.locator('[data-testid="job-board"]').first();
         const jobCard = board.locator('.job-card').filter({ hasText: company });
-        await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
+        await jobCard.getByRole('button', { name: DE.board.deleteJob }).click();
         await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
         await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
     });
@@ -232,13 +232,13 @@ test.describe('Dashboard', () => {
         // Reopen and dismiss via the Close button.
         await row.click();
         await expect(modal.getByText(DE.board.viewJob)).toBeVisible({ timeout: 10000 });
-        await modal.getByRole('button', { name: DE.board.close }).click();
+        await modal.getByRole('button', { name: DE.board.close, exact: true }).click();
         await expect(modal.getByText(DE.board.viewJob)).toHaveCount(0);
 
         await navigateTo(page, '/');
-        const board = page.locator('div.hidden.sm\\:block').first();
+        const board = page.locator('[data-testid="job-board"]').first();
         const jobCard = board.locator('.job-card').filter({ hasText: company });
-        await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
+        await jobCard.getByRole('button', { name: DE.board.deleteJob }).click();
         await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
         await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
     });
@@ -290,7 +290,7 @@ test.describe('Dashboard', () => {
         await row.click();
         await expect(modal.getByText(DE.board.viewJob)).toBeVisible({ timeout: 10000 });
         await expect(modal.getByRole('button', { name: DE.board.edit })).toHaveCount(0);
-        await modal.getByRole('button', { name: DE.board.close }).click();
+        await modal.getByRole('button', { name: DE.board.close, exact: true }).click();
         await expect(modal.getByText(DE.board.viewJob)).toHaveCount(0);
 
         // Switch to one round card
@@ -305,9 +305,9 @@ test.describe('Dashboard', () => {
 
         // Clean up created job
         await navigateTo(page, '/');
-        const board = page.locator('div.hidden.sm\\:block').first();
+        const board = page.locator('[data-testid="job-board"]').first();
         const jobCard = board.locator('.job-card').filter({ hasText: company });
-        await jobCard.getByRole('button', { name: DE.board.confirmDelete }).click();
+        await jobCard.getByRole('button', { name: DE.board.deleteJob }).click();
         await page.locator('.fixed.inset-0').getByRole('button', { name: DE.board.confirmDelete }).click();
         await expect(page.getByText(company)).not.toBeVisible({ timeout: 10000 });
     });

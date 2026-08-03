@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ScheduleView } from './components/ScheduleView';
 import { JobBoard } from './components/JobBoard';
@@ -25,6 +25,7 @@ const AppContent: React.FC = () => {
     updateStatus,
     deleteJob,
     refetchJobs,
+    loading,
   } = useJobs(user);
   const {
     events: applicationEvents,
@@ -33,6 +34,11 @@ const AppContent: React.FC = () => {
   } = useApplicationEvents(user, jobs, jobsRevision);
 
   const currentSchedule = getSchedule(language);
+
+  useEffect(() => {
+    document.documentElement.lang = language === 'de' ? 'de' : 'en';
+    document.title = language === 'de' ? 'CareerTrack Planer' : 'CareerTrack Planner';
+  }, [language]);
 
   if (isLoading) {
     return (
@@ -67,6 +73,7 @@ const AppContent: React.FC = () => {
               onDeleteJob={deleteJob}
               onRefetchJobs={refetchJobs}
               language={language}
+              loading={loading}
             />
           }
         />

@@ -20,16 +20,56 @@ const CategoryIcon = ({ category }: { category: string }) => {
   }
 };
 
+interface AdviceState {
+  text: string;
+  error: boolean;
+}
+
+const ADVICE_STORAGE_KEY = (lang: Language) => `careertrack.advice.${lang}`;
+
+const readStoredAdvice = (lang: Language): Record<string, AdviceState> => {
+  try {
+    const raw = localStorage.getItem(ADVICE_STORAGE_KEY(lang));
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    if (parsed.date !== new Date().toISOString().split('T')[0]) return {};
+    return parsed.advice ?? {};
+  } catch {
+    return {};
+  }
+};
+
+const writeStoredAdvice = (lang: Language, advice: Record<string, AdviceState>) => {
+  localStorage.setItem(ADVICE_STORAGE_KEY(lang), JSON.stringify({
+    date: new Date().toISOString().split('T')[0],
+    advice,
+  }));
+};
+
 export const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, language }) => {
   const [loadingId, setLoadingId] = useState<string | null>(null);
-  const [advice, setAdvice] = useState<Record<string, string>>({});
+  const [advice, setAdvice] = useState<Record<string, AdviceState>>(() => readStoredAdvice(language));
   const t = TRANSLATIONS[language];
 
   const handleGetAdvice = async (block: ScheduleBlock) => {
     setLoadingId(block.id);
-    const result = await generateTaskAdvice(block, language);
-    setAdvice(prev => ({ ...prev, [block.id]: result }));
-    setLoadingId(null);
+    try {
+      const result = await generateTaskAdvice(block, language);
+      setAdvice(prev => {
+        const next = { ...prev, [block.id]: { text: result, error: false } };
+        writeStoredAdvice(language, next);
+        return next;
+      });
+    } catch (error) {
+      console.error('Error generating advice:', error);
+      setAdvice(prev => {
+        const next = { ...prev, [block.id]: { text: '', error: true } };
+        writeStoredAdvice(language, next);
+        return next;
+      });
+    } finally {
+      setLoadingId(null);
+    }
   };
 
   const handleGoogleCalendar = (block: ScheduleBlock) => {
@@ -85,7 +125,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, language }
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{t.schedule.title}</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">{t.schedule.subtitle}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">{t.schedule.subtitle}</p>
         </div>
         <button
           onClick={handleExportCalendar}
@@ -103,7 +143,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, language }
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="text-xs font-mono text-gray-500 dark:text-gray-400">
+                  <span className="text-xs text-gray-500 dark:text-gray-400">
                     {block.startTime} - {block.endTime}
                   </span>
                   <span className={`text-xs px-2 py-1 rounded-full border ${
@@ -119,15 +159,37 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, language }
                   <CategoryIcon category={block.category} />
                   {block.title}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{block.description}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed max-w-prose">{block.description}</p>
 
-                {advice[block.id] && (
+                {advice[block.id] && advice[block.id].error && (
+                  <div
+                    role="alert"
+                    className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-900/50 animate-fadeIn"
+                  >
+                    <h4 className="text-sm font-bold text-red-700 dark:text-red-300 mb-2 flex items-center gap-2">
+                      <Sparkles className="w-3 h-3" /> {t.schedule.coachAdvice}
+                    </h4>
+                    <div className="text-sm text-red-700 dark:text-red-300 whitespace-pre-wrap leading-relaxed">
+                      {t.schedule.coachAdviceFailed}
+                    </div>
+                    <button
+                      onClick={() => handleGetAdvice(block)}
+                      disabled={loadingId === block.id}
+                      className="mt-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-md border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors disabled:opacity-50"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      {t.schedule.coachAdviceErrorRetry}
+                    </button>
+                  </div>
+                )}
+
+                {advice[block.id] && !advice[block.id].error && (
                   <div className="mt-4 p-4 bg-primary/5 dark:bg-primary/10 rounded-lg border border-primary/20 dark:border-primary/30 animate-fadeIn">
                     <h4 className="text-sm font-bold text-primary dark:text-primary mb-2 flex items-center gap-2">
                       <Sparkles className="w-3 h-3" /> {t.schedule.coachAdvice}
                     </h4>
                     <div className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
-                      {advice[block.id]}
+                      {advice[block.id].text}
                     </div>
                   </div>
                 )}
@@ -147,7 +209,7 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, language }
                   <button
                     onClick={() => handleGetAdvice(block)}
                     disabled={loadingId === block.id}
-                    className="flex items-center justify-center gap-2 px-3 py-2 bg-primary dark:bg-primary text-white rounded-md text-sm font-medium hover:bg-blue-700 dark:hover:bg-blue-700 transition-colors disabled:opacity-50 w-full md:w-auto"
+                    className="flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-primary/40 dark:border-primary/40 text-primary dark:text-primary rounded-md text-sm font-medium hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors disabled:opacity-50 w-full md:w-auto"
                   >
                     {loadingId === block.id ? (
                       <span className="animate-pulse">{t.schedule.thinking}</span>

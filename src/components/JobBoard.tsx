@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS, STATUS_COLORS, STATUS_COUNT_COLORS } from '../constants';
-import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search, X, Calendar, SearchX } from 'lucide-react';
+import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search, X, Calendar, SearchX, Inbox, Check } from 'lucide-react';
 import { JobCard } from './JobCard';
 import { JobModal } from './JobModal';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
+import { useFocusTrap } from '../hooks/useFocusTrap';
 import { generateJobsCSV, downloadFile } from '../lib/csvExport';
 import { clearPendingCalendarImport, readPendingCalendarImport } from '../lib/googleCalendarAuth';
 import { formatLocalDate } from '../lib/date';
@@ -26,6 +27,43 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
+function useIsMobile(): boolean {
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 639px)').matches);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)');
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  return isMobile;
+}
+
+const BOARD_STATE_KEY = 'careertrack.boardState';
+const MOBILE_PAGE_SIZE = 8;
+
+interface BoardPersistState {
+  statusFilter: ApplicationStatus[] | 'ALL';
+  searchQuery: string;
+  dateAddedFrom: string;
+  dateAddedTo: string;
+  lastUpdatedFrom: string;
+  lastUpdatedTo: string;
+  sortField: 'dateAdded' | 'lastUpdated' | 'company' | 'position';
+  sortDirection: 'asc' | 'desc';
+  mobileOpenStatuses: ApplicationStatus[];
+}
+
+const readBoardState = (): Partial<BoardPersistState> => {
+  try {
+    const raw = sessionStorage.getItem(BOARD_STATE_KEY);
+    return raw ? JSON.parse(raw) as Partial<BoardPersistState> : {};
+  } catch {
+    return {};
+  }
+};
+
 interface JobBoardProps {
   jobs: JobApplication[];
   onAddJob: (job: JobApplication) => Promise<void>;
@@ -34,20 +72,25 @@ interface JobBoardProps {
   onDeleteJob: (id: string) => Promise<void>;
   onRefetchJobs?: () => void | Promise<void>;
   language: Language;
+  loading?: boolean;
 }
 
-export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, onUpdateStatus, onDeleteJob, onRefetchJobs, language }) => {
+export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, onUpdateStatus, onDeleteJob, onRefetchJobs, language, loading }) => {
+  const restoredBoardState = useRef(readBoardState());
+  const hasRestoredMobileOpen = useRef((restoredBoardState.current.mobileOpenStatuses?.length ?? 0) > 0);
+
   // Filters & sorting
-  const [statusFilter, setStatusFilter] = useState<ApplicationStatus[] | 'ALL'>('ALL');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<ApplicationStatus[] | 'ALL'>(restoredBoardState.current.statusFilter ?? 'ALL');
+  const [searchQuery, setSearchQuery] = useState(restoredBoardState.current.searchQuery ?? '');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [dateAddedFrom, setDateAddedFrom] = useState<string>('');
-  const [dateAddedTo, setDateAddedTo] = useState<string>('');
-  const [lastUpdatedFrom, setLastUpdatedFrom] = useState<string>('');
-  const [lastUpdatedTo, setLastUpdatedTo] = useState<string>('');
-  const [sortField, setSortField] = useState<'dateAdded' | 'lastUpdated' | 'company' | 'position'>('dateAdded');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const [dateAddedFrom, setDateAddedFrom] = useState<string>(restoredBoardState.current.dateAddedFrom ?? '');
+  const [dateAddedTo, setDateAddedTo] = useState<string>(restoredBoardState.current.dateAddedTo ?? '');
+  const [lastUpdatedFrom, setLastUpdatedFrom] = useState<string>(restoredBoardState.current.lastUpdatedFrom ?? '');
+  const [lastUpdatedTo, setLastUpdatedTo] = useState<string>(restoredBoardState.current.lastUpdatedTo ?? '');
+  const [sortField, setSortField] = useState<'dateAdded' | 'lastUpdated' | 'company' | 'position'>(restoredBoardState.current.sortField ?? 'dateAdded');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>(restoredBoardState.current.sortDirection ?? 'desc');
   const [jobToDelete, setJobToDelete] = useState<JobApplication | null>(null);
+  const [moveToJob, setMoveToJob] = useState<JobApplication | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState<Partial<JobApplication>>({});
   const [viewJobId, setViewJobId] = useState<string | null>(null);
@@ -56,11 +99,49 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
   const [showEmptyColumns, setShowEmptyColumns] = useState(true);
-  const [mobileOpenStatuses, setMobileOpenStatuses] = useState<ApplicationStatus[]>([]);
+  const [mobileOpenStatuses, setMobileOpenStatuses] = useState<ApplicationStatus[]>(
+    hasRestoredMobileOpen.current ? restoredBoardState.current.mobileOpenStatuses! : []
+  );
+  const [mobileShowAll, setMobileShowAll] = useState<ApplicationStatus[]>([]);
+  const isMobile = useIsMobile();
+  const filterSheetRef = useRef<HTMLDivElement>(null);
+  const moveSheetRef = useRef<HTMLDivElement>(null);
+  useFocusTrap(filterSheetRef, showFilters);
+  useFocusTrap(moveSheetRef, Boolean(moveToJob));
 
   // Drag and Drop State (Mouse & Touch)
   const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
   const [draggedItemId, setDraggedItemId] = useState<string | null>(null);
+
+  // Toast + undo for status moves
+  const [toast, setToast] = useState<{
+    kind: 'info' | 'error';
+    text: string;
+    actionLabel?: string;
+    onAction?: () => void;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  // Persist board view state across navigation (filters, sort, accordion)
+  useEffect(() => {
+    const state: BoardPersistState = {
+      statusFilter,
+      searchQuery,
+      dateAddedFrom,
+      dateAddedTo,
+      lastUpdatedFrom,
+      lastUpdatedTo,
+      sortField,
+      sortDirection,
+      mobileOpenStatuses,
+    };
+    sessionStorage.setItem(BOARD_STATE_KEY, JSON.stringify(state));
+  }, [statusFilter, searchQuery, dateAddedFrom, dateAddedTo, lastUpdatedFrom, lastUpdatedTo, sortField, sortDirection, mobileOpenStatuses]);
 
   // Auto-scroll Refs
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -72,6 +153,17 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const dragItemTimer = useRef<any>(null);
   const sortRef = useRef<HTMLDivElement>(null);
   const didInitMobileOpen = useRef(false);
+
+  // Horizontal scroll affordance (edge fades)
+  const [showLeftFade, setShowLeftFade] = useState(false);
+  const [showRightFade, setShowRightFade] = useState(false);
+
+  const updateScrollFades = useCallback(() => {
+    const el = scrollContainerRef.current;
+    if (!el) return;
+    setShowLeftFade(el.scrollLeft > 4);
+    setShowRightFade(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+  }, []);
 
   const t = TRANSLATIONS[language];
   const columns = useMemo(() => Object.values(ApplicationStatus), []);
@@ -128,6 +220,23 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showSort]);
+
+  // Handle Escape key to dismiss sort dropdown and filter sheet
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (showSort) setShowSort(false);
+        if (showFilters) setShowFilters(false);
+        if (moveToJob) setMoveToJob(null);
+      }
+    };
+    if (showSort || showFilters || moveToJob) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showSort, showFilters, moveToJob]);
 
   const openAddModal = () => {
     setResumeCalendarImport(false);
@@ -188,42 +297,77 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const handleSaveJob = async (data: Partial<JobApplication>) => {
     const today = formatLocalDate();
 
-    if (data.id) {
-      // Edit existing
-      await onEditJob({
-        ...data,
-        lastUpdated: today,
-        // Preserve link field - convert empty string to undefined for optional field
-        link: data.link && data.link.trim() ? data.link.trim() : undefined
-      } as JobApplication);
-      await onRefetchJobs?.();
-    } else {
-      // Create new
-      const job: JobApplication = {
-        id: Math.random().toString(36).substr(2, 9),
-        company: data.company!,
-        position: data.position!,
-        location: data.location?.trim() || '',
-        status: data.status || ApplicationStatus.RESEARCH,
-        dateAdded: today,
-        lastUpdated: today,
-        notes: data.notes || '',
-        salary: data.salary,
-        // Preserve link field - convert empty string to undefined for optional field
-        link: data.link && data.link.trim() ? data.link.trim() : undefined
-      };
-      await onAddJob(job);
-      await onRefetchJobs?.();
+    try {
+      if (data.id) {
+        // Edit existing
+        await onEditJob({
+          ...data,
+          lastUpdated: today,
+          // Preserve link field - convert empty string to undefined for optional field
+          link: data.link && data.link.trim() ? data.link.trim() : undefined
+        } as JobApplication);
+        await onRefetchJobs?.();
+      } else {
+        // Create new
+        const job: JobApplication = {
+          id: Math.random().toString(36).substr(2, 9),
+          company: data.company!,
+          position: data.position!,
+          location: data.location?.trim() || '',
+          status: data.status || ApplicationStatus.RESEARCH,
+          dateAdded: today,
+          lastUpdated: today,
+          notes: data.notes || '',
+          salary: data.salary,
+          // Preserve link field - convert empty string to undefined for optional field
+          link: data.link && data.link.trim() ? data.link.trim() : undefined
+        };
+        await onAddJob(job);
+        await onRefetchJobs?.();
+      }
+      setShowModal(false);
+    } catch {
+      setToast({ kind: 'error', text: t.board.errorSave });
     }
-    setShowModal(false);
   };
 
-  const confirmDelete = () => {
-    if (jobToDelete) {
-      onDeleteJob(jobToDelete.id);
+  const confirmDelete = async () => {
+    if (!jobToDelete) return;
+    const where = jobToDelete.company
+      ? `${jobToDelete.company}: ${t.board.deleted}`
+      : t.board.deleted;
+    try {
+      await onDeleteJob(jobToDelete.id);
       setJobToDelete(null);
+      setToast({ kind: 'info', text: where });
+    } catch {
+      setToast({ kind: 'error', text: t.board.errorDelete });
     }
   };
+
+  const undoLastMove = useCallback((move: { jobId: string; from: ApplicationStatus }) => {
+    setToast(null);
+    onUpdateStatus(move.jobId, move.from).catch(() => {
+      setToast({ kind: 'error', text: t.board.errorStatusUpdate });
+    });
+  }, [onUpdateStatus, t]);
+
+  const recordMove = useCallback(async (jobId: string, to: ApplicationStatus) => {
+    const job = jobs.find(j => j.id === jobId);
+    if (!job || job.status === to) return;
+    try {
+      await onUpdateStatus(jobId, to);
+      const move = { jobId, from: job.status, to, company: job.company };
+      setToast({
+        kind: 'info',
+        text: `${job.company} → ${t.board.status[to]}`,
+        actionLabel: t.board.undo,
+        onAction: () => undoLastMove(move)
+      });
+    } catch {
+      setToast({ kind: 'error', text: t.board.errorStatusUpdate });
+    }
+  }, [jobs, onUpdateStatus, t, undoLastMove]);
 
   const handleExportCSV = () => {
     const csvContent = generateJobsCSV(jobs, language);
@@ -279,7 +423,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     if (jobId) {
       const job = jobs.find(j => j.id === jobId);
       if (job && job.status !== status) {
-        onUpdateStatus(jobId, status);
+        recordMove(jobId, status);
       }
     }
   };
@@ -340,7 +484,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
     if (isTouchDragging) {
       if (draggedItemId && dragOverColumn) {
-        onUpdateStatus(draggedItemId, dragOverColumn);
+        recordMove(draggedItemId, dragOverColumn);
       }
       // Reset
       document.body.style.overflow = '';
@@ -350,7 +494,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       setDragOverColumn(null);
       pointerRef.current = null;
     }
-  }, [isTouchDragging, draggedItemId, dragOverColumn, onUpdateStatus]);
+  }, [isTouchDragging, draggedItemId, dragOverColumn, recordMove]);
 
   const getNextStatus = useCallback((current: ApplicationStatus): ApplicationStatus | null => {
     const idx = columns.indexOf(current);
@@ -365,9 +509,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const handleNextStatus = useCallback((job: JobApplication) => {
     const next = getNextStatus(job.status);
     if (next) {
-      onUpdateStatus(job.id, next);
+      recordMove(job.id, next);
     }
-  }, [getNextStatus, onUpdateStatus]);
+  }, [getNextStatus, recordMove]);
   const visibleJobs = useMemo(() => {
     let result = [...jobs];
 
@@ -459,13 +603,21 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     return columns.filter((status) => statusCounts[status] > 0);
   }, [columns, showEmptyColumns, statusCounts, visibleJobs.length]);
 
+  // Re-measure scroll affordance whenever the board layout changes
+  useEffect(() => {
+    updateScrollFades();
+    window.addEventListener('resize', updateScrollFades);
+    return () => window.removeEventListener('resize', updateScrollFades);
+  }, [updateScrollFades, visibleJobs, columnsForDesktop]);
+
   useEffect(() => {
     if (didInitMobileOpen.current) return;
+    didInitMobileOpen.current = true;
+    if (hasRestoredMobileOpen.current) return;
     if (visibleJobs.length === 0) return;
     const firstWithJobs = columns.find((status) => statusCounts[status] > 0) || columns[0];
     if (!firstWithJobs) return;
     setMobileOpenStatuses([firstWithJobs]);
-    didInitMobileOpen.current = true;
   }, [columns, statusCounts, visibleJobs.length]);
 
   // Calculate active filter count
@@ -495,17 +647,15 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   };
 
   // Date preset helpers
-  const setDatePreset = useCallback((preset: 'last7' | 'last30' | 'thisMonth', field: 'dateAdded' | 'lastUpdated') => {
+  const setDatePreset = useCallback((preset: 'last7Days' | 'last30Days' | 'thisMonth', field: 'dateAdded' | 'lastUpdated') => {
     const today = new Date();
-    let fromDate: Date;
+    let fromDate: Date = new Date(today);
 
     switch (preset) {
-      case 'last7':
-        fromDate = new Date(today);
+      case 'last7Days':
         fromDate.setDate(today.getDate() - 7);
         break;
-      case 'last30':
-        fromDate = new Date(today);
+      case 'last30Days':
         fromDate.setDate(today.getDate() - 30);
         break;
       case 'thisMonth':
@@ -522,6 +672,22 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     } else {
       setLastUpdatedFrom(fromStr);
       setLastUpdatedTo(toStr);
+    }
+  }, []);
+
+  const clampDateBound = useCallback((
+    setFrom: React.Dispatch<React.SetStateAction<string>>,
+    setTo: React.Dispatch<React.SetStateAction<string>>,
+    bound: 'from' | 'to',
+    value: string,
+    other: string
+  ) => {
+    if (bound === 'from') {
+      setFrom(value);
+      if (value && other && value > other) setTo(value);
+    } else {
+      setTo(value);
+      if (value && other && value < other) setFrom(value);
     }
   }, []);
 
@@ -567,34 +733,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   }, []);
 
   const filtersPanelContent = (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
-      {/* Search */}
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <Search className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-              {t.board.filters?.search || 'Search'}
-            </span>
-          </div>
-          <div className="relative">
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t.board.filters?.searchPlaceholder || 'Search company, position, location, notes...'}
-              className="w-full px-3 py-1.5 pr-8 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary/50/60 focus:border-primary"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        </div>
-
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
         {/* Status filters with colored chips */}
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
@@ -617,7 +756,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   key={status}
                   type="button"
                   onClick={() => toggleStatusInFilter(status)}
-                  className={`px-2 py-1 text-[10px] rounded-full border transition-colors ${isSelected
+                  aria-pressed={isSelected}
+                  className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${isSelected
                     ? STATUS_COLORS[status]
                     : 'bg-gray-50 dark:bg-slate-900/50 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-slate-800 hover:text-gray-600 dark:hover:text-gray-300'
                     }`}
@@ -642,14 +782,18 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <input
               type="date"
               value={dateAddedFrom}
-              onChange={(e) => setDateAddedFrom(e.target.value)}
+              max={dateAddedTo || undefined}
+              aria-label={`${t.board.labels.dateAdded} ${t.board.filters.from}`}
+              onChange={(e) => clampDateBound(setDateAddedFrom, setDateAddedTo, 'from', e.target.value, dateAddedTo)}
               className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             <span className="text-gray-400 text-xs">→</span>
             <input
               type="date"
               value={dateAddedTo}
-              onChange={(e) => setDateAddedTo(e.target.value)}
+              min={dateAddedFrom || undefined}
+              aria-label={`${t.board.labels.dateAdded} ${t.board.filters.to}`}
+              onChange={(e) => clampDateBound(setDateAddedFrom, setDateAddedTo, 'to', e.target.value, dateAddedFrom)}
               className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             {(dateAddedFrom || dateAddedTo) && (
@@ -666,21 +810,21 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <button
               type="button"
               onClick={() => setDatePreset('last7Days', 'dateAdded')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.last7Days || 'Last 7 days'}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('last30Days', 'dateAdded')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.last30Days || 'Last 30 days'}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('thisMonth', 'dateAdded')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.thisMonth || 'This month'}
             </button>
@@ -699,14 +843,18 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <input
               type="date"
               value={lastUpdatedFrom}
-              onChange={(e) => setLastUpdatedFrom(e.target.value)}
+              max={lastUpdatedTo || undefined}
+              aria-label={`${t.board.labels.lastUpdated} ${t.board.filters.from}`}
+              onChange={(e) => clampDateBound(setLastUpdatedFrom, setLastUpdatedTo, 'from', e.target.value, lastUpdatedTo)}
               className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             <span className="text-gray-400 text-xs">→</span>
             <input
               type="date"
               value={lastUpdatedTo}
-              onChange={(e) => setLastUpdatedTo(e.target.value)}
+              min={lastUpdatedFrom || undefined}
+              aria-label={`${t.board.labels.lastUpdated} ${t.board.filters.to}`}
+              onChange={(e) => clampDateBound(setLastUpdatedFrom, setLastUpdatedTo, 'to', e.target.value, lastUpdatedFrom)}
               className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             {(lastUpdatedFrom || lastUpdatedTo) && (
@@ -723,21 +871,21 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <button
               type="button"
               onClick={() => setDatePreset('last7Days', 'lastUpdated')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.last7Days || 'Last 7 days'}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('last30Days', 'lastUpdated')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.last30Days || 'Last 30 days'}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('thisMonth', 'lastUpdated')}
-              className="px-2 py-0.5 text-[10px] rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
             >
               {t.board.filters?.thisMonth || 'This month'}
             </button>
@@ -795,9 +943,91 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         <DeleteConfirmModal
           language={language}
           jobName={{ company: jobToDelete.company, position: jobToDelete.position }}
+          hasRounds={(jobToDelete.interviewRounds?.length ?? 0) > 0}
+          roundsCount={jobToDelete.interviewRounds?.length ?? 0}
           onConfirm={confirmDelete}
           onCancel={() => setJobToDelete(null)}
         />
+      )}
+
+      {/* Move to... status sheet */}
+      {moveToJob && (
+        <div
+          className="fixed inset-0 z-50 bg-black/30 dark:bg-black/50 sm:bg-black/20 flex items-end sm:items-center justify-center sm:p-4"
+          onClick={() => setMoveToJob(null)}
+        >
+          <div
+            ref={moveSheetRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="move-to-title"
+            className="w-full sm:max-w-sm bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl p-4 sm:p-5 sm:border border-gray-200 dark:border-slate-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 id="move-to-title" className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                {t.board.moveTo} <span className="font-normal text-gray-400">{moveToJob.company}</span>
+              </h3>
+              <button
+                onClick={() => setMoveToJob(null)}
+                aria-label={t.board.close}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 -m-2 rounded-lg"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {columns.map(status => {
+                const isCurrent = moveToJob.status === status;
+                return (
+                  <button
+                    key={status}
+                    type="button"
+                    disabled={isCurrent}
+                    onClick={() => {
+                      const job = moveToJob;
+                      setMoveToJob(null);
+                      recordMove(job.id, status);
+                    }}
+                    className={`w-full min-h-[44px] flex items-center justify-between px-3 py-2 rounded-lg border text-sm font-medium transition-colors ${isCurrent
+                      ? 'bg-gray-50 dark:bg-slate-700/50 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-slate-600 cursor-default'
+                      : `${STATUS_COLORS[status]} hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`
+                      }`}
+                  >
+                    <span>{t.board.status[status]}</span>
+                    {isCurrent && <Check className="w-4 h-4" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast (status moves, undo, errors) */}
+      {toast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed left-1/2 -translate-x-1/2 bottom-24 sm:bottom-6 z-[60] flex items-center gap-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-xl px-4 py-3 max-w-[calc(100vw-2rem)] sm:max-w-md"
+        >
+          <span className="text-sm text-gray-700 dark:text-gray-200 truncate">{toast.text}</span>
+          {toast.kind === 'info' && toast.onAction && (
+            <button
+              onClick={toast.onAction}
+              className="text-sm font-medium text-primary dark:text-primary hover:underline shrink-0"
+            >
+              {toast.actionLabel}
+            </button>
+          )}
+          <button
+            onClick={() => setToast(null)}
+            aria-label={t.board.close}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 shrink-0 p-1"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
       )}
 
       {/* Add/Edit/View Job Modal */}
@@ -823,11 +1053,31 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{t.board.title}</h2>
-          <p className="text-gray-500 dark:text-gray-400 text-sm">{t.board.subtitle}</p>
+          <h1 className="text-2xl font-bold text-gray-800 dark:text-white">{t.board.title}</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-sm">{t.board.subtitle}</p>
         </div>
 
         <div className="flex flex-wrap gap-2">
+          <div className="relative order-first w-full sm:w-56">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder={t.board.filters?.searchPlaceholder || 'Search company, position, location, notes...'}
+              className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-700 focus:border-transparent"
+              aria-label={t.board.filters.search}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1"
+                aria-label={t.board.filters?.searchClear || 'Clear search'}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
           <button
             onClick={() => {
               setShowFilters(!showFilters);
@@ -869,35 +1119,62 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             </button>
 
             {showSort && (
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 py-2 animate-in fade-in zoom-in duration-200">
+              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 py-2">
                 {[
-                  { value: 'dateAdded_desc', label: t.board.filters?.sortOptions?.dateAddedDesc || 'Date added (newest)' },
-                  { value: 'dateAdded_asc', label: t.board.filters?.sortOptions?.dateAddedAsc || 'Date added (oldest)' },
-                  { value: 'lastUpdated_desc', label: t.board.filters?.sortOptions?.lastUpdatedDesc || 'Last updated (newest)' },
-                  { value: 'lastUpdated_asc', label: t.board.filters?.sortOptions?.lastUpdatedAsc || 'Last updated (oldest)' },
-                  { value: 'company_asc', label: t.board.filters?.sortOptions?.companyAsc || 'Company (A–Z)' },
-                  { value: 'company_desc', label: t.board.filters?.sortOptions?.companyDesc || 'Company (Z–A)' },
-                  { value: 'position_asc', label: t.board.filters?.sortOptions?.positionAsc || 'Position (A–Z)' },
-                  { value: 'position_desc', label: t.board.filters?.sortOptions?.positionDesc || 'Position (Z–A)' }
-                ].map((opt) => (
-                  <button
-                    key={opt.value}
-                    onClick={() => {
-                      const [field, dir] = opt.value.split('_') as [typeof sortField, typeof sortDirection];
-                      setSortField(field);
-                      setSortDirection(dir);
-                      setShowSort(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center justify-between ${`${sortField}_${sortDirection}` === opt.value
-                      ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary font-medium'
-                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
-                      }`}
-                  >
-                    {opt.label}
-                    {`${sortField}_${sortDirection}` === opt.value && (
-                      <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                    )}
-                  </button>
+                  {
+                    label: t.board.labels.dateAdded,
+                    options: [
+                      { value: 'dateAdded_desc', label: t.board.filters?.sortOptions?.dateAddedDesc || 'Date added (newest)' },
+                      { value: 'dateAdded_asc', label: t.board.filters?.sortOptions?.dateAddedAsc || 'Date added (oldest)' }
+                    ]
+                  },
+                  {
+                    label: t.board.labels.lastUpdated,
+                    options: [
+                      { value: 'lastUpdated_desc', label: t.board.filters?.sortOptions?.lastUpdatedDesc || 'Last updated (newest)' },
+                      { value: 'lastUpdated_asc', label: t.board.filters?.sortOptions?.lastUpdatedAsc || 'Last updated (oldest)' }
+                    ]
+                  },
+                  {
+                    label: t.board.filters?.sortGroupCompany || 'Company',
+                    options: [
+                      { value: 'company_asc', label: t.board.filters?.sortOptions?.companyAsc || 'Company (A–Z)' },
+                      { value: 'company_desc', label: t.board.filters?.sortOptions?.companyDesc || 'Company (Z–A)' }
+                    ]
+                  },
+                  {
+                    label: t.board.filters?.sortGroupPosition || 'Position',
+                    options: [
+                      { value: 'position_asc', label: t.board.filters?.sortOptions?.positionAsc || 'Position (A–Z)' },
+                      { value: 'position_desc', label: t.board.filters?.sortOptions?.positionDesc || 'Position (Z–A)' }
+                    ]
+                  }
+                ].map((group) => (
+                  <div key={group.label}>
+                    <div className="px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                      {group.label}
+                    </div>
+                    {group.options.map((opt) => (
+                      <button
+                        key={opt.value}
+                        onClick={() => {
+                          const [field, dir] = opt.value.split('_') as [typeof sortField, typeof sortDirection];
+                          setSortField(field);
+                          setSortDirection(dir);
+                          setShowSort(false);
+                        }}
+                        className={`w-full text-left px-4 py-1.5 text-sm transition-colors flex items-center justify-between ${`${sortField}_${sortDirection}` === opt.value
+                          ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary font-medium'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                          }`}
+                      >
+                        {opt.label}
+                        {`${sortField}_${sortDirection}` === opt.value && (
+                          <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 ))}
               </div>
             )}
@@ -921,6 +1198,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         </div>
       </div>
 
+
       {/* Active Filter Chips */}
       {hasActiveFilters && !showFilters && (
         <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -936,25 +1214,25 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             </span>
           )}
           {debouncedSearchQuery.trim() && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-200 border border-blue-200 dark:border-blue-700">
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/30">
               {t.board.filters?.search || 'Search'}: "{debouncedSearchQuery}"
-              <button onClick={() => removeFilter('search')} className="hover:text-blue-900 dark:hover:text-white">
+              <button onClick={() => removeFilter('search')} aria-label={`${t.board.filters?.search || 'Search'} ${t.board.filters?.searchClear || ''}`} className="hover:text-primary dark:hover:text-white">
                 <X className="w-3 h-3" />
               </button>
             </span>
           )}
           {(dateAddedFrom || dateAddedTo) && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-green-50 dark:bg-green-900/40 text-green-700 dark:text-green-200 border border-green-200 dark:border-green-700">
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/30">
               {t.board.labels.dateAdded}: {dateAddedFrom || '...'} - {dateAddedTo || '...'}
-              <button onClick={() => removeFilter('dateAdded')} className="hover:text-green-900 dark:hover:text-white">
+              <button onClick={() => removeFilter('dateAdded')} className="hover:text-primary dark:hover:text-white">
                 <X className="w-3 h-3" />
               </button>
             </span>
           )}
           {(lastUpdatedFrom || lastUpdatedTo) && (
-            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-yellow-50 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-200 border border-yellow-200 dark:border-yellow-700">
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/30">
               {t.board.labels.lastUpdated}: {lastUpdatedFrom || '...'} - {lastUpdatedTo || '...'}
-              <button onClick={() => removeFilter('lastUpdated')} className="hover:text-yellow-900 dark:hover:text-white">
+              <button onClick={() => removeFilter('lastUpdated')} className="hover:text-primary dark:hover:text-white">
                 <X className="w-3 h-3" />
               </button>
             </span>
@@ -963,13 +1241,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             onClick={resetFilters}
             className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:underline"
           >
-            {t.board.filters?.clearAll || 'Clear all'}
+            {t.board.filters?.reset || 'Reset all filters'}
           </button>
         </div>
       )}
 
       {/* Results count */}
-      <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 shrink-0">
+      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 shrink-0">
         <span>
           {t.board.filters?.showing || 'Showing'} <span className="font-semibold text-gray-700 dark:text-gray-200">{visibleJobs.length}</span> {t.board.filters?.of || 'of'} <span className="font-semibold text-gray-700 dark:text-gray-200">{jobs.length}</span> {t.board.filters?.applications || 'applications'}
         </span>
@@ -1004,17 +1282,21 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             onClick={() => setShowFilters(false)}
           >
             <div
+              ref={filterSheetRef}
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="filter-sheet-title"
               className="absolute inset-x-0 bottom-0 bg-white dark:bg-slate-800 rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                  {t.board.filters?.status || 'Filters'}
+                <h3 id="filter-sheet-title" className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                  {t.board.filters.status}
                 </h3>
                 <button
                   onClick={() => setShowFilters(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-                  aria-label={t.board.close || 'Close'}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 -m-2 rounded-lg"
+                  aria-label={t.board.close}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -1026,7 +1308,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
         {/* Filters bar (desktop) */}
         <div
-          className={`hidden sm:flex bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-100 dark:border-slate-700 flex-col overflow-hidden transition-all duration-300 ${showFilters ? 'p-4 opacity-100' : 'h-0 p-0 opacity-0 border-none'
+          className={`hidden sm:flex rounded-xl border flex-col overflow-hidden transition-all duration-300 ${showFilters
+            ? 'p-4 bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-700 shadow-sm opacity-100'
+            : 'h-0 opacity-0 border-transparent bg-transparent'
             }`}
         >
           {filtersPanelContent}
@@ -1049,150 +1333,161 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               className="inline-flex items-center gap-2 px-4 py-2 bg-primary dark:bg-primary text-white rounded-lg hover:bg-blue-700 dark:hover:bg-primary transition-colors text-sm font-medium"
             >
               <X className="w-4 h-4" />
-              {t.board.filters?.clearAll || 'Clear all filters'}
+              {t.board.filters?.reset || 'Reset all filters'}
             </button>
           </div>
         </div>
       )}
 
-      {/* Desktop board */}
+      {/* Unified board (horizontal columns on desktop, stacked accordion on mobile) */}
+      {loading && jobs.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center gap-4" data-testid="job-board-loading">
+          <div className="w-10 h-10 border-4 border-primary/30 dark:border-primary/20 border-t-primary rounded-full animate-spin"></div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">{t.board.loading}</p>
+        </div>
+      ) : (
       <div
-        className={`hidden sm:block flex-1 overflow-x-auto overflow-y-hidden pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
+        data-testid="job-board"
+        className={`relative flex-1 sm:overflow-x-auto sm:overflow-y-hidden pb-4 sm:px-2 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
         ref={scrollContainerRef}
+        onScroll={updateScrollFades}
         onDragOver={handleContainerDragOver} // Track drag over globally in container
       >
-        <div className="flex gap-4 min-w-full h-full pb-2">
-          {columnsForDesktop.map(status => (
-            <div
-              key={status}
-              data-column-id={status}
-              onDragOver={(e) => handleDragOver(e, status)}
-              onDrop={(e) => handleDrop(e, status)}
-              onDragLeave={handleDragLeave}
-              className={`flex-1 flex flex-col min-w-[260px] md:min-w-[280px] 2xl:min-w-[300px] 2xl:min-w-0 transition-all duration-200 ${dragOverColumn === status
-                ? 'bg-primary/5 dark:bg-primary/10 rounded-xl border-2 border-dashed border-primary/40 scale-[1.01]'
-                : ''
-                } ${status === ApplicationStatus.REJECTED ? 'opacity-60 grayscale-[0.5] dark:opacity-50 dark:grayscale-[0.3]' : ''}`}
-            >
-              <div className="flex items-center justify-between mb-4 sticky top-0 bg-[#f6f6f8]/80 dark:bg-[#101622]/90 backdrop-blur-sm py-2 z-10">
-                <h2 className="font-bold text-lg flex items-center gap-2 text-slate-900 dark:text-slate-100">
-                  {t.board.status[status]}
-                  <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_COUNT_COLORS[status]}`}>
-                    {statusCounts[status]}
-                  </span>
-                </h2>
-              </div>
-
-              <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar p-2">
-                {jobsByStatus[status].length === 0 && !dragOverColumn ? (
-                  <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-8 opacity-50 dark:opacity-40">
-                    <div className="w-16 h-16 bg-slate-200 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 dark:border dark:border-slate-800">
-                      <SearchX className="w-8 h-8 text-slate-400 dark:text-slate-600" />
-                    </div>
-                    <p className="text-sm font-medium text-slate-400 dark:text-slate-500 text-center">{t.board.emptyColumns[status]}</p>
-                  </div>
-                ) : (
-                  <>
-                    {jobsByStatus[status].map(job => (
-                      <JobCard
-                        key={job.id}
-                        job={job}
-                        language={language}
-                        draggedItemId={draggedItemId}
-                        onView={openViewModal}
-                        onEdit={openEditModal}
-                        onDelete={handleDeleteRequest}
-                        onNextStatus={getNextStatus(job.status) ? handleNextStatus : undefined}
-                        nextStatusLabel={(() => {
-                          const next = getNextStatus(job.status);
-                          return next ? t.board.status[next] : undefined;
-                        })()}
-                        onDragStart={handleDragStart}
-                        onDragEnd={handleDragEnd}
-                        onTouchStart={handleTouchStart}
-                        onTouchMove={handleTouchMove}
-                        onTouchEnd={handleTouchEnd}
-                      />
-                    ))}
-                    {/* Visual Placeholder for drop zone */}
-                    {dragOverColumn === status && (
-                      <div className="h-24 rounded-lg border-2 border-dashed border-primary/30 dark:border-primary/30 bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary text-xs font-medium animate-pulse">
-                        Drop Here
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Mobile board (stacked) */}
-      < div
-        className={`sm:hidden flex-1 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
-      >
-        <div className="flex flex-col gap-3 pb-28">
-          {columns.map(status => (
-            <div
-              key={status}
-              data-column-id={status}
-              onDragOver={(e) => handleDragOver(e, status)}
-              onDrop={(e) => handleDrop(e, status)}
-              onDragLeave={handleDragLeave}
-              className={`rounded-xl border transition-all ${dragOverColumn === status
-                ? 'bg-primary/10 dark:bg-primary/20 border-primary/40 border-dashed'
-                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
-                } ${status === ApplicationStatus.REJECTED ? 'opacity-60' : ''}`}
-            >
+        {/* Mobile status quick navigator bar */}
+        <div className="sm:hidden sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md py-2 px-1 mb-3 border-b border-gray-200 dark:border-slate-700 flex items-center gap-1.5 overflow-x-auto">
+          {columns.map(status => {
+            const isActive = mobileOpenStatuses.includes(status);
+            return (
               <button
-                onClick={() => toggleMobileStatus(status)}
-                className="column-accordion-button w-full flex items-center justify-between px-3 py-2 text-sm font-semibold"
-                aria-expanded={mobileOpenStatuses.includes(status)}
+                key={`mobile-nav-${status}`}
+                type="button"
+                onClick={() => {
+                  setMobileOpenStatuses([status]);
+                  const el = document.querySelector(`[data-column-id="${status}"]`);
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }}
+                className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'bg-primary text-white shadow-sm scale-[1.02]'
+                    : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                }`}
               >
-                <span className="text-slate-700 dark:text-slate-200">{t.board.status[status]}</span>
-                <span className="flex items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COUNT_COLORS[status]}`}>
-                    {statusCounts[status]}
-                  </span>
-                  {mobileOpenStatuses.includes(status) ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                <span>{t.board.status[status]}</span>
+                <span className={`px-1.5 py-0.5 text-[11px] rounded-full font-bold ${
+                  isActive ? 'bg-white/20 text-white' : STATUS_COUNT_COLORS[status]
+                }`}>
+                  {statusCounts[status]}
                 </span>
               </button>
+            );
+          })}
+        </div>
 
-              {mobileOpenStatuses.includes(status) && (
-                <div className="p-2 space-y-3">
-                  {jobsByStatus[status].map(job => (
-                    <JobCard
-                      key={job.id}
-                      job={job}
-                      language={language}
-                      draggedItemId={draggedItemId}
-                      onView={openViewModal}
-                      onEdit={openEditModal}
-                      onDelete={handleDeleteRequest}
-                      onNextStatus={getNextStatus(job.status) ? handleNextStatus : undefined}
-                      nextStatusLabel={(() => {
-                        const next = getNextStatus(job.status);
-                        return next ? t.board.status[next] : undefined;
-                      })()}
-                      onDragStart={handleDragStart}
-                      onDragEnd={handleDragEnd}
-                      onTouchStart={handleTouchStart}
-                      onTouchMove={handleTouchMove}
-                      onTouchEnd={handleTouchEnd}
-                    />
-                  ))}
-                  {dragOverColumn === status && (
-                    <div className="h-20 rounded-lg border-2 border-dashed border-primary/30 dark:border-primary/30 bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary text-xs font-medium animate-pulse">
-                      Drop Here
+        {/* Edge fades signal horizontal scrollability */}
+        <div
+          className={`hidden sm:block absolute left-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-background-light dark:from-background-dark to-transparent transition-opacity duration-200 ${showLeftFade ? 'opacity-100' : 'opacity-0'}`}
+          aria-hidden="true"
+        />
+        <div
+          className={`hidden sm:block absolute right-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-transparent to-background-light dark:to-background-dark transition-opacity duration-200 ${showRightFade ? 'opacity-100' : 'opacity-0'}`}
+          aria-hidden="true"
+        />
+        <div className="flex flex-col sm:flex-row gap-4 min-w-full pb-28 sm:h-full sm:pb-2">
+          {columnsForDesktop.map(status => {
+            const isOpen = mobileOpenStatuses.includes(status);
+            return (
+              <section
+                key={status}
+                data-column-id={status}
+                onDragOver={(e) => handleDragOver(e, status)}
+                onDrop={(e) => handleDrop(e, status)}
+                onDragLeave={handleDragLeave}
+                className={`flex-1 flex flex-col min-w-[220px] md:min-w-[240px] 2xl:min-w-[250px] transition-all duration-200 ${dragOverColumn === status
+                  ? 'bg-primary/5 dark:bg-primary/10 rounded-xl border-2 border-dashed border-primary/40 sm:scale-[1.01]'
+                  : ''
+                  } ${statusCounts[status] === 0 && visibleJobs.length > 0 ? 'max-sm:hidden' : ''}`}
+              >
+                {/* Mobile accordion header */}
+                <button
+                  onClick={() => toggleMobileStatus(status)}
+                  className="column-accordion-button sm:hidden w-full flex items-center justify-between px-3 py-2 text-sm font-semibold"
+                  aria-expanded={isOpen}
+                >
+                  <span className="text-slate-700 dark:text-slate-200">{t.board.status[status]}</span>
+                  <span className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COUNT_COLORS[status]}`}>
+                      {statusCounts[status]}
+                    </span>
+                    {isOpen ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+                  </span>
+                </button>
+
+                {/* Desktop column header */}
+                <div className="hidden sm:flex items-center justify-between mb-4 sticky top-0 bg-background-light/80 dark:bg-background-dark/90 backdrop-blur-sm py-2 px-2 z-10">
+                  <h2 className="font-bold text-lg flex items-center gap-2 text-slate-900 dark:text-slate-100">
+                    {t.board.status[status]}
+                    <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${STATUS_COUNT_COLORS[status]}`}>
+                      {statusCounts[status]}
+                    </span>
+                  </h2>
+                </div>
+
+                <div className={`p-2 space-y-3 sm:space-y-4 sm:flex-1 sm:overflow-y-auto sm:pr-2 ${isOpen ? 'block' : 'hidden'} sm:block`}>
+                  {jobsByStatus[status].length === 0 && !dragOverColumn ? (
+                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-8">
+                      <div className="w-16 h-16 bg-slate-200 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 dark:border dark:border-slate-800">
+                        <Inbox className="w-8 h-8 text-slate-400 dark:text-slate-600" />
+                      </div>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400 text-center">{t.board.emptyColumns[status]}</p>
                     </div>
+                  ) : (
+                    <>
+                      {(isMobile && !mobileShowAll.includes(status) ? jobsByStatus[status].slice(0, MOBILE_PAGE_SIZE) : jobsByStatus[status]).map(job => (
+                        <JobCard
+                          key={job.id}
+                          job={job}
+                          language={language}
+                          draggedItemId={draggedItemId}
+                          onView={openViewModal}
+                          onEdit={openEditModal}
+                          onDelete={handleDeleteRequest}
+                          onNextStatus={getNextStatus(job.status) ? handleNextStatus : undefined}
+                          nextStatusLabel={(() => {
+                            const next = getNextStatus(job.status);
+                            return next ? t.board.status[next] : undefined;
+                          })()}
+                          onMoveTo={() => setMoveToJob(job)}
+                          onDragStart={handleDragStart}
+                          onDragEnd={handleDragEnd}
+                          onTouchStart={handleTouchStart}
+                          onTouchMove={handleTouchMove}
+                          onTouchEnd={handleTouchEnd}
+                        />
+                      ))}
+                      {isMobile && jobsByStatus[status].length > MOBILE_PAGE_SIZE && !mobileShowAll.includes(status) && (
+                        <button
+                          type="button"
+                          onClick={() => setMobileShowAll(prev => [...prev, status])}
+                          className="w-full min-h-[44px] text-xs font-semibold text-primary dark:text-primary border border-primary/30 dark:border-primary/30 rounded-lg bg-primary/5 dark:bg-primary/10 hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
+                        >
+                          {t.board.filters.showMore.replace('{count}', String(jobsByStatus[status].length - MOBILE_PAGE_SIZE))}
+                        </button>
+                      )}
+                      {/* Visual Placeholder for drop zone */}
+          {dragOverColumn === status && (
+            <div className="h-20 sm:h-24 rounded-lg border-2 border-dashed border-primary/30 dark:border-primary/30 bg-primary/5 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-primary text-xs font-medium animate-pulse">
+              {t.board.dropHere}
+            </div>
+          )}
+                    </>
                   )}
                 </div>
-              )}
-            </div>
-          ))}
+              </section>
+            );
+          })}
         </div>
-      </div >
+      </div>
+      )}
       {/* Floating Action Button */}
       <button
         onClick={openAddModal}

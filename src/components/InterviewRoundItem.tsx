@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Calendar, ChevronUp, ChevronDown } from 'lucide-react';
 import { InterviewRound, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { getGoogleCalendarUrl } from '../lib/calendar';
@@ -125,15 +126,16 @@ export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, l
               onClick={addToCalendar}
               className="flex items-center gap-1 text-xs px-2 py-1 bg-primary text-white rounded hover:bg-blue-700 transition-colors"
             >
-              <span className="w-3 h-3">📅</span>
+              <Calendar className="w-3 h-3" />
               {t.interviewRound.addToCalendar}
             </button>
             <button
               type="button"
               onClick={() => setShowNotes(!showNotes)}
-              className="text-xs text-primary dark:text-primary hover:text-primary dark:hover:text-primary"
+              className="flex items-center gap-1 text-xs text-primary dark:text-primary hover:text-primary dark:hover:text-primary"
             >
-              {showNotes ? '▼' : '▶'} {t.interviewRound.notes}
+              {showNotes ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              {t.interviewRound.notes}
             </button>
           </div>
 

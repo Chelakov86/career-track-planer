@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Clock, Briefcase, Calendar, CheckCircle, MessageCircle, Search, Send, XCircle } from 'lucide-react';
 import { JobApplication, Language, TimelineEvent, TimelineEventType, ApplicationStatus } from '../types';
-import { TRANSLATIONS } from '../constants';
+import { TRANSLATIONS, formatPositionAtCompany } from '../constants';
 import { getGoogleCalendarUrl } from '../lib/calendar';
 
 interface TimelineViewProps {
@@ -27,7 +27,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
         position: job.position,
         eventType: 'job_added',
         eventDate: job.dateAdded,
-        description: `${job.position} at ${job.company}`,
+        description: formatPositionAtCompany(job.position, job.company, language),
         metadata: {}
       });
 
@@ -46,7 +46,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
           position: job.position,
           eventType: 'job_applied',
           eventDate: appliedDate,
-          description: `${job.position} at ${job.company}`,
+          description: formatPositionAtCompany(job.position, job.company, language),
           metadata: { newStatus: ApplicationStatus.APPLIED }
         });
       }
@@ -60,7 +60,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
           position: job.position,
           eventType: 'job_rejected',
           eventDate: job.lastUpdated,
-          description: `${job.position} at ${job.company}`,
+          description: formatPositionAtCompany(job.position, job.company, language),
           metadata: { newStatus: ApplicationStatus.REJECTED }
         });
       }
@@ -175,7 +175,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
   const getIconColor = (type: TimelineEventType) => {
     switch (type) {
       case 'job_added': return 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400';
-      case 'job_applied': return 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400';
+      case 'job_applied': return 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400';
       case 'interview_scheduled': return 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400';
       case 'interview_completed': return 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400';
       case 'interview_feedback': return 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400';
@@ -187,7 +187,7 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
   const getEventPillColor = (type: TimelineEventType) => {
     switch (type) {
       case 'job_added': return 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
-      case 'job_applied': return 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300';
+      case 'job_applied': return 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300';
       case 'interview_scheduled': return 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300';
       case 'interview_completed': return 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300';
       case 'interview_feedback': return 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300';
@@ -229,8 +229,8 @@ export const TimelineView = ({ jobs, language }: TimelineViewProps) => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-6">
           <div>
             <h2 className="text-2xl font-bold text-gray-800 dark:text-white">{t.timeline.title}</h2>
-            <p className="text-gray-500 dark:text-gray-400 text-sm">
-              {filteredEvents.length} {t.timeline.allEvents.toLowerCase()}
+            <p className="text-gray-600 dark:text-gray-400 text-sm">
+              {t.timeline.eventCount.replace('{count}', String(filteredEvents.length))}
             </p>
           </div>
           <div className="relative w-full sm:w-64">

@@ -1,4 +1,4 @@
-import { ScheduleBlock, ApplicationStatus, Language, JobApplication } from './types';
+import { ScheduleBlock, ApplicationStatus, Language, JobApplication, InterviewRoundStatus } from './types';
 
 export const TRANSLATIONS = {
   en: {
@@ -16,13 +16,17 @@ export const TRANSLATIONS = {
       checkEmailAction: "Click it to log in.",
       errorSendingLink: "Error sending magic link"
     },
+    languageLabel: "Language",
     nav: {
       schedule: "Daily Schedule",
       board: "Application Board",
       timeline: "Timeline",
       stats: "Analytics",
       subtitle: "Job Hunt Planner",
-      logout: "Log out"
+      logout: "Log out",
+      language: "Language",
+      openMenu: "Open menu",
+      closeMenu: "Close menu"
     },
     schedule: {
       title: "Daily Routine",
@@ -31,25 +35,33 @@ export const TRANSLATIONS = {
       addToCal: "Add to Cal",
       getFocus: "Get Focus",
       coachAdvice: "Coach's Advice",
-      thinking: "Thinking..."
+      thinking: "Thinking...",
+      coachAdviceFailed: "The AI coach could not generate advice. Please try again.",
+      coachAdviceErrorRetry: "Try again"
     },
     board: {
       title: "Job Tracker",
       subtitle: "Visualize your application pipeline.",
-      addJob: "Add Job",
-      editJob: "Edit Job",
-      viewJob: "View Job",
+      addJob: "Add Application",
+      editJob: "Edit Application",
+      viewJob: "View Application",
       moveStage: "Move to next stage",
+      moveTo: "Move to...",
       openLink: "Open Link",
       exportCSV: "Export CSV",
-      newOpp: "Add New Opportunity",
+      newOpp: "New Application",
       save: "Save",
       cancel: "Cancel",
       close: "Close",
       edit: "Edit",
-      deleteTitle: "Delete Job?",
+      deleteTitle: "Delete Application?",
       deleteMessage: "Are you sure you want to permanently delete the application for {position} at {company}?",
+      deleteRoundsWarningCount: "{count} interview rounds will also be deleted.",
       confirmDelete: "Delete",
+      deleteJob: "Delete application",
+      closeDialog: "Close dialog",
+      deleted: "Application deleted",
+      dropHere: "Drop here",
       interview: "interview",
       interviews: "interviews",
       placeholders: {
@@ -89,6 +101,7 @@ export const TRANSLATIONS = {
         allStatuses: 'All',
         search: 'Search',
         searchPlaceholder: 'Search company, position, location, notes...',
+        searchClear: 'Clear search',
         sortBy: 'Sort by',
         sortOptions: {
           dateAddedDesc: 'Date added (newest)',
@@ -100,6 +113,8 @@ export const TRANSLATIONS = {
           positionAsc: 'Position (A–Z)',
           positionDesc: 'Position (Z–A)'
         },
+        sortGroupCompany: 'Company',
+        sortGroupPosition: 'Position',
         reset: 'Reset all filters',
         clearAll: 'Clear all filters',
         activeFilters: 'Active filters:',
@@ -112,9 +127,17 @@ export const TRANSLATIONS = {
         noResults: 'No applications found',
         noResultsMessage: 'Try adjusting your filters or search terms to find what you\'re looking for.',
         hideEmptyColumns: 'Hide empty columns',
-        showEmptyColumns: 'Show empty columns'
+        showEmptyColumns: 'Show empty columns',
+        from: 'From',
+        to: 'To',
+        showMore: 'Show more ({count})'
       },
       viewDetails: 'View Details',
+      undo: 'Undo',
+      loading: 'Loading applications...',
+      errorSave: 'Could not save the job. Please try again.',
+      errorStatusUpdate: 'Could not update the status. Please try again.',
+      errorDelete: 'Could not delete the job. Please try again.',
       emptyColumns: {
         RESEARCH: 'Start exploring opportunities!',
         TO_APPLY: 'Add jobs you want to apply for.',
@@ -196,6 +219,8 @@ export const TRANSLATIONS = {
       title: "Application Timeline",
       filters: "Filters",
       allEvents: "All Events",
+      eventCount: "{count} events",
+      positionAtCompany: "{position} at {company}",
       eventTypes: {
         jobAdded: "Job Added",
         jobApplied: "Applied",
@@ -255,13 +280,17 @@ export const TRANSLATIONS = {
       checkEmailAction: "gesendet. Klicke darauf, um dich anzumelden.",
       errorSendingLink: "Fehler beim Senden des Magic Links"
     },
+    languageLabel: "Sprache",
     nav: {
       schedule: "Tagesplan",
       board: "Bewerbungen",
       timeline: "Timeline",
       stats: "Statistik",
       subtitle: "Jobsuche Planer",
-      logout: "Abmelden"
+      logout: "Abmelden",
+      language: "Sprache",
+      openMenu: "Menü öffnen",
+      closeMenu: "Menü schließen"
     },
     schedule: {
       title: "Tagesablauf",
@@ -270,25 +299,33 @@ export const TRANSLATIONS = {
       addToCal: "Kalender",
       getFocus: "Fokus starten",
       coachAdvice: "Coach Ratschlag",
-      thinking: "Nachdenken..."
+      thinking: "Nachdenken...",
+      coachAdviceFailed: "Der KI-Coach konnte keinen Ratschlag erstellen. Bitte versuche es erneut.",
+      coachAdviceErrorRetry: "Erneut versuchen"
     },
     board: {
       title: "Bewerbungstracker",
       subtitle: "Visualisiere deinen Bewerbungsprozess.",
-      addJob: "Job hinzufügen",
-      editJob: "Job bearbeiten",
-      viewJob: "Job anzeigen",
+      addJob: "Bewerbung hinzufügen",
+      editJob: "Bewerbung bearbeiten",
+      viewJob: "Bewerbung anzeigen",
       moveStage: "In nächste Phase verschieben",
+      moveTo: "Verschieben nach...",
       openLink: "Link öffnen",
-      exportCSV: "Excel Export",
-      newOpp: "Neue Chance hinzufügen",
+      exportCSV: "CSV-Export",
+      newOpp: "Neue Bewerbung",
       save: "Speichern",
       cancel: "Abbrechen",
       close: "Schließen",
       edit: "Bearbeiten",
-      deleteTitle: "Job löschen?",
+      deleteTitle: "Bewerbung löschen?",
       deleteMessage: "Möchtest du die Bewerbung für {position} bei {company} wirklich unwiderruflich löschen?",
+      deleteRoundsWarningCount: "{count} Interview-Runden werden mitgelöscht.",
       confirmDelete: "Löschen",
+      deleteJob: "Bewerbung löschen",
+      closeDialog: "Dialog schließen",
+      deleted: "Bewerbung gelöscht",
+      dropHere: "Hier ablegen",
       interview: "Interview",
       interviews: "Interviews",
       placeholders: {
@@ -328,6 +365,7 @@ export const TRANSLATIONS = {
         allStatuses: 'Alle',
         search: 'Suche',
         searchPlaceholder: 'Suche nach Firma, Position, Ort, Notizen...',
+        searchClear: 'Suche löschen',
         sortBy: 'Sortieren nach',
         sortOptions: {
           dateAddedDesc: 'Hinzugefügt (neueste)',
@@ -339,6 +377,8 @@ export const TRANSLATIONS = {
           positionAsc: 'Position (A–Z)',
           positionDesc: 'Position (Z–A)'
         },
+        sortGroupCompany: 'Firma',
+        sortGroupPosition: 'Position',
         reset: 'Alle Filter zurücksetzen',
         clearAll: 'Alle Filter löschen',
         activeFilters: 'Aktive Filter:',
@@ -351,9 +391,17 @@ export const TRANSLATIONS = {
         noResults: 'Keine Bewerbungen gefunden',
         noResultsMessage: 'Versuche, deine Filter oder Suchbegriffe anzupassen, um zu finden, wonach du suchst.',
         hideEmptyColumns: 'Leere Spalten ausblenden',
-        showEmptyColumns: 'Leere Spalten anzeigen'
+        showEmptyColumns: 'Leere Spalten anzeigen',
+        from: 'Von',
+        to: 'Bis',
+        showMore: 'Mehr anzeigen ({count})'
       },
       viewDetails: 'Details anzeigen',
+      undo: 'Rückgängig',
+      loading: 'Bewerbungen werden geladen...',
+      errorSave: 'Speichern fehlgeschlagen. Bitte versuche es erneut.',
+      errorStatusUpdate: 'Status konnte nicht aktualisiert werden. Bitte versuche es erneut.',
+      errorDelete: 'Löschen fehlgeschlagen. Bitte versuche es erneut.',
       emptyColumns: {
         RESEARCH: 'Entdecke neue Möglichkeiten!',
         TO_APPLY: 'Füge Jobs hinzu, auf die du dich bewerben willst.',
@@ -435,6 +483,8 @@ export const TRANSLATIONS = {
       title: "Bewerbungs-Zeitstrahl",
       filters: "Filter",
       allEvents: "Alle Ereignisse",
+      eventCount: "{count} Ereignisse",
+      positionAtCompany: "{position} bei {company}",
       eventTypes: {
         jobAdded: "Job hinzugefügt",
         jobApplied: "Beworben",
@@ -562,7 +612,7 @@ const SCHEDULE_DE: ScheduleBlock[] = [
     startTime: '13:00',
     endTime: '14:00',
     title: 'Weiterbildung (Hard Skills)',
-    description: 'Online-Kurse, professionelle Zertifikate oder Tool-Training relevant für Ihre Zielrollen.',
+    description: 'Online-Kurse, professionelle Zertifikate oder Tool-Training relevant für deine Zielrollen.',
     category: 'Learning',
     isFixed: false
   },
@@ -592,10 +642,21 @@ export const STATUS_COUNT_COLORS: Record<ApplicationStatus, string> = {
   [ApplicationStatus.RESEARCH]: 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
   [ApplicationStatus.TO_APPLY]: 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
   [ApplicationStatus.APPLIED]: 'bg-primary/20 text-primary dark:border dark:border-primary/30',
-  [ApplicationStatus.INTERVIEW]: 'bg-amber-100 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400',
-  [ApplicationStatus.OFFER]: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400',
-  [ApplicationStatus.REJECTED]: 'bg-slate-200 dark:bg-slate-800 text-slate-500',
+  [ApplicationStatus.INTERVIEW]: 'bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400',
+  [ApplicationStatus.OFFER]: 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400',
+  [ApplicationStatus.REJECTED]: 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400',
 };
+
+export const INTERVIEW_ROUND_STATUS_COLORS: Record<InterviewRoundStatus, string> = {
+  scheduled: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+  completed: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300',
+  awaiting_feedback: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
+};
+
+export const formatPositionAtCompany = (position: string, company: string, lang: Language): string =>
+  TRANSLATIONS[lang].timeline.positionAtCompany
+    .replace('{position}', position)
+    .replace('{company}', company);
 
 export const MOCK_JOBS: JobApplication[] = [
   {

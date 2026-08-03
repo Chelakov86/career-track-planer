@@ -13,15 +13,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ language, setLanguage }) =
   const t = TRANSLATIONS[language];
   const [email, setEmail] = React.useState('');
   const [sent, setSent] = React.useState(false);
+  const [loginError, setLoginError] = React.useState('');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
+    setLoginError('');
     try {
       await loginWithEmail(email);
       setSent(true);
     } catch (error) {
-      alert(t.login.errorSendingLink);
+      setLoginError(t.login.errorSendingLink);
     }
   };
 
@@ -51,10 +53,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ language, setLanguage }) =
                 placeholder={t.login.emailPlaceholder}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none transition-all"
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-900 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:ring-2 focus:ring-primary/50 outline-none transition-all"
                 required
               />
             </div>
+            {loginError && (
+              <p role="alert" className="text-sm text-red-600 dark:text-red-400">{loginError}</p>
+            )}
             <button
               type="submit"
               disabled={isLoading}
@@ -62,24 +67,24 @@ export const LoginPage: React.FC<LoginPageProps> = ({ language, setLanguage }) =
             >
               {isLoading ? t.login.sending : t.login.sendMagicLink}
             </button>
-            <p className="text-xs text-center text-gray-400">
+            <p className="text-xs text-center text-gray-500 dark:text-gray-500">
               {t.login.securedBy}
             </p>
           </form>
         )}
 
         <div className="mt-8 flex items-center justify-center gap-2">
-          <div className="text-xs text-gray-400 dark:text-gray-500 font-medium">LANGUAGE</div>
+          <div className="text-xs text-gray-500 dark:text-gray-500 font-medium">{t.languageLabel}</div>
           <div className="flex bg-gray-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg p-0.5">
             <button
               onClick={() => setLanguage('en')}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${language === 'en' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${language === 'en' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : 'text-gray-500 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
             >
               EN
             </button>
             <button
               onClick={() => setLanguage('de')}
-              className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${language === 'de' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${language === 'de' ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary' : 'text-gray-500 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'}`}
             >
               DE
             </button>
@@ -87,7 +92,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ language, setLanguage }) =
         </div>
 
         <div className="mt-8 text-center border-t border-gray-200 dark:border-slate-800 pt-6">
-          <p className="text-xs text-gray-400 dark:text-gray-500">
+          <p className="text-xs text-gray-500 dark:text-gray-500">
             {t.login.footer}
           </p>
         </div>

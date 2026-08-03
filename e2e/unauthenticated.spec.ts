@@ -52,7 +52,7 @@ test.describe('Unauthenticated user', () => {
     await expect(page.getByText(DE.login.footer)).toBeVisible();
 
     // Language section
-    const langSection = page.getByText('LANGUAGE');
+    const langSection = page.getByText(DE.login.languageLabel);
     await langSection.scrollIntoViewIfNeeded();
     await expect(langSection).toBeVisible();
   });
@@ -62,7 +62,7 @@ test.describe('Unauthenticated user', () => {
     await expect(page.getByText(DE.login.title)).toBeVisible({ timeout: 15000 });
 
     // Scroll language buttons into view
-    const langSection = page.getByText('LANGUAGE');
+    const langSection = page.getByText(DE.login.languageLabel);
     await langSection.scrollIntoViewIfNeeded();
 
     // Switch to English — use exact match to avoid matching submit button
