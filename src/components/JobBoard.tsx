@@ -154,6 +154,22 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     };
   }, [showSort]);
 
+  // Handle Escape key to dismiss sort dropdown and filter sheet
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        if (showSort) setShowSort(false);
+        if (showFilters) setShowFilters(false);
+      }
+    };
+    if (showSort || showFilters) {
+      window.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showSort, showFilters]);
+
   const openAddModal = () => {
     setResumeCalendarImport(false);
     setFormData({
@@ -559,17 +575,17 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   };
 
   // Date preset helpers
-  const setDatePreset = useCallback((preset: 'last7' | 'last30' | 'thisMonth', field: 'dateAdded' | 'lastUpdated') => {
+  const setDatePreset = useCallback((preset: 'last7' | 'last30' | 'last7Days' | 'last30Days' | 'thisMonth', field: 'dateAdded' | 'lastUpdated') => {
     const today = new Date();
-    let fromDate: Date;
+    let fromDate: Date = new Date(today);
 
     switch (preset) {
       case 'last7':
-        fromDate = new Date(today);
+      case 'last7Days':
         fromDate.setDate(today.getDate() - 7);
         break;
       case 'last30':
-        fromDate = new Date(today);
+      case 'last30Days':
         fromDate.setDate(today.getDate() - 30);
         break;
       case 'thisMonth':
@@ -680,14 +696,28 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <input
               type="date"
               value={dateAddedFrom}
-              onChange={(e) => setDateAddedFrom(e.target.value)}
+              max={dateAddedTo || undefined}
+              onChange={(e) => {
+                const val = e.target.value;
+                setDateAddedFrom(val);
+                if (val && dateAddedTo && val > dateAddedTo) {
+                  setDateAddedTo(val);
+                }
+              }}
               className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             <span className="text-gray-400 text-xs">→</span>
             <input
               type="date"
               value={dateAddedTo}
-              onChange={(e) => setDateAddedTo(e.target.value)}
+              min={dateAddedFrom || undefined}
+              onChange={(e) => {
+                const val = e.target.value;
+                setDateAddedTo(val);
+                if (val && dateAddedFrom && val < dateAddedFrom) {
+                  setDateAddedFrom(val);
+                }
+              }}
               className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             {(dateAddedFrom || dateAddedTo) && (
@@ -737,14 +767,28 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <input
               type="date"
               value={lastUpdatedFrom}
-              onChange={(e) => setLastUpdatedFrom(e.target.value)}
+              max={lastUpdatedTo || undefined}
+              onChange={(e) => {
+                const val = e.target.value;
+                setLastUpdatedFrom(val);
+                if (val && lastUpdatedTo && val > lastUpdatedTo) {
+                  setLastUpdatedTo(val);
+                }
+              }}
               className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             <span className="text-gray-400 text-xs">→</span>
             <input
               type="date"
               value={lastUpdatedTo}
-              onChange={(e) => setLastUpdatedTo(e.target.value)}
+              min={lastUpdatedFrom || undefined}
+              onChange={(e) => {
+                const val = e.target.value;
+                setLastUpdatedTo(val);
+                if (val && lastUpdatedFrom && val < lastUpdatedFrom) {
+                  setLastUpdatedFrom(val);
+                }
+              }}
               className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
             />
             {(lastUpdatedFrom || lastUpdatedTo) && (
@@ -1175,6 +1219,36 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         onScroll={updateScrollFades}
         onDragOver={handleContainerDragOver} // Track drag over globally in container
       >
+        {/* Mobile status quick navigator bar */}
+        <div className="sm:hidden sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md py-2 px-1 mb-3 border-b border-gray-200 dark:border-slate-700 flex items-center gap-1.5 overflow-x-auto">
+          {columns.map(status => {
+            const isActive = mobileOpenStatuses.includes(status);
+            return (
+              <button
+                key={`mobile-nav-${status}`}
+                type="button"
+                onClick={() => {
+                  setMobileOpenStatuses([status]);
+                  const el = document.querySelector(`[data-column-id="${status}"]`);
+                  el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }}
+                className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
+                  isActive
+                    ? 'bg-primary text-white shadow-sm scale-[1.02]'
+                    : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700'
+                }`}
+              >
+                <span>{t.board.status[status]}</span>
+                <span className={`px-1.5 py-0.2 text-[10px] rounded-full font-bold ${
+                  isActive ? 'bg-white/20 text-white' : STATUS_COUNT_COLORS[status]
+                }`}>
+                  {statusCounts[status]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Edge fades signal horizontal scrollability */}
         <div
           className={`hidden sm:block absolute left-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-background-light dark:from-background-dark to-transparent transition-opacity duration-200 ${showLeftFade ? 'opacity-100' : 'opacity-0'}`}

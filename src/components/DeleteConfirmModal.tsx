@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Trash2 } from 'lucide-react';
 import { Language } from '../types';
 import { TRANSLATIONS } from '../constants';
@@ -23,10 +23,23 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
     const dialogRef = useRef<HTMLDivElement>(null);
     useFocusTrap(dialogRef, true);
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                onCancel();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [onCancel]);
+
     return (
         <div className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
             <div
                 ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="delete-modal-title"
                 className="bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-gray-200 dark:border-slate-800 max-w-sm w-full p-6"
                 onClick={e => e.stopPropagation()}
             >
@@ -35,7 +48,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
                         <Trash2 className="w-8 h-8 text-red-500 dark:text-red-400" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                        <h3 id="delete-modal-title" className="text-lg font-bold text-gray-900 dark:text-white">
                             {t.board.deleteTitle}
                         </h3>
                         <p className="text-gray-500 dark:text-gray-400 text-sm mt-1 leading-relaxed">

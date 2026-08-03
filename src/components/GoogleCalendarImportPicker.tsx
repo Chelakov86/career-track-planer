@@ -318,7 +318,11 @@ export const GoogleCalendarImportPicker: React.FC<GoogleCalendarImportPickerProp
                   type="button"
                   onClick={() => handleImport(event)}
                   disabled={imported || importingEventId === event.id}
-                  className="shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-primary text-white rounded-lg text-xs font-medium hover:bg-blue-700 disabled:bg-gray-300 dark:disabled:bg-slate-700 disabled:text-gray-600 dark:disabled:text-gray-400 disabled:hover:bg-gray-300 dark:disabled:hover:bg-slate-700 disabled:cursor-not-allowed"
+                  className={`shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium ${
+                    imported || importingEventId === event.id
+                      ? 'bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700 cursor-not-allowed'
+                      : 'bg-primary text-white hover:bg-blue-700'
+                  }`}
                 >
                   {imported ? <Check className="w-3.5 h-3.5" /> : <Calendar className="w-3.5 h-3.5" />}
                   {imported ? t.alreadyImported : t.importEvent}

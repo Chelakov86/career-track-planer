@@ -112,9 +112,9 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
     };
 
     const accentBorder =
-        job.status === ApplicationStatus.APPLIED ? 'border-l-4 !border-l-primary' :
-            job.status === ApplicationStatus.INTERVIEW ? 'border-l-4 !border-l-amber-400' :
-                job.status === ApplicationStatus.OFFER ? 'border-l-4 !border-l-emerald-500' : '';
+        job.status === ApplicationStatus.APPLIED ? 'border-l-2 !border-l-primary' :
+            job.status === ApplicationStatus.INTERVIEW ? 'border-l-2 !border-l-amber-400' :
+                job.status === ApplicationStatus.OFFER ? 'border-l-2 !border-l-emerald-500' : '';
 
     return (
         <div
