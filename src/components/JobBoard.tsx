@@ -5,6 +5,7 @@ import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search, X,
 import { JobCard } from './JobCard';
 import { JobModal } from './JobModal';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
+import { MobileStageDock } from './MobileStageDock';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { generateJobsCSV, downloadFile } from '../lib/csvExport';
 import { clearPendingCalendarImport, readPendingCalendarImport } from '../lib/googleCalendarAuth';
@@ -1423,63 +1424,19 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         </div>
       </div>
 
-      <div className="sm:hidden sticky top-0 z-20 -mx-4 px-4 py-3 bg-background-light dark:bg-background-dark border-y border-gray-200 dark:border-slate-700 shadow-sm">
-        {searchField}
-        <div className={`grid gap-2 mt-2 ${showBackToTop ? 'grid-cols-3' : 'grid-cols-2'}`}>
-          <button
-            type="button"
-            onClick={toggleFilters}
-            className={`min-h-[44px] w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${showFilters || hasActiveFilters
-              ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/30'
-              : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-              }`}
-            title={t.board.filters.status}
-            aria-expanded={showFilters}
-          >
-            <Filter className="w-4 h-4" />
-            <span>{t.board.filters.status}</span>
-            {activeFilterCount > 0 && (
-              <span className="bg-primary dark:bg-primary text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
-                {activeFilterCount}
-              </span>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={toggleMobileActions}
-            className={`min-h-[44px] w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${showMobileActions
-              ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/30'
-              : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-600'
-              }`}
-            title={t.board.filters.moreActionsTitle}
-            aria-expanded={showMobileActions}
-          >
-            <MoreHorizontal className="w-4 h-4" />
-            <span>{t.board.filters.moreActions}</span>
-          </button>
-          {showBackToTop && (
-            <button
-              type="button"
-              onClick={scrollToTop}
-              className="min-h-[44px] w-full flex items-center justify-center rounded-lg transition-colors text-sm font-medium border bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-              aria-label={t.board.filters.backToTop}
-              title={t.board.filters.backToTop}
-            >
-              <ArrowUp className="w-4 h-4" />
-              <span className="sr-only">{t.board.filters.backToTop}</span>
-            </button>
-          )}
-        </div>
-        {hasActiveFilters && (
-          <button
-            type="button"
-            onClick={resetFilters}
-            className="mt-2 min-h-[44px] w-full text-xs font-medium text-primary dark:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
-          >
-            {t.board.filters.clearAll}
-          </button>
-        )}
-      </div>
+      <MobileStageDock
+        searchField={searchField}
+        showFilters={showFilters}
+        hasActiveFilters={hasActiveFilters}
+        activeFilterCount={activeFilterCount}
+        showMobileActions={showMobileActions}
+        showBackToTop={showBackToTop}
+        t={t}
+        toggleFilters={toggleFilters}
+        toggleMobileActions={toggleMobileActions}
+        scrollToTop={scrollToTop}
+        clearFilters={resetFilters}
+      />
 
 
       {/* Active Filter Chips */}
@@ -1786,20 +1743,18 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       </div>
       )}
       {/* Floating Action Button */}
-      {!showBackToTop && (
-        <button
-          type="button"
-          onClick={openAddModal}
-          className="glass-fab fixed right-4 w-14 h-14 text-white flex items-center justify-center rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-transform z-30 group sm:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background-light dark:focus-visible:ring-offset-background-dark"
-          style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
-          aria-label={t.board.addJob}
-          title={t.board.addJob}
-        >
-          <div className="w-8 h-8 bg-white/20 p-1 rounded-full group-hover:bg-white/30 transition-colors flex items-center justify-center">
-            <Plus className="w-6 h-6" />
-          </div>
-        </button>
-      )}
+      <button
+        type="button"
+        onClick={openAddModal}
+        className="glass-fab fixed right-4 w-14 h-14 text-white flex items-center justify-center rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-transform z-30 group sm:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background-light dark:focus-visible:ring-offset-background-dark"
+        style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+        aria-label={t.board.addJob}
+        title={t.board.addJob}
+      >
+        <div className="w-8 h-8 bg-white/20 p-1 rounded-full group-hover:bg-white/30 transition-colors flex items-center justify-center">
+          <Plus className="w-6 h-6" />
+        </div>
+      </button>
     </div>
   );
 };

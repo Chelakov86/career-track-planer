@@ -94,6 +94,7 @@ test.describe('Mobile View', () => {
 
         await expect(page.getByTitle(DE.board.moreActionsTitle)).toBeVisible();
         await expect(page.getByTitle(DE.board.backToTop)).toBeVisible();
+        await expect(page.getByLabel(DE.board.addJob)).toBeVisible();
         expect(await main.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
 
         await page.getByTitle(DE.board.backToTop).click();
