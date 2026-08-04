@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS, STATUS_COLORS, STATUS_COUNT_COLORS } from '../constants';
-import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search, X, Calendar, SearchX, Inbox, Check } from 'lucide-react';
+import { Plus, Download, Filter, ChevronDown, ChevronUp, ArrowUpDown, Search, X, Calendar, SearchX, Inbox, Check, MoreHorizontal, ArrowUp } from 'lucide-react';
 import { JobCard } from './JobCard';
 import { JobModal } from './JobModal';
 import { DeleteConfirmModal } from './DeleteConfirmModal';
@@ -98,16 +98,23 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [resumeCalendarImport, setResumeCalendarImport] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showSort, setShowSort] = useState(false);
+  const [showMobileActions, setShowMobileActions] = useState(false);
+  const [showMobileSort, setShowMobileSort] = useState(false);
   const [showEmptyColumns, setShowEmptyColumns] = useState(true);
   const [mobileOpenStatuses, setMobileOpenStatuses] = useState<ApplicationStatus[]>(
     hasRestoredMobileOpen.current ? restoredBoardState.current.mobileOpenStatuses! : []
   );
-  const [mobileShowAll, setMobileShowAll] = useState<ApplicationStatus[]>([]);
+  const [mobileVisibleCounts, setMobileVisibleCounts] = useState<Partial<Record<ApplicationStatus, number>>>({});
+  const [showBackToTop, setShowBackToTop] = useState(false);
   const isMobile = useIsMobile();
   const filterSheetRef = useRef<HTMLDivElement>(null);
   const moveSheetRef = useRef<HTMLDivElement>(null);
+  const mobileActionsRef = useRef<HTMLDivElement>(null);
+  const mobileSortSheetRef = useRef<HTMLDivElement>(null);
   useFocusTrap(filterSheetRef, showFilters);
   useFocusTrap(moveSheetRef, Boolean(moveToJob));
+  useFocusTrap(mobileActionsRef, showMobileActions);
+  useFocusTrap(mobileSortSheetRef, showMobileSort);
 
   // Drag and Drop State (Mouse & Touch)
   const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
@@ -165,6 +172,20 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     setShowRightFade(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
   }, []);
 
+  const getScrollOwner = useCallback(() => (
+    scrollContainerRef.current?.closest('main') ?? document.querySelector('main')
+  ), []);
+
+  const getPageScrollTop = useCallback(() => {
+    const main = getScrollOwner();
+    const mainScrollTop = main instanceof HTMLElement ? main.scrollTop : 0;
+    return Math.max(mainScrollTop, window.scrollY);
+  }, [getScrollOwner]);
+
+  const updateBackToTop = useCallback(() => {
+    setShowBackToTop(getPageScrollTop() > window.innerHeight * 0.75);
+  }, [getPageScrollTop]);
+
   const t = TRANSLATIONS[language];
   const columns = useMemo(() => Object.values(ApplicationStatus), []);
 
@@ -221,22 +242,24 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     };
   }, [showSort]);
 
-  // Handle Escape key to dismiss sort dropdown and filter sheet
+  // Handle Escape key to dismiss board overlays.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         if (showSort) setShowSort(false);
         if (showFilters) setShowFilters(false);
+        if (showMobileActions) setShowMobileActions(false);
+        if (showMobileSort) setShowMobileSort(false);
         if (moveToJob) setMoveToJob(null);
       }
     };
-    if (showSort || showFilters || moveToJob) {
+    if (showSort || showFilters || showMobileActions || showMobileSort || moveToJob) {
       window.addEventListener('keydown', handleKeyDown);
     }
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [showSort, showFilters, moveToJob]);
+  }, [showSort, showFilters, showMobileActions, showMobileSort, moveToJob]);
 
   const openAddModal = () => {
     setResumeCalendarImport(false);
@@ -597,6 +620,23 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     return { statusCounts: counts, jobsByStatus: byStatus };
   }, [columns, visibleJobs]);
 
+  const showNextMobileJobs = useCallback((status: ApplicationStatus, total: number) => {
+    setMobileVisibleCounts((prev) => ({
+      ...prev,
+      [status]: Math.min((prev[status] ?? MOBILE_PAGE_SIZE) + MOBILE_PAGE_SIZE, total),
+    }));
+  }, []);
+
+  const showLessMobileJobs = useCallback((status: ApplicationStatus) => {
+    setMobileVisibleCounts((prev) => {
+      const next = { ...prev };
+      delete next[status];
+      return next;
+    });
+    const section = document.querySelector(`[data-column-id="${status}"]`);
+    section?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
+
   const hasEmptyColumns = columns.some((status) => statusCounts[status] === 0);
   const columnsForDesktop = useMemo(() => {
     if (showEmptyColumns || visibleJobs.length === 0) return columns;
@@ -611,12 +651,26 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   }, [updateScrollFades, visibleJobs, columnsForDesktop]);
 
   useEffect(() => {
+    const main = getScrollOwner();
+    window.addEventListener('scroll', updateBackToTop, { passive: true });
+    main?.addEventListener('scroll', updateBackToTop, { passive: true });
+    window.addEventListener('resize', updateBackToTop);
+    updateBackToTop();
+
+    return () => {
+      window.removeEventListener('scroll', updateBackToTop);
+      main?.removeEventListener('scroll', updateBackToTop);
+      window.removeEventListener('resize', updateBackToTop);
+    };
+  }, [getScrollOwner, updateBackToTop, visibleJobs.length]);
+
+  useEffect(() => {
     if (didInitMobileOpen.current) return;
-    didInitMobileOpen.current = true;
     if (hasRestoredMobileOpen.current) return;
     if (visibleJobs.length === 0) return;
     const firstWithJobs = columns.find((status) => statusCounts[status] > 0) || columns[0];
     if (!firstWithJobs) return;
+    didInitMobileOpen.current = true;
     setMobileOpenStatuses([firstWithJobs]);
   }, [columns, statusCounts, visibleJobs.length]);
 
@@ -712,6 +766,39 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     setSortDirection('desc');
   };
 
+  const toggleFilters = () => {
+    const nextOpen = !showFilters;
+    setShowFilters(nextOpen);
+    if (nextOpen) {
+      setShowSort(false);
+      setShowMobileActions(false);
+      setShowMobileSort(false);
+    }
+  };
+
+  const toggleMobileActions = () => {
+    const nextOpen = !showMobileActions;
+    setShowMobileActions(nextOpen);
+    if (nextOpen) {
+      setShowFilters(false);
+      setShowMobileSort(false);
+    }
+  };
+
+  const openMobileSort = () => {
+    setShowMobileActions(false);
+    setShowMobileSort(true);
+  };
+
+  const scrollToTop = useCallback(() => {
+    const main = getScrollOwner();
+    if (main instanceof HTMLElement && main.scrollTop > 0) {
+      main.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [getScrollOwner]);
+
   // Remove individual filter chip
   const removeFilter = useCallback((filterType: string) => {
     switch (filterType) {
@@ -732,20 +819,51 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
     }
   }, []);
 
+  const sortGroups = [
+    {
+      label: t.board.labels.dateAdded,
+      options: [
+        { value: 'dateAdded_desc', label: t.board.filters.sortOptions.dateAddedDesc },
+        { value: 'dateAdded_asc', label: t.board.filters.sortOptions.dateAddedAsc }
+      ]
+    },
+    {
+      label: t.board.labels.lastUpdated,
+      options: [
+        { value: 'lastUpdated_desc', label: t.board.filters.sortOptions.lastUpdatedDesc },
+        { value: 'lastUpdated_asc', label: t.board.filters.sortOptions.lastUpdatedAsc }
+      ]
+    },
+    {
+      label: t.board.filters.sortGroupCompany,
+      options: [
+        { value: 'company_asc', label: t.board.filters.sortOptions.companyAsc },
+        { value: 'company_desc', label: t.board.filters.sortOptions.companyDesc }
+      ]
+    },
+    {
+      label: t.board.filters.sortGroupPosition,
+      options: [
+        { value: 'position_asc', label: t.board.filters.sortOptions.positionAsc },
+        { value: 'position_desc', label: t.board.filters.sortOptions.positionDesc }
+      ]
+    }
+  ];
+
   const filtersPanelContent = (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
         {/* Status filters with colored chips */}
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
               {t.board.labels.status}
             </span>
             <button
               type="button"
               onClick={() => setStatusFilter('ALL')}
-              className="text-xs text-primary dark:text-primary hover:underline"
+              className="min-h-[44px] px-2 -mr-2 text-xs text-primary dark:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg sm:min-h-0 sm:py-1"
             >
-              {t.board.filters?.allStatuses || 'All'}
+              {t.board.filters.allStatuses}
             </button>
           </div>
           <div className="flex flex-wrap gap-1">
@@ -757,7 +875,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   type="button"
                   onClick={() => toggleStatusInFilter(status)}
                   aria-pressed={isSelected}
-                  className={`px-2.5 py-1 text-xs rounded-full border transition-colors ${isSelected
+                  className={`min-h-[44px] px-3 py-2 text-xs rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:min-h-0 sm:px-2.5 sm:py-1 ${isSelected
                     ? STATUS_COLORS[status]
                     : 'bg-gray-50 dark:bg-slate-900/50 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-slate-800 hover:text-gray-600 dark:hover:text-gray-300'
                     }`}
@@ -774,7 +892,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <Calendar className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
               {t.board.labels.dateAdded}
             </span>
           </div>
@@ -785,7 +903,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               max={dateAddedTo || undefined}
               aria-label={`${t.board.labels.dateAdded} ${t.board.filters.from}`}
               onChange={(e) => clampDateBound(setDateAddedFrom, setDateAddedTo, 'from', e.target.value, dateAddedTo)}
-              className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
+              className="flex-1 min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 sm:min-h-0 sm:px-2 sm:py-1 sm:text-xs"
             />
             <span className="text-gray-400 text-xs">→</span>
             <input
@@ -794,13 +912,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               min={dateAddedFrom || undefined}
               aria-label={`${t.board.labels.dateAdded} ${t.board.filters.to}`}
               onChange={(e) => clampDateBound(setDateAddedFrom, setDateAddedTo, 'to', e.target.value, dateAddedFrom)}
-              className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
+              className="flex-1 min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 sm:min-h-0 sm:px-2 sm:py-1 sm:text-xs"
             />
             {(dateAddedFrom || dateAddedTo) && (
               <button
                 type="button"
                 onClick={() => clearDateFilter('dateAdded')}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg sm:min-w-0 sm:min-h-0"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -810,23 +928,23 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <button
               type="button"
               onClick={() => setDatePreset('last7Days', 'dateAdded')}
-              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="flex-1 min-h-[44px] px-2 py-2 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:min-h-0 sm:flex-none sm:py-1"
             >
-              {t.board.filters?.last7Days || 'Last 7 days'}
+              {t.board.filters.last7Days}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('last30Days', 'dateAdded')}
-              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="flex-1 min-h-[44px] px-2 py-2 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:min-h-0 sm:flex-none sm:py-1"
             >
-              {t.board.filters?.last30Days || 'Last 30 days'}
+              {t.board.filters.last30Days}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('thisMonth', 'dateAdded')}
-              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="flex-1 min-h-[44px] px-2 py-2 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:min-h-0 sm:flex-none sm:py-1"
             >
-              {t.board.filters?.thisMonth || 'This month'}
+              {t.board.filters.thisMonth}
             </button>
           </div>
         </div>
@@ -835,7 +953,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
             <Calendar className="w-3.5 h-3.5 text-gray-400" />
-            <span className="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
               {t.board.labels.lastUpdated}
             </span>
           </div>
@@ -846,7 +964,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               max={lastUpdatedTo || undefined}
               aria-label={`${t.board.labels.lastUpdated} ${t.board.filters.from}`}
               onChange={(e) => clampDateBound(setLastUpdatedFrom, setLastUpdatedTo, 'from', e.target.value, lastUpdatedTo)}
-              className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
+              className="flex-1 min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 sm:min-h-0 sm:px-2 sm:py-1 sm:text-xs"
             />
             <span className="text-gray-400 text-xs">→</span>
             <input
@@ -855,13 +973,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               min={lastUpdatedFrom || undefined}
               aria-label={`${t.board.labels.lastUpdated} ${t.board.filters.to}`}
               onChange={(e) => clampDateBound(setLastUpdatedFrom, setLastUpdatedTo, 'to', e.target.value, lastUpdatedFrom)}
-              className="flex-1 px-2 py-1 text-xs rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200"
+              className="flex-1 min-h-[44px] px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-900 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary/50 sm:min-h-0 sm:px-2 sm:py-1 sm:text-xs"
             />
             {(lastUpdatedFrom || lastUpdatedTo) && (
               <button
                 type="button"
                 onClick={() => clearDateFilter('lastUpdated')}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 rounded-lg sm:min-w-0 sm:min-h-0"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -871,23 +989,23 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <button
               type="button"
               onClick={() => setDatePreset('last7Days', 'lastUpdated')}
-              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="flex-1 min-h-[44px] px-2 py-2 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:min-h-0 sm:flex-none sm:py-1"
             >
-              {t.board.filters?.last7Days || 'Last 7 days'}
+              {t.board.filters.last7Days}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('last30Days', 'lastUpdated')}
-              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="flex-1 min-h-[44px] px-2 py-2 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:min-h-0 sm:flex-none sm:py-1"
             >
-              {t.board.filters?.last30Days || 'Last 30 days'}
+              {t.board.filters.last30Days}
             </button>
             <button
               type="button"
               onClick={() => setDatePreset('thisMonth', 'lastUpdated')}
-              className="px-2.5 py-1 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+              className="flex-1 min-h-[44px] px-2 py-2 text-xs rounded bg-gray-100 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:min-h-0 sm:flex-none sm:py-1"
             >
-              {t.board.filters?.thisMonth || 'This month'}
+              {t.board.filters.thisMonth}
             </button>
           </div>
         </div>
@@ -898,14 +1016,38 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           onClick={resetFilters}
           className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:underline"
         >
-          {t.board.filters?.reset || 'Reset all filters'}
+          {t.board.filters.reset}
         </button>
       </div>
     </div>
   );
 
+  const searchField = (
+    <div className="relative w-full sm:w-56">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+      <input
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        placeholder={t.board.filters.searchPlaceholder}
+        className="w-full pl-10 pr-12 py-3 text-base rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-700 focus:border-transparent sm:py-2 sm:pl-9 sm:pr-8 sm:text-sm"
+        aria-label={t.board.filters.search}
+      />
+      {searchQuery && (
+        <button
+          type="button"
+          onClick={() => setSearchQuery('')}
+          className="absolute right-1 top-1/2 -translate-y-1/2 min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:min-w-8 sm:min-h-8"
+          aria-label={t.board.filters.searchClear}
+        >
+          <X className="w-4 h-4" />
+        </button>
+      )}
+    </div>
+  );
+
   return (
-    <div className="space-y-6 h-[calc(100vh-140px)] flex flex-col relative">
+    <div className="space-y-5 sm:space-y-6 min-h-full sm:min-h-0 sm:h-[calc(100vh-140px)] flex flex-col relative">
 
       {/* Ghost Element for both Mouse (via state if needed, but using browser default for now) and Touch Drag */}
       {isTouchDragging && touchPos && draggedItemId && (
@@ -953,7 +1095,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       {/* Move to... status sheet */}
       {moveToJob && (
         <div
-          className="fixed inset-0 z-50 bg-black/30 dark:bg-black/50 sm:bg-black/20 flex items-end sm:items-center justify-center sm:p-4"
+          className="fixed inset-0 z-50 bg-black/30 dark:bg-black/50 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4"
           onClick={() => setMoveToJob(null)}
         >
           <div
@@ -961,7 +1103,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             role="dialog"
             aria-modal="true"
             aria-labelledby="move-to-title"
-            className="w-full sm:max-w-sm bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-2xl shadow-2xl p-4 sm:p-5 sm:border border-gray-200 dark:border-slate-700"
+            className="w-full sm:max-w-sm bg-white dark:bg-slate-800 rounded-t-xl sm:rounded-2xl shadow-xl p-4 sm:p-5 sm:border border-gray-200 dark:border-slate-700"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-3">
@@ -969,9 +1111,10 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 {t.board.moveTo} <span className="font-normal text-gray-400">{moveToJob.company}</span>
               </h3>
               <button
+                type="button"
                 onClick={() => setMoveToJob(null)}
                 aria-label={t.board.close}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 -m-2 rounded-lg"
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -999,6 +1142,136 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   </button>
                 );
               })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMobileActions && (
+        <div
+          className="fixed inset-0 z-50 bg-black/30 dark:bg-black/50 backdrop-blur-sm sm:hidden"
+          onClick={() => setShowMobileActions(false)}
+        >
+          <div
+            ref={mobileActionsRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mobile-actions-title"
+            className="absolute inset-x-0 bottom-0 bg-white dark:bg-slate-800 rounded-t-xl border-t border-gray-200 dark:border-slate-700 p-4 shadow-xl"
+            style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 id="mobile-actions-title" className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                {t.board.filters.moreActionsTitle}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowMobileActions(false)}
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                aria-label={t.board.close}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid gap-2">
+              <button
+                type="button"
+                onClick={openMobileSort}
+                className="w-full min-h-[52px] flex items-center gap-3 px-3 rounded-lg border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              >
+                <ArrowUpDown className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span>{t.board.filters.sortBy}</span>
+              </button>
+              {showBackToTop && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowMobileActions(false);
+                    openAddModal();
+                  }}
+                  className="w-full min-h-[52px] flex items-center gap-3 px-3 rounded-lg bg-primary text-white text-sm font-medium hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>{t.board.addJob}</span>
+                </button>
+              )}
+              {/* Add stays in the overflow only while the FAB is out of the way. */}
+              <button
+                type="button"
+                onClick={() => {
+                  setShowMobileActions(false);
+                  handleExportCSV();
+                }}
+                className="w-full min-h-[52px] flex items-center gap-3 px-3 rounded-lg border border-gray-200 dark:border-slate-700 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              >
+                <Download className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span>{t.board.exportCSV}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMobileSort && (
+        <div
+          className="fixed inset-0 z-50 bg-black/30 dark:bg-black/50 backdrop-blur-sm sm:hidden"
+          onClick={() => setShowMobileSort(false)}
+        >
+          <div
+            ref={mobileSortSheetRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mobile-sort-title"
+            className="absolute inset-x-0 bottom-0 bg-white dark:bg-slate-800 rounded-t-xl border-t border-gray-200 dark:border-slate-700 p-4 max-h-[85vh] overflow-y-auto shadow-xl"
+            style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-3">
+              <h3 id="mobile-sort-title" className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                {t.board.filters.sortBy}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowMobileSort(false)}
+                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                aria-label={t.board.close}
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid gap-3">
+              {sortGroups.map((group) => (
+                <div key={group.label}>
+                  <div className="px-1 pb-1 text-xs font-semibold text-gray-400 dark:text-gray-500">
+                    {group.label}
+                  </div>
+                  <div className="grid gap-1">
+                    {group.options.map((opt) => {
+                      const isSelected = `${sortField}_${sortDirection}` === opt.value;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            const [field, dir] = opt.value.split('_') as [typeof sortField, typeof sortDirection];
+                            setSortField(field);
+                            setSortDirection(dir);
+                            setShowMobileSort(false);
+                          }}
+                          className={`w-full min-h-[44px] text-left px-3 text-sm transition-colors flex items-center justify-between rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${isSelected
+                            ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary font-medium'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/50'
+                            }`}
+                        >
+                          {opt.label}
+                          {isSelected && <Check className="w-4 h-4" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -1051,47 +1324,25 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         />
       )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 shrink-0">
-        <div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-3 shrink-0">
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">{t.board.title}</h1>
           <p className="text-gray-600 dark:text-gray-400 text-sm">{t.board.subtitle}</p>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <div className="relative order-first w-full sm:w-56">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder={t.board.filters?.searchPlaceholder || 'Search company, position, location, notes...'}
-              className="w-full pl-9 pr-8 py-2 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-700 focus:border-transparent"
-              aria-label={t.board.filters.search}
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-1"
-                aria-label={t.board.filters?.searchClear || 'Clear search'}
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
+        <div className="hidden sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
+          {searchField}
           <button
-            onClick={() => {
-              setShowFilters(!showFilters);
-              if (!showFilters) setShowSort(false);
-            }}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm font-medium shadow-sm border ${showFilters || hasActiveFilters
+            type="button"
+            onClick={toggleFilters}
+            className={`min-h-[44px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium shadow-sm border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:min-h-0 sm:w-auto sm:justify-start sm:py-2 ${showFilters || hasActiveFilters
               ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/30'
               : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-600'
               }`}
-            title={t.board.filters?.status || 'Filters'}
+            title={t.board.filters.status}
           >
             <Filter className="w-4 h-4" />
-            <span className="sm:hidden">{t.board.filters?.status || 'Filters'}</span>
-            <span className="hidden sm:inline">{t.board.filters?.status || 'Filters'}</span>
+            <span>{t.board.filters.status}</span>
             {activeFilterCount > 0 && (
               <span className="bg-primary dark:bg-primary text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
                 {activeFilterCount}
@@ -1102,61 +1353,33 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
 
           <div className="relative" ref={sortRef}>
             <button
+              type="button"
               onClick={() => {
                 setShowSort(!showSort);
                 if (!showSort) setShowFilters(false);
               }}
-              className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm font-medium shadow-sm border ${showSort
+              className={`min-h-[44px] flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium shadow-sm border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:min-h-0 sm:w-auto sm:justify-start sm:py-2 ${showSort
                 ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/30'
                 : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-600'
                 }`}
-              title={t.board.filters?.sortBy || 'Sort'}
+              title={t.board.filters.sortBy}
             >
               <ArrowUpDown className="w-4 h-4" />
-              <span className="sm:hidden">{t.board.filters?.sortBy || 'Sort'}</span>
-              <span className="hidden sm:inline">{t.board.filters?.sortBy || 'Sort'}</span>
+              <span>{t.board.filters.sortBy}</span>
               {showSort ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
             </button>
 
             {showSort && (
-              <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 py-2">
-                {[
-                  {
-                    label: t.board.labels.dateAdded,
-                    options: [
-                      { value: 'dateAdded_desc', label: t.board.filters?.sortOptions?.dateAddedDesc || 'Date added (newest)' },
-                      { value: 'dateAdded_asc', label: t.board.filters?.sortOptions?.dateAddedAsc || 'Date added (oldest)' }
-                    ]
-                  },
-                  {
-                    label: t.board.labels.lastUpdated,
-                    options: [
-                      { value: 'lastUpdated_desc', label: t.board.filters?.sortOptions?.lastUpdatedDesc || 'Last updated (newest)' },
-                      { value: 'lastUpdated_asc', label: t.board.filters?.sortOptions?.lastUpdatedAsc || 'Last updated (oldest)' }
-                    ]
-                  },
-                  {
-                    label: t.board.filters?.sortGroupCompany || 'Company',
-                    options: [
-                      { value: 'company_asc', label: t.board.filters?.sortOptions?.companyAsc || 'Company (A–Z)' },
-                      { value: 'company_desc', label: t.board.filters?.sortOptions?.companyDesc || 'Company (Z–A)' }
-                    ]
-                  },
-                  {
-                    label: t.board.filters?.sortGroupPosition || 'Position',
-                    options: [
-                      { value: 'position_asc', label: t.board.filters?.sortOptions?.positionAsc || 'Position (A–Z)' },
-                      { value: 'position_desc', label: t.board.filters?.sortOptions?.positionDesc || 'Position (Z–A)' }
-                    ]
-                  }
-                ].map((group) => (
+              <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 py-2">
+                {sortGroups.map((group) => (
                   <div key={group.label}>
-                    <div className="px-4 pt-2 pb-1 text-[11px] font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+                    <div className="px-4 pt-2 pb-1 text-xs font-semibold text-gray-400 dark:text-gray-500">
                       {group.label}
                     </div>
                     {group.options.map((opt) => (
                       <button
                         key={opt.value}
+                        type="button"
                         onClick={() => {
                           const [field, dir] = opt.value.split('_') as [typeof sortField, typeof sortDirection];
                           setSortField(field);
@@ -1180,8 +1403,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             )}
           </div>
           <button
+            type="button"
             onClick={handleExportCSV}
-            className="flex items-center gap-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-gray-200 px-3 py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm font-medium shadow-sm"
+            className="col-span-2 sm:col-span-1 min-h-[44px] w-full sm:w-auto flex items-center justify-center gap-2 bg-white dark:bg-slate-700 border border-gray-200 dark:border-slate-600 text-gray-700 dark:text-gray-200 px-3 py-2.5 sm:py-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors text-sm font-medium shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
             title={t.board.exportCSV}
           >
             <Download className="w-4 h-4" />
@@ -1189,8 +1413,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
             <span className="hidden lg:inline">{t.board.exportCSV}</span>
           </button>
           <button
+            type="button"
             onClick={openAddModal}
-            className="hidden sm:flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm"
+            className="hidden sm:flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900"
           >
             <Plus className="w-4 h-4" />
             {t.board.addJob}
@@ -1198,25 +1423,88 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         </div>
       </div>
 
+      <div className="sm:hidden sticky top-0 z-20 -mx-4 px-4 py-3 bg-background-light dark:bg-background-dark border-y border-gray-200 dark:border-slate-700 shadow-sm">
+        {searchField}
+        <div className={`grid gap-2 mt-2 ${showBackToTop ? 'grid-cols-3' : 'grid-cols-2'}`}>
+          <button
+            type="button"
+            onClick={toggleFilters}
+            className={`min-h-[44px] w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${showFilters || hasActiveFilters
+              ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/30'
+              : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+              }`}
+            title={t.board.filters.status}
+            aria-expanded={showFilters}
+          >
+            <Filter className="w-4 h-4" />
+            <span>{t.board.filters.status}</span>
+            {activeFilterCount > 0 && (
+              <span className="bg-primary dark:bg-primary text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={toggleMobileActions}
+            className={`min-h-[44px] w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${showMobileActions
+              ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border-primary/30 dark:border-primary/30'
+              : 'bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-600'
+              }`}
+            title={t.board.filters.moreActionsTitle}
+            aria-expanded={showMobileActions}
+          >
+            <MoreHorizontal className="w-4 h-4" />
+            <span>{t.board.filters.moreActions}</span>
+          </button>
+          {showBackToTop && (
+            <button
+              type="button"
+              onClick={scrollToTop}
+              className="min-h-[44px] w-full flex items-center justify-center rounded-lg transition-colors text-sm font-medium border bg-white dark:bg-slate-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-slate-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              aria-label={t.board.filters.backToTop}
+              title={t.board.filters.backToTop}
+            >
+              <ArrowUp className="w-4 h-4" />
+              <span className="sr-only">{t.board.filters.backToTop}</span>
+            </button>
+          )}
+        </div>
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={resetFilters}
+            className="mt-2 min-h-[44px] w-full text-xs font-medium text-primary dark:text-primary hover:bg-primary/5 dark:hover:bg-primary/10 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+          >
+            {t.board.filters.clearAll}
+          </button>
+        )}
+      </div>
+
 
       {/* Active Filter Chips */}
       {hasActiveFilters && !showFilters && (
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           <span className="text-xs text-gray-500 dark:text-gray-400">
-            {t.board.filters?.activeFilters || 'Active filters:'}
+            {t.board.filters.activeFilters}
           </span>
           {statusFilter !== 'ALL' && (
             <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/30">
               {t.board.labels.status}: {statusFilter.map(s => t.board.status[s]).join(', ')}
-              <button onClick={() => removeFilter('status')} className="hover:text-primary dark:hover:text-white">
+              <button
+                type="button"
+                onClick={() => removeFilter('status')}
+                aria-label={`${t.board.filters.removeFilter}: ${t.board.labels.status}`}
+                className="min-w-7 min-h-7 inline-flex items-center justify-center hover:text-primary dark:hover:text-white rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              >
                 <X className="w-3 h-3" />
               </button>
             </span>
           )}
           {debouncedSearchQuery.trim() && (
             <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/30">
-              {t.board.filters?.search || 'Search'}: "{debouncedSearchQuery}"
-              <button onClick={() => removeFilter('search')} aria-label={`${t.board.filters?.search || 'Search'} ${t.board.filters?.searchClear || ''}`} className="hover:text-primary dark:hover:text-white">
+              {t.board.filters.search}: "{debouncedSearchQuery}"
+              <button type="button" onClick={() => removeFilter('search')} aria-label={`${t.board.filters.search} ${t.board.filters.searchClear}`} className="hover:text-primary dark:hover:text-white">
                 <X className="w-3 h-3" />
               </button>
             </span>
@@ -1224,7 +1512,12 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           {(dateAddedFrom || dateAddedTo) && (
             <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/30">
               {t.board.labels.dateAdded}: {dateAddedFrom || '...'} - {dateAddedTo || '...'}
-              <button onClick={() => removeFilter('dateAdded')} className="hover:text-primary dark:hover:text-white">
+              <button
+                type="button"
+                onClick={() => removeFilter('dateAdded')}
+                aria-label={`${t.board.filters.removeFilter}: ${t.board.labels.dateAdded}`}
+                className="min-w-7 min-h-7 inline-flex items-center justify-center hover:text-primary dark:hover:text-white rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              >
                 <X className="w-3 h-3" />
               </button>
             </span>
@@ -1232,24 +1525,30 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           {(lastUpdatedFrom || lastUpdatedTo) && (
             <span className="inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary border border-primary/30 dark:border-primary/30">
               {t.board.labels.lastUpdated}: {lastUpdatedFrom || '...'} - {lastUpdatedTo || '...'}
-              <button onClick={() => removeFilter('lastUpdated')} className="hover:text-primary dark:hover:text-white">
+              <button
+                type="button"
+                onClick={() => removeFilter('lastUpdated')}
+                aria-label={`${t.board.filters.removeFilter}: ${t.board.labels.lastUpdated}`}
+                className="min-w-7 min-h-7 inline-flex items-center justify-center hover:text-primary dark:hover:text-white rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+              >
                 <X className="w-3 h-3" />
               </button>
             </span>
           )}
           <button
+            type="button"
             onClick={resetFilters}
             className="text-xs text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:underline"
           >
-            {t.board.filters?.reset || 'Reset all filters'}
+            {t.board.filters.reset}
           </button>
         </div>
       )}
 
       {/* Results count */}
-      <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 shrink-0">
+      <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-gray-600 dark:text-gray-400 shrink-0">
         <span>
-          {t.board.filters?.showing || 'Showing'} <span className="font-semibold text-gray-700 dark:text-gray-200">{visibleJobs.length}</span> {t.board.filters?.of || 'of'} <span className="font-semibold text-gray-700 dark:text-gray-200">{jobs.length}</span> {t.board.filters?.applications || 'applications'}
+          {t.board.filters.showing} <span className="font-semibold text-gray-700 dark:text-gray-200">{visibleJobs.length}</span> {t.board.filters.of} <span className="font-semibold text-gray-700 dark:text-gray-200">{jobs.length}</span> {t.board.filters.applications}
         </span>
         <div className="flex items-center gap-3">
           {hasEmptyColumns && (
@@ -1265,20 +1564,20 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               onClick={resetFilters}
               className="text-primary dark:text-primary hover:underline text-xs"
             >
-              {t.board.filters?.clearAll || 'Clear all filters'}
+              {t.board.filters.clearAll}
             </button>
           )}
         </div>
       </div>
 
-      {/* Mobile status overview removed to avoid redundancy with section headers */}
+      {/* Mobile stage navigation is provided by the accordion headers below. */}
 
       {/* Collapsible Panels */}
       <div className="flex flex-col gap-3 shrink-0">
         {/* Mobile Filters Sheet */}
         {showFilters && (
           <div
-            className="fixed inset-0 z-50 bg-black/30 sm:hidden"
+            className="fixed inset-0 z-50 bg-black/30 dark:bg-black/50 backdrop-blur-sm sm:hidden"
             onClick={() => setShowFilters(false)}
           >
             <div
@@ -1286,7 +1585,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               role="dialog"
               aria-modal="true"
               aria-labelledby="filter-sheet-title"
-              className="absolute inset-x-0 bottom-0 bg-white dark:bg-slate-800 rounded-t-2xl p-4 max-h-[85vh] overflow-y-auto shadow-2xl"
+              className="absolute inset-x-0 bottom-0 bg-white dark:bg-slate-800 rounded-t-xl border-t border-gray-200 dark:border-slate-700 p-4 max-h-[85vh] overflow-y-auto shadow-xl"
+              style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex items-center justify-between mb-3">
@@ -1294,8 +1594,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   {t.board.filters.status}
                 </h3>
                 <button
+                  type="button"
                   onClick={() => setShowFilters(false)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 p-2 -m-2 rounded-lg"
+                  className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                   aria-label={t.board.close}
                 >
                   <X className="w-4 h-4" />
@@ -1323,17 +1624,17 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           <div className="bg-gray-50 dark:bg-slate-800/50 rounded-2xl p-8 text-center max-w-md">
             <SearchX className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
-              {t.board.filters?.noResults || 'No applications found'}
+              {t.board.filters.noResults}
             </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              {t.board.filters?.noResultsMessage || 'Try adjusting your filters or search terms to find what you\'re looking for.'}
+              {t.board.filters.noResultsMessage}
             </p>
             <button
               onClick={resetFilters}
               className="inline-flex items-center gap-2 px-4 py-2 bg-primary dark:bg-primary text-white rounded-lg hover:bg-blue-700 dark:hover:bg-primary transition-colors text-sm font-medium"
             >
               <X className="w-4 h-4" />
-              {t.board.filters?.reset || 'Reset all filters'}
+              {t.board.filters.reset}
             </button>
           </div>
         </div>
@@ -1348,41 +1649,11 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       ) : (
       <div
         data-testid="job-board"
-        className={`relative flex-1 sm:overflow-x-auto sm:overflow-y-hidden pb-4 sm:px-2 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
+        className={`relative flex-1 min-h-0 sm:overflow-x-auto sm:overflow-y-hidden pb-32 sm:px-2 sm:pb-4 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
         ref={scrollContainerRef}
         onScroll={updateScrollFades}
         onDragOver={handleContainerDragOver} // Track drag over globally in container
       >
-        {/* Mobile status quick navigator bar */}
-        <div className="sm:hidden sticky top-0 z-20 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md py-2 px-1 mb-3 border-b border-gray-200 dark:border-slate-700 flex items-center gap-1.5 overflow-x-auto">
-          {columns.map(status => {
-            const isActive = mobileOpenStatuses.includes(status);
-            return (
-              <button
-                key={`mobile-nav-${status}`}
-                type="button"
-                onClick={() => {
-                  setMobileOpenStatuses([status]);
-                  const el = document.querySelector(`[data-column-id="${status}"]`);
-                  el?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                }}
-                className={`shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${
-                  isActive
-                    ? 'bg-primary text-white shadow-sm scale-[1.02]'
-                    : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-slate-700'
-                }`}
-              >
-                <span>{t.board.status[status]}</span>
-                <span className={`px-1.5 py-0.5 text-[11px] rounded-full font-bold ${
-                  isActive ? 'bg-white/20 text-white' : STATUS_COUNT_COLORS[status]
-                }`}>
-                  {statusCounts[status]}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
         {/* Edge fades signal horizontal scrollability */}
         <div
           className={`hidden sm:block absolute left-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-background-light dark:from-background-dark to-transparent transition-opacity duration-200 ${showLeftFade ? 'opacity-100' : 'opacity-0'}`}
@@ -1392,9 +1663,14 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           className={`hidden sm:block absolute right-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-transparent to-background-light dark:to-background-dark transition-opacity duration-200 ${showRightFade ? 'opacity-100' : 'opacity-0'}`}
           aria-hidden="true"
         />
-        <div className="flex flex-col sm:flex-row gap-4 min-w-full pb-28 sm:h-full sm:pb-2">
+        <div className="flex flex-col sm:flex-row gap-4 min-w-full pb-32 sm:h-full sm:pb-2">
           {columnsForDesktop.map(status => {
             const isOpen = mobileOpenStatuses.includes(status);
+            const mobileVisibleCount = Math.min(mobileVisibleCounts[status] ?? MOBILE_PAGE_SIZE, jobsByStatus[status].length);
+            const jobsToRender = isMobile
+              ? jobsByStatus[status].slice(0, mobileVisibleCount)
+              : jobsByStatus[status];
+            const remainingMobileCount = jobsByStatus[status].length - mobileVisibleCount;
             return (
               <section
                 key={status}
@@ -1402,16 +1678,17 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                 onDragOver={(e) => handleDragOver(e, status)}
                 onDrop={(e) => handleDrop(e, status)}
                 onDragLeave={handleDragLeave}
-                className={`flex-1 flex flex-col min-w-[220px] md:min-w-[240px] 2xl:min-w-[250px] transition-all duration-200 ${dragOverColumn === status
+                className={`flex-1 flex flex-col min-w-0 sm:min-w-[220px] md:min-w-[240px] 2xl:min-w-[250px] transition-all duration-200 ${dragOverColumn === status
                   ? 'bg-primary/5 dark:bg-primary/10 rounded-xl border-2 border-dashed border-primary/40 sm:scale-[1.01]'
-                  : ''
-                  } ${statusCounts[status] === 0 && visibleJobs.length > 0 ? 'max-sm:hidden' : ''}`}
+                  : ''}`}
               >
                 {/* Mobile accordion header */}
                 <button
+                  type="button"
                   onClick={() => toggleMobileStatus(status)}
-                  className="column-accordion-button sm:hidden w-full flex items-center justify-between px-3 py-2 text-sm font-semibold"
+                  className="column-accordion-button sm:hidden w-full min-h-[52px] flex items-center justify-between px-3.5 py-3 text-sm font-semibold rounded-lg border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-primary/40 dark:hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
                   aria-expanded={isOpen}
+                  aria-controls={`column-${status}`}
                 >
                   <span className="text-slate-700 dark:text-slate-200">{t.board.status[status]}</span>
                   <span className="flex items-center gap-2">
@@ -1432,9 +1709,9 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   </h2>
                 </div>
 
-                <div className={`p-2 space-y-3 sm:space-y-4 sm:flex-1 sm:overflow-y-auto sm:pr-2 ${isOpen ? 'block' : 'hidden'} sm:block`}>
+                <div id={`column-${status}`} className={`p-1 pt-2 space-y-3 sm:p-2 sm:space-y-4 sm:flex-1 sm:overflow-y-auto sm:pr-2 ${isOpen ? 'block' : 'hidden'} sm:block`}>
                   {jobsByStatus[status].length === 0 && !dragOverColumn ? (
-                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-8">
+                    <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-6 sm:p-8">
                       <div className="w-16 h-16 bg-slate-200 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 dark:border dark:border-slate-800">
                         <Inbox className="w-8 h-8 text-slate-400 dark:text-slate-600" />
                       </div>
@@ -1442,7 +1719,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                     </div>
                   ) : (
                     <>
-                      {(isMobile && !mobileShowAll.includes(status) ? jobsByStatus[status].slice(0, MOBILE_PAGE_SIZE) : jobsByStatus[status]).map(job => (
+                      {jobsToRender.map(job => (
                         <JobCard
                           key={job.id}
                           job={job}
@@ -1464,14 +1741,34 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                           onTouchEnd={handleTouchEnd}
                         />
                       ))}
-                      {isMobile && jobsByStatus[status].length > MOBILE_PAGE_SIZE && !mobileShowAll.includes(status) && (
-                        <button
-                          type="button"
-                          onClick={() => setMobileShowAll(prev => [...prev, status])}
-                          className="w-full min-h-[44px] text-xs font-semibold text-primary dark:text-primary border border-primary/30 dark:border-primary/30 rounded-lg bg-primary/5 dark:bg-primary/10 hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors"
-                        >
-                          {t.board.filters.showMore.replace('{count}', String(jobsByStatus[status].length - MOBILE_PAGE_SIZE))}
-                        </button>
+                      {isMobile && jobsByStatus[status].length > MOBILE_PAGE_SIZE && (
+                        <div className="space-y-2 pt-1">
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {t.board.filters.showingCount
+                              .replace('{shown}', String(mobileVisibleCount))
+                              .replace('{total}', String(jobsByStatus[status].length))}
+                          </p>
+                          <div className="flex gap-2">
+                            {remainingMobileCount > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => showNextMobileJobs(status, jobsByStatus[status].length)}
+                                className="flex-1 min-h-[44px] px-3 text-xs font-semibold text-primary dark:text-primary border border-primary/30 dark:border-primary/30 rounded-lg bg-primary/5 dark:bg-primary/10 hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                              >
+                                {t.board.filters.showNext.replace('{count}', String(Math.min(MOBILE_PAGE_SIZE, remainingMobileCount)))}
+                              </button>
+                            )}
+                            {mobileVisibleCount > MOBILE_PAGE_SIZE && (
+                              <button
+                                type="button"
+                                onClick={() => showLessMobileJobs(status)}
+                                className="flex-1 min-h-[44px] px-3 text-xs font-semibold text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                              >
+                                {t.board.filters.showLess}
+                              </button>
+                            )}
+                          </div>
+                        </div>
                       )}
                       {/* Visual Placeholder for drop zone */}
           {dragOverColumn === status && (
@@ -1489,15 +1786,20 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
       </div>
       )}
       {/* Floating Action Button */}
-      <button
-        onClick={openAddModal}
-        className="glass-fab fixed bottom-8 right-8 text-white flex items-center gap-3 pl-4 pr-6 py-4 rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-all z-30 group sm:hidden"
-        aria-label={t.board.addJob}
-      >
-        <div className="bg-white/20 p-1 rounded-full group-hover:bg-white/30 transition-colors">
-          <Plus className="w-6 h-6" />
-        </div>
-      </button>
+      {!showBackToTop && (
+        <button
+          type="button"
+          onClick={openAddModal}
+          className="glass-fab fixed right-4 w-14 h-14 text-white flex items-center justify-center rounded-full shadow-2xl hover:scale-105 active:scale-95 transition-transform z-30 group sm:hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background-light dark:focus-visible:ring-offset-background-dark"
+          style={{ bottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+          aria-label={t.board.addJob}
+          title={t.board.addJob}
+        >
+          <div className="w-8 h-8 bg-white/20 p-1 rounded-full group-hover:bg-white/30 transition-colors flex items-center justify-center">
+            <Plus className="w-6 h-6" />
+          </div>
+        </button>
+      )}
     </div>
   );
 };

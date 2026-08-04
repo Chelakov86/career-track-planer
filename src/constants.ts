@@ -103,6 +103,8 @@ export const TRANSLATIONS = {
         searchPlaceholder: 'Search company, position, location, notes...',
         searchClear: 'Clear search',
         sortBy: 'Sort by',
+        moreActions: 'More',
+        moreActionsTitle: 'More actions',
         sortOptions: {
           dateAddedDesc: 'Date added (newest)',
           dateAddedAsc: 'Date added (oldest)',
@@ -117,6 +119,7 @@ export const TRANSLATIONS = {
         sortGroupPosition: 'Position',
         reset: 'Reset all filters',
         clearAll: 'Clear all filters',
+        removeFilter: 'Remove filter',
         activeFilters: 'Active filters:',
         showing: 'Showing',
         of: 'of',
@@ -130,7 +133,10 @@ export const TRANSLATIONS = {
         showEmptyColumns: 'Show empty columns',
         from: 'From',
         to: 'To',
-        showMore: 'Show more ({count})'
+        showNext: 'Show next {count}',
+        showLess: 'Show less',
+        showingCount: 'Showing {shown} of {total}',
+        backToTop: 'Back to top'
       },
       viewDetails: 'View Details',
       undo: 'Undo',
@@ -367,6 +373,8 @@ export const TRANSLATIONS = {
         searchPlaceholder: 'Suche nach Firma, Position, Ort, Notizen...',
         searchClear: 'Suche löschen',
         sortBy: 'Sortieren nach',
+        moreActions: 'Mehr',
+        moreActionsTitle: 'Weitere Aktionen',
         sortOptions: {
           dateAddedDesc: 'Hinzugefügt (neueste)',
           dateAddedAsc: 'Hinzugefügt (älteste)',
@@ -381,6 +389,7 @@ export const TRANSLATIONS = {
         sortGroupPosition: 'Position',
         reset: 'Alle Filter zurücksetzen',
         clearAll: 'Alle Filter löschen',
+        removeFilter: 'Filter entfernen',
         activeFilters: 'Aktive Filter:',
         showing: 'Zeige',
         of: 'von',
@@ -394,7 +403,10 @@ export const TRANSLATIONS = {
         showEmptyColumns: 'Leere Spalten anzeigen',
         from: 'Von',
         to: 'Bis',
-        showMore: 'Mehr anzeigen ({count})'
+        showNext: 'Nächste {count} anzeigen',
+        showLess: 'Weniger anzeigen',
+        showingCount: 'Zeige {shown} von {total}',
+        backToTop: 'Nach oben'
       },
       viewDetails: 'Details anzeigen',
       undo: 'Rückgängig',

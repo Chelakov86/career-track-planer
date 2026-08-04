@@ -27,6 +27,13 @@ test.describe('JobCard Responsive Behavior', () => {
                     await expect(btn).toHaveAttribute('aria-expanded', 'true', { timeout: 3000 });
                 }
             }
+
+            for (let i = 0; i < 40; i++) {
+                const showNext = board.getByRole('button', { name: /Nächste/ }).first();
+                if (await showNext.count() === 0) break;
+                await showNext.click();
+                await page.waitForTimeout(50);
+            }
         }
     }
 
@@ -110,4 +117,3 @@ test.describe('JobCard Responsive Behavior', () => {
         expect(className).toContain('text-[11px]');
     });
 });
-

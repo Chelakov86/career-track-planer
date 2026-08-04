@@ -21,7 +21,10 @@ export const Header: React.FC<HeaderProps> = ({
     const t = TRANSLATIONS[language];
 
     return (
-        <div className="md:hidden bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 p-4 flex justify-between items-center sticky top-0 z-[35]">
+        <div
+            className="md:hidden bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800 px-4 pb-4 flex justify-between items-center sticky top-0 z-[35]"
+            style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
+        >
             <div className="flex items-center gap-2">
                 <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">CT</div>
                 <span className="font-bold text-gray-800 dark:text-white">CareerTrack</span>

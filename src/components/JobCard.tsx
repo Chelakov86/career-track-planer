@@ -123,7 +123,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
             className={`job-card relative bg-white dark:bg-slate-800 p-3 2xl:p-4 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm transition-[transform,box-shadow,border-color,background-color,opacity] ${isGhost ? 'shadow-2xl ring-2 ring-primary rotate-3 z-50 opacity-90' :
                     draggedItemId === job.id && !isGhost ? 'opacity-30 grayscale' :
                         'hover:shadow-md dark:hover:border-slate-700'
-                } ${!isGhost ? 'cursor-grab active:cursor-grabbing group' : ''}`}
+            } ${!isGhost ? 'cursor-grab active:cursor-grabbing touch-manipulation group' : ''}`}
             draggable={!isGhost}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
@@ -270,7 +270,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                         e.stopPropagation();
                         onView(job);
                     }}
-                    className="w-full py-1.5 2xl:py-2 text-xs 2xl:text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-primary hover:text-white transition-all mb-2 2xl:mb-3"
+                    className="w-full min-h-[44px] py-2.5 text-sm 2xl:py-2 2xl:text-sm bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg font-medium hover:bg-primary hover:text-white transition-all mb-2 2xl:mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 sm:min-h-0 sm:py-1.5 sm:text-xs"
                 >
                     {t.board.viewDetails}
                 </button>

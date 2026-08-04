@@ -24,14 +24,22 @@ test.describe('Job Board', () => {
         }
     });
 
-    test('should display action buttons', async ({ page }) => {
-        await expect(page.getByTitle(DE.board.filter).first()).toBeVisible();
-        await expect(page.getByTitle(DE.board.sort).first()).toBeVisible();
-        await expect(page.getByTitle(DE.board.exportCSV).first()).toBeVisible();
+    test('should display action buttons', async ({ page, isMobile }) => {
+        await expect(page.locator('button[title="Filter"]:visible').first()).toBeVisible();
+        if (isMobile) {
+            await expect(page.getByTitle(DE.board.moreActionsTitle)).toBeVisible();
+            await page.getByTitle(DE.board.moreActionsTitle).click();
+            await expect(page.getByRole('button', { name: DE.board.sort }).last()).toBeVisible();
+            await expect(page.getByRole('button', { name: DE.board.exportCSV }).last()).toBeVisible();
+            await page.keyboard.press('Escape');
+        } else {
+            await expect(page.getByTitle(DE.board.sort).first()).toBeVisible();
+            await expect(page.getByTitle(DE.board.exportCSV).first()).toBeVisible();
+        }
     });
 
     test('should display results count', async ({ page }) => {
-        await expect(page.getByText(/Zeige/)).toBeVisible();
+        await expect(page.getByText(/Zeige \d+ von \d+ Bewerbungen/).first()).toBeVisible();
         await expect(page.getByText(/Bewerbungen/i).first()).toBeVisible();
     });
 
@@ -40,7 +48,7 @@ test.describe('Job Board', () => {
         const searchInput = page.locator('input[placeholder*="Suche nach Firma"]:visible').first();
         await expect(searchInput).toBeVisible({ timeout: 5000 });
 
-        const filterButton = page.getByTitle(DE.board.filter).first();
+        const filterButton = page.locator('button[title="Filter"]:visible').first();
         if (isMobile) {
             // On mobile the filter sheet only exists in the DOM once opened
             await expect(page.locator('.fixed.inset-0 button.rounded-full:visible').filter({ hasText: 'Recherche' })).toHaveCount(0);
@@ -61,7 +69,7 @@ test.describe('Job Board', () => {
     });
 
     test('should filter jobs by search text', async ({ page, isMobile }) => {
-        const filterButton = page.getByTitle(DE.board.filter).first();
+        const filterButton = page.locator('button[title="Filter"]:visible').first();
         await filterButton.click();
 
         const searchInput = page.locator('input[placeholder*="Suche nach Firma"]:visible').first();
@@ -78,7 +86,7 @@ test.describe('Job Board', () => {
     });
 
     test('should reset filters', async ({ page, isMobile }) => {
-        const filterButton = page.getByTitle(DE.board.filter).first();
+        const filterButton = page.locator('button[title="Filter"]:visible').first();
         await filterButton.click();
 
         const searchInput = page.locator('input[placeholder*="Suche nach Firma"]:visible').first();
@@ -92,23 +100,31 @@ test.describe('Job Board', () => {
         await expect(searchInput).toHaveValue('');
     });
 
-    test('should open sort dropdown and show options', async ({ page }) => {
-        const sortButton = page.getByTitle(DE.board.sort).first();
-        await sortButton.click();
+    test('should open sort dropdown and show options', async ({ page, isMobile }) => {
+        if (isMobile) {
+            await page.getByTitle(DE.board.moreActionsTitle).click();
+            await page.getByRole('button', { name: DE.board.sort }).last().click();
+        } else {
+            await page.getByTitle(DE.board.sort).first().click();
+        }
 
         await expect(page.getByText('Hinzugefügt (neueste)')).toBeVisible();
         await expect(page.getByText('Firma (A–Z)')).toBeVisible();
     });
 
-    test('should close sort dropdown when selecting an option', async ({ page }) => {
-        const sortButton = page.getByTitle(DE.board.sort).first();
-        await sortButton.click();
+    test('should close sort dropdown when selecting an option', async ({ page, isMobile }) => {
+        if (isMobile) {
+            await page.getByTitle(DE.board.moreActionsTitle).click();
+            await page.getByRole('button', { name: DE.board.sort }).last().click();
+        } else {
+            await page.getByTitle(DE.board.sort).first().click();
+        }
         await page.getByText('Firma (A–Z)').click();
         await expect(page.getByText('Hinzugefügt (neueste)')).not.toBeVisible();
     });
 
     test('should toggle status filter chips', async ({ page }) => {
-        const filterButton = page.getByTitle(DE.board.filter).first();
+        const filterButton = page.locator('button[title="Filter"]:visible').first();
         await filterButton.click();
 
         const researchChip = page.locator('button:visible').filter({ hasText: /^Recherche$/ }).first();
@@ -119,7 +135,7 @@ test.describe('Job Board', () => {
     });
 
     test('date presets should produce the expected from/to range', async ({ page }) => {
-        const filterButton = page.getByTitle(DE.board.filter).first();
+        const filterButton = page.locator('button[title="Filter"]:visible').first();
         await filterButton.click();
 
         const fromInput = page.locator('input[aria-label="Hinzugefügt Von"]:visible').first();

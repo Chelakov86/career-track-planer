@@ -55,6 +55,7 @@ test.describe('Mobile View', () => {
     test('should show mobile board with accordion sections', async ({ page }) => {
         await navigateTo(page, '/');
         await expect(page.getByText(DE.board.title)).toBeVisible({ timeout: 10000 });
+        await expect(page.locator('[data-testid="job-board"]')).toBeVisible({ timeout: 10000 });
 
         // Mobile board shows collapsible status sections with aria-expanded
         const accordionButtons = page.locator('button.column-accordion-button');
@@ -66,7 +67,7 @@ test.describe('Mobile View', () => {
         await navigateTo(page, '/');
         await expect(page.getByText(DE.board.title)).toBeVisible({ timeout: 10000 });
 
-        // Zero-count sections are hidden on mobile; only visible sections toggle
+        // All stages stay reachable on mobile, including empty sections.
         const accordionButtons = page.locator('button.column-accordion-button:visible');
         const count = await accordionButtons.count();
 
@@ -77,6 +78,26 @@ test.describe('Mobile View', () => {
             const isNowExpanded = await secondSection.getAttribute('aria-expanded');
             expect(isNowExpanded).not.toEqual(wasExpanded);
         }
+    });
+
+    test('should keep mobile controls available while scrolling', async ({ page }) => {
+        await navigateTo(page, '/');
+        await expect(page.getByText(DE.board.title)).toBeVisible({ timeout: 10000 });
+        await expect(page.locator('[data-testid="job-board"]')).toBeVisible({ timeout: 10000 });
+
+        await expect(page.locator('nav[aria-label="Status"]')).toHaveCount(0);
+        await expect(page.getByTitle(DE.board.moreActionsTitle)).toBeVisible();
+
+        const main = page.locator('main');
+        await main.evaluate((element) => element.scrollTo({ top: 700, behavior: 'instant' }));
+        await page.waitForTimeout(250);
+
+        await expect(page.getByTitle(DE.board.moreActionsTitle)).toBeVisible();
+        await expect(page.getByTitle(DE.board.backToTop)).toBeVisible();
+        expect(await main.evaluate((element) => element.scrollTop)).toBeGreaterThan(0);
+
+        await page.getByTitle(DE.board.backToTop).click();
+        await expect.poll(() => main.evaluate((element) => element.scrollTop)).toBe(0);
     });
 
     test('should show floating action button (FAB) for adding jobs', async ({ page }) => {
