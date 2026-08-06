@@ -1666,7 +1666,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                   </h2>
                 </div>
 
-                <div id={`column-${status}`} className={`p-1 pt-2 space-y-3 sm:p-2 sm:space-y-4 sm:flex-1 sm:overflow-y-auto sm:pr-2 ${isOpen ? 'block' : 'hidden'} sm:block`}>
+                <div id={`column-${status}`} className={`p-1 pt-2 space-y-3 sm:p-2 sm:space-y-4 sm:flex-1 sm:overflow-y-auto sm:pr-2 ${isOpen ? 'block' : 'hidden'} sm:block min-w-0 w-full`}>
                   {jobsByStatus[status].length === 0 && !dragOverColumn ? (
                     <div className="flex-1 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-800 rounded-2xl p-6 sm:p-8">
                       <div className="w-16 h-16 bg-slate-200 dark:bg-slate-900 rounded-full flex items-center justify-center mb-4 dark:border dark:border-slate-800">

@@ -120,7 +120,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
 
     return (
         <div
-            className={`job-card relative bg-white dark:bg-slate-800 p-3 2xl:p-4 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm transition-[transform,box-shadow,border-color,background-color,opacity] ${isGhost ? 'shadow-2xl ring-2 ring-primary rotate-3 z-50 opacity-90' :
+            className={`job-card relative bg-white dark:bg-slate-800 p-3 2xl:p-4 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm transition-[transform,box-shadow,border-color,background-color,opacity] w-full max-w-full overflow-hidden ${isGhost ? 'shadow-2xl ring-2 ring-primary rotate-3 z-50 opacity-90' :
                     draggedItemId === job.id && !isGhost ? 'opacity-30 grayscale' :
                         'hover:shadow-md dark:hover:border-slate-700'
             } ${!isGhost ? 'cursor-grab active:cursor-grabbing touch-manipulation group' : ''}`}
@@ -194,7 +194,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
             )}
 
             {/* Company + Location */}
-            <p className="text-sm text-gray-500 dark:text-slate-400 mb-2 2xl:mb-3">
+            <p className="text-sm text-gray-500 dark:text-slate-400 mb-2 2xl:mb-3 truncate">
                 {job.company}{job.location ? ` · ${job.location}` : ''}
             </p>
 
@@ -276,19 +276,19 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                 </button>
             )}
 
-            <div className="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-slate-700">
-                <span className="text-xs text-gray-500 dark:text-slate-400">
+            <div className="flex justify-between items-center gap-1 pt-2 border-t border-gray-100 dark:border-slate-700 min-w-0">
+                <span className="text-xs text-gray-500 dark:text-slate-400 truncate min-w-0 shrink" title={`${t.board.labels.lastUpdated}: ${job.lastUpdated}`}>
                     {t.board.labels.lastUpdated}: {job.lastUpdated}
                 </span>
 
-                <div className="flex items-center">
+                <div className="flex items-center shrink-0 min-w-0">
                     {!isGhost && onMoveTo && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onMoveTo(job);
                             }}
-                            className="min-h-[44px] sm:min-h-8 px-2 -mx-2 sm:mx-0 sm:px-2.5 text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg sm:py-1"
+                            className="min-h-[44px] sm:min-h-8 px-2 -mx-2 sm:mx-0 sm:px-2.5 text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg sm:py-1 truncate"
                             title={t.board.moveTo}
                             aria-label={t.board.moveTo}
                         >
@@ -301,11 +301,11 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                                 e.stopPropagation();
                                 onNextStatus(job);
                             }}
-                            className="p-2 -m-1 sm:p-1 sm:m-0 rounded-full hover:bg-primary/10 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors min-w-[44px] min-h-[44px] sm:min-w-8 sm:min-h-8 flex items-center justify-center"
+                            className="p-2 -m-1 sm:p-1 sm:m-0 rounded-full hover:bg-primary/10 dark:hover:bg-slate-700 text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors min-w-[44px] min-h-[44px] sm:min-w-8 sm:min-h-8 flex items-center justify-center shrink-0"
                             title={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
                             aria-label={nextStatusLabel ? `→ ${nextStatusLabel}` : undefined}
                         >
-                            <ChevronRight className="w-4 h-4 sm:w-4 sm:h-4" />
+                            <ChevronRight className="w-4 h-4 sm:w-4 sm:h-4 shrink-0" />
                         </button>
                     )}
                 </div>
