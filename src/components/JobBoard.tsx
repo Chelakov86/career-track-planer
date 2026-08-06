@@ -1605,22 +1605,16 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         </div>
       ) : (
       <div
-        data-testid="job-board"
-        className={`relative flex-1 min-h-0 sm:overflow-x-auto sm:overflow-y-hidden pb-32 sm:px-2 sm:pb-4 ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
-        ref={scrollContainerRef}
-        onScroll={updateScrollFades}
-        onDragOver={handleContainerDragOver} // Track drag over globally in container
+        className={`relative flex-1 min-h-0 flex flex-col ${visibleJobs.length === 0 && hasActiveFilters ? 'hidden' : ''}`}
       >
-        {/* Edge fades signal horizontal scrollability */}
         <div
-          className={`hidden sm:block absolute left-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-background-light dark:from-background-dark to-transparent transition-opacity duration-200 ${showLeftFade ? 'opacity-100' : 'opacity-0'}`}
-          aria-hidden="true"
-        />
-        <div
-          className={`hidden sm:block absolute right-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-transparent to-background-light dark:to-background-dark transition-opacity duration-200 ${showRightFade ? 'opacity-100' : 'opacity-0'}`}
-          aria-hidden="true"
-        />
-        <div className="flex flex-col sm:flex-row gap-4 min-w-full pb-32 sm:h-full sm:pb-2">
+          data-testid="job-board"
+          className="flex-1 min-h-0 sm:overflow-x-auto sm:overflow-y-hidden pb-32 sm:px-2 sm:pb-4"
+          ref={scrollContainerRef}
+          onScroll={updateScrollFades}
+          onDragOver={handleContainerDragOver} // Track drag over globally in container
+        >
+          <div className="flex flex-col sm:flex-row gap-4 min-w-full pb-32 sm:h-full sm:pb-2">
           {columnsForDesktop.map(status => {
             const isOpen = mobileOpenStatuses.includes(status);
             const mobileVisibleCount = Math.min(mobileVisibleCounts[status] ?? MOBILE_PAGE_SIZE, jobsByStatus[status].length);
@@ -1739,7 +1733,21 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               </section>
             );
           })}
+          </div>
         </div>
+
+        {/* Edge fades signal horizontal scrollability — pinned outside the scroll
+            container so they stay at the board's viewport edges while scrolling */}
+        <div
+          data-testid="job-board-fade-left"
+          className={`hidden sm:block absolute left-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-background-light dark:from-background-dark to-transparent transition-opacity duration-200 ${showLeftFade ? 'opacity-100' : 'opacity-0'}`}
+          aria-hidden="true"
+        />
+        <div
+          data-testid="job-board-fade-right"
+          className={`hidden sm:block absolute right-0 top-0 bottom-0 w-10 z-10 pointer-events-none bg-gradient-to-r from-transparent to-background-light dark:to-background-dark transition-opacity duration-200 ${showRightFade ? 'opacity-100' : 'opacity-0'}`}
+          aria-hidden="true"
+        />
       </div>
       )}
       {/* Floating Action Button */}

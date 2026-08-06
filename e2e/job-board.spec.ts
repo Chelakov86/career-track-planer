@@ -173,4 +173,47 @@ test.describe('Job Board', () => {
         await page.keyboard.press('Escape');
         await expect(sheet).not.toBeVisible();
     });
+
+    test('edge fades stay pinned to the board edges after horizontal scrolling', async ({ page, isMobile }) => {
+        test.skip(isMobile, 'Edge fades only exist on the desktop board');
+
+        const board = page.locator('[data-testid="job-board"]');
+        await expect(board).toBeVisible({ timeout: 10000 });
+
+        // At rest, the right fade hints at more content at the board's right edge
+        const leftFade = page.getByTestId('job-board-fade-left');
+        const rightFade = page.getByTestId('job-board-fade-right');
+        await expect(rightFade).toHaveCSS('opacity', '1');
+        await expect(leftFade).toHaveCSS('opacity', '0');
+
+        // Scroll the board to the far end
+        await board.evaluate((el) => {
+            el.scrollLeft = el.scrollWidth - el.clientWidth;
+            el.dispatchEvent(new Event('scroll'));
+        });
+
+        await expect(leftFade).toHaveCSS('opacity', '1');
+        await expect(rightFade).toHaveCSS('opacity', '0');
+
+        // The fades must remain aligned with the board viewport edges instead of
+        // drifting with the scroll content (regression: they painted over cards).
+        const alignment = await page.evaluate(() => {
+            const boardEl = document.querySelector('[data-testid="job-board"]');
+            const leftEl = document.querySelector('[data-testid="job-board-fade-left"]');
+            const rightEl = document.querySelector('[data-testid="job-board-fade-right"]');
+            if (!boardEl || !leftEl || !rightEl) return null;
+            const boardRect = boardEl.getBoundingClientRect();
+            const leftRect = leftEl.getBoundingClientRect();
+            const rightRect = rightEl.getBoundingClientRect();
+            return {
+                boardLeft: boardRect.left,
+                boardRight: boardRect.right,
+                leftFadeLeft: leftRect.left,
+                rightFadeRight: rightRect.right,
+            };
+        });
+        expect(alignment).not.toBeNull();
+        expect(Math.abs(alignment!.leftFadeLeft - alignment!.boardLeft)).toBeLessThanOrEqual(1);
+        expect(Math.abs(alignment!.rightFadeRight - alignment!.boardRight)).toBeLessThanOrEqual(1);
+    });
 });
