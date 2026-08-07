@@ -209,6 +209,8 @@ export const ScheduleView: React.FC<ScheduleViewProps> = ({ schedule, language }
                   <button
                     onClick={() => handleGetAdvice(block)}
                     disabled={loadingId === block.id}
+                    // The visible label is hidden at the md breakpoint (md:hidden lg:inline);
+                    // the explicit name keeps the action accessible and role-findable at tablet widths.
                     aria-label={t.schedule.getFocus}
                     className="flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 border border-primary/40 dark:border-primary/40 text-primary dark:text-primary rounded-md text-sm font-medium hover:bg-primary/10 dark:hover:bg-primary/20 transition-colors disabled:opacity-50 w-full md:w-auto"
                   >

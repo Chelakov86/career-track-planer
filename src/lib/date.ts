@@ -96,12 +96,7 @@ export const formatRelativeTime = (
   if (calendarDays === 0 && elapsedHours < 24) return labels.hours(elapsedHours);
   if (calendarDays === 1) return labels.yesterday;
 
-  const updatedDateOnly = [
-    updatedDate.getFullYear(),
-    String(updatedDate.getMonth() + 1).padStart(2, '0'),
-    String(updatedDate.getDate()).padStart(2, '0')
-  ].join('-');
-  return formatLocalizedDateOnly(updatedDateOnly, language) || fallbackDate;
+  return formatLocalizedDateOnly(formatLocalDate(updatedDate), language) || fallbackDate;
 };
 
 export const getMillisecondsUntilNextLocalMidnight = (date: Date = new Date()): number => {

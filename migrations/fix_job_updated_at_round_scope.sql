@@ -1,4 +1,6 @@
--- Scope the parent timestamp touch to the interview round owner.
+-- Harden the parent timestamp touch added in add_job_updated_at.sql:
+-- scope the update to the interview round owner's job.
+-- Apply AFTER add_job_updated_at.sql; replaces the unscoped function body.
 CREATE OR REPLACE FUNCTION public.touch_job_updated_at_from_interview_round()
 RETURNS TRIGGER
 LANGUAGE plpgsql
