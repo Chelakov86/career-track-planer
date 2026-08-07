@@ -308,7 +308,10 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                             aria-label={t.board.moveTo}
                         >
                             <span className="hidden sm:inline">{t.board.moveTo}</span>
-                            <span className="sm:hidden">{t.board.moveCompact}</span>
+                            <span className="sm:hidden inline-flex items-center gap-1">
+                                <span>{t.board.moveCompact}</span>
+                                <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+                            </span>
                         </button>
                     )}
                     {!isGhost && onNextStatus && (

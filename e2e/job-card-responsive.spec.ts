@@ -123,7 +123,9 @@ test.describe('JobCard Responsive Behavior', () => {
             expect(metadataClippedDescendants).toEqual([]);
 
             if (width < 640) {
-                await expect(footer.getByText('Verschieben', { exact: true })).toBeVisible();
+                const moveButton = footer.getByRole('button', { name: DE.board.moveTo });
+                await expect(moveButton.getByText('Verschieben', { exact: true })).toBeVisible();
+                await expect(moveButton.locator('svg')).toBeVisible();
             }
         }
     });
