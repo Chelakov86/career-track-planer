@@ -5,21 +5,18 @@ export const RELATIVE_TIME_LABELS: Record<Language, {
   minutes: (count: number) => string;
   hours: (count: number) => string;
   yesterday: string;
-  days: (count: number) => string;
 }> = {
   en: {
     justNow: 'just now',
     minutes: (count) => `${count} min ago`,
     hours: (count) => `${count} hr ago`,
-    yesterday: 'yesterday',
-    days: (count) => `${count} days ago`
+    yesterday: 'yesterday'
   },
   de: {
     justNow: 'gerade eben',
     minutes: (count) => `vor ${count} Min.`,
     hours: (count) => `vor ${count} Std.`,
-    yesterday: 'gestern',
-    days: (count) => `vor ${count} Tagen`
+    yesterday: 'gestern'
   }
 };
 

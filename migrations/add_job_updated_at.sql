@@ -1,4 +1,5 @@
 -- Record precise application changes without changing the existing date-only field.
+-- Prerequisite: apply the interview_rounds table migration before this trigger migration.
 ALTER TABLE public.jobs
   ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ;
 

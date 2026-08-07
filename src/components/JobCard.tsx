@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { Pencil, Trash2, Calendar, Clock, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 import { JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS, INTERVIEW_ROUND_STATUS_COLORS } from '../constants';
-import { formatLocalizedDateOnly, formatLocalizedDateTime, formatRelativeTime } from '../lib/date';
+import { formatRelativeTime, formatUpdatedAt } from '../lib/date';
 
 const AVATAR_PALETTES = [
     'bg-blue-700 border-blue-600',
@@ -64,9 +64,7 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
     const hasDragged = useRef(false);
     const [showInterviews, setShowInterviews] = useState(false);
     const relativeUpdatedAt = formatRelativeTime(job.updatedAt, job.lastUpdated, language, currentTime);
-    const exactUpdatedAt = formatLocalizedDateTime(job.updatedAt, language)
-        || formatLocalizedDateOnly(job.lastUpdated, language)
-        || job.lastUpdated;
+    const exactUpdatedAt = formatUpdatedAt(job.updatedAt, job.lastUpdated, language);
     const updatedAtLabel = `${t.board.labels.lastUpdatedDetails}: ${exactUpdatedAt}`;
 
     const ensureAbsoluteUrl = (url: string) => {

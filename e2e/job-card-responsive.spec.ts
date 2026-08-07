@@ -13,7 +13,17 @@ test.describe('JobCard Responsive Behavior', () => {
         return page.locator('[data-testid="job-board"]').first();
     }
 
-    /** Helper to ensure cards are visible — expand accordion sections on mobile */
+    async function findClippedDescendants(locator: import('@playwright/test').Locator) {
+        return locator.evaluate((element) => Array.from(element.querySelectorAll('*'))
+            .filter((child) => {
+                const style = window.getComputedStyle(child);
+                return child.scrollWidth > child.clientWidth && ['hidden', 'clip'].includes(style.overflowX);
+            })
+            .map((child) => child.textContent?.trim())
+            .filter(Boolean));
+    }
+
+    /** Helper to ensure applications are visible — expand accordion sections on mobile */
     async function ensureCardsVisible(page: import('@playwright/test').Page) {
         const viewport = page.viewportSize();
         if (viewport && viewport.width < 640) {
@@ -37,7 +47,7 @@ test.describe('JobCard Responsive Behavior', () => {
         }
     }
 
-    /** Create a job with notes and return its card locator */
+    /** Create an application with notes and return its locator */
     async function createJobWithNotes(page: import('@playwright/test').Page, company: string) {
         const viewport = page.viewportSize();
         const isMobile = viewport && viewport.width < 640;
@@ -94,33 +104,21 @@ test.describe('JobCard Responsive Behavior', () => {
         await page.getByRole('button', { name: DE.board.close, exact: true }).click();
     });
 
-    test('card footer avoids clipping across desktop, tablet, and mobile widths', async ({ page }) => {
+    test('application footer avoids clipping across desktop, tablet, and mobile widths', async ({ page }) => {
         for (const width of [1280, 768, 375]) {
-            await page.setViewportSize({ width, height: 900 });
+            await page.setViewportSize({ width, height: width === 768 ? 1024 : 900 });
             await ensureCardsVisible(page);
 
             const card = visibleBoard(page).locator('.job-card').first();
             const footer = card.getByTestId('job-card-footer');
             await expect(footer).toBeVisible();
 
-            const clippedDescendants = await footer.evaluate((element) => Array.from(element.querySelectorAll('*'))
-                .filter((child) => {
-                    const style = window.getComputedStyle(child);
-                    return child.scrollWidth > child.clientWidth && ['hidden', 'clip'].includes(style.overflowX);
-                })
-                .map((child) => child.textContent?.trim())
-                .filter(Boolean));
+            const clippedDescendants = await findClippedDescendants(footer);
 
             expect(clippedDescendants).toEqual([]);
 
             const updatedMetadata = card.getByTestId('job-card-updated-at');
-            const metadataClippedDescendants = await updatedMetadata.evaluate((element) => Array.from(element.querySelectorAll('*'))
-                .filter((child) => {
-                    const style = window.getComputedStyle(child);
-                    return child.scrollWidth > child.clientWidth && ['hidden', 'clip'].includes(style.overflowX);
-                })
-                .map((child) => child.textContent?.trim())
-                .filter(Boolean));
+            const metadataClippedDescendants = await findClippedDescendants(updatedMetadata);
 
             expect(metadataClippedDescendants).toEqual([]);
 

@@ -23,6 +23,7 @@ export default defineConfig({
     },
     {
       name: 'chromium',
+      testIgnore: /mobile\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         storageState: './e2e/.auth/user.json',
@@ -39,6 +40,7 @@ export default defineConfig({
     },
     {
       name: 'tablet',
+      testIgnore: /mobile\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 768, height: 1024 },

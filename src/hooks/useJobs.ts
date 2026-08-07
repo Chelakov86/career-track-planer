@@ -9,6 +9,12 @@ export const useJobs = (user: User | null) => {
     const [loading, setLoading] = useState(false);
     const [jobsRevision, setJobsRevision] = useState(0);
     const markJobsPersisted = () => setJobsRevision(revision => revision + 1);
+    const applyServerUpdatedAt = (jobId: string, updatedAt: string | null | undefined) => {
+        setJobs(prev => prev.map(job => job.id === jobId ? {
+            ...job,
+            updatedAt: updatedAt ?? undefined
+        } : job));
+    };
 
     const fetchJobs = async (currentUser: User) => {
         setLoading(true);
@@ -179,10 +185,7 @@ export const useJobs = (user: User | null) => {
             setJobs(previousJobs);
             throw new Error(error.message);
         } else {
-            setJobs(prev => prev.map(j => j.id === updatedJob.id ? {
-                ...j,
-                updatedAt: data?.updated_at ?? undefined
-            } : j));
+            applyServerUpdatedAt(updatedJob.id, data?.updated_at);
             markJobsPersisted();
         }
     };
@@ -213,10 +216,7 @@ export const useJobs = (user: User | null) => {
             setJobs(previousJobs);
             throw new Error(error.message);
         } else {
-            setJobs(prev => prev.map(j => j.id === id ? {
-                ...j,
-                updatedAt: data?.updated_at ?? undefined
-            } : j));
+            applyServerUpdatedAt(id, data?.updated_at);
             markJobsPersisted();
         }
     };

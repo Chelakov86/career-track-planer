@@ -43,6 +43,16 @@ export const formatLocalizedDateTime = (
   }).format(date);
 };
 
+export const formatUpdatedAt = (
+  updatedAt: string | null | undefined,
+  fallbackDate: string,
+  language: Language
+): string => {
+  return formatLocalizedDateTime(updatedAt, language)
+    || formatLocalizedDateOnly(fallbackDate, language)
+    || fallbackDate;
+};
+
 export const getLastUpdatedTimestamp = (
   updatedAt: string | null | undefined,
   fallbackDate: string
@@ -85,7 +95,6 @@ export const formatRelativeTime = (
 
   if (calendarDays === 0 && elapsedHours < 24) return labels.hours(elapsedHours);
   if (calendarDays === 1) return labels.yesterday;
-  if (calendarDays > 1 && calendarDays < 7) return labels.days(calendarDays);
 
   const updatedDateOnly = [
     updatedDate.getFullYear(),
