@@ -37,6 +37,15 @@ export default defineConfig({
       },
       dependencies: ['setup'],
     },
+    {
+      name: 'tablet',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 768, height: 1024 },
+        storageState: './e2e/.auth/user.json',
+      },
+      dependencies: ['setup'],
+    },
   ],
   webServer: {
     command: 'npm run dev',
