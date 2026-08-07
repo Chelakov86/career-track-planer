@@ -97,6 +97,27 @@ test.describe('Job Modal - CRUD Operations', () => {
         await expect(editBtn).toBeVisible({ timeout: 5000 });
     });
 
+    test('should show the precise last-updated timestamp in Details', async ({ page, isMobile }) => {
+        const uniqueCompany = `Timestamp Details ${Date.now()}`;
+
+        await openAddModal(page, isMobile);
+        await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(uniqueCompany);
+        await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Timestamp Tester');
+        await page.getByRole('button', { name: DE.board.save }).click();
+        await page.waitForTimeout(1000);
+        await ensureCardsVisible(page, isMobile);
+
+        const board = visibleBoard(page, isMobile);
+        const card = board.locator('.job-card').filter({ hasText: uniqueCompany }).first();
+        await expect(card).toBeVisible({ timeout: 5000 });
+        await card.getByText(DE.board.viewDetails).click();
+
+        const modal = page.locator('.fixed.inset-0');
+        await expect(modal.getByText('Zuletzt aktualisiert', { exact: true })).toBeVisible();
+        await expect(modal).toContainText(/\d{2}\.\d{2}\.\d{4}/);
+        await expect(modal).toContainText(/\d{2}:\d{2}/);
+    });
+
     test('should switch from view to edit mode', async ({ page, isMobile }) => {
         await ensureCardsVisible(page, isMobile);
 
