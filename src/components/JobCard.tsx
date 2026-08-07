@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Pencil, Trash2, Calendar, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
+import { Pencil, Trash2, Calendar, Clock, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 import { JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS, INTERVIEW_ROUND_STATUS_COLORS } from '../constants';
+import { formatRelativeTime, formatUpdatedAt } from '../lib/date';
 
 const AVATAR_PALETTES = [
     'bg-blue-700 border-blue-600',
@@ -21,6 +22,7 @@ const getAvatarClasses = (name: string) => {
 interface JobCardProps {
     job: JobApplication;
     language: Language;
+    currentTime?: Date;
     isGhost?: boolean;
     draggedItemId?: string | null;
 
@@ -42,6 +44,7 @@ interface JobCardProps {
 export const JobCard: React.FC<JobCardProps> = React.memo(({
     job,
     language,
+    currentTime = new Date(),
     isGhost = false,
     draggedItemId,
     onView,
@@ -60,6 +63,9 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
     const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
     const hasDragged = useRef(false);
     const [showInterviews, setShowInterviews] = useState(false);
+    const relativeUpdatedAt = formatRelativeTime(job.updatedAt, job.lastUpdated, language, currentTime);
+    const exactUpdatedAt = formatUpdatedAt(job.updatedAt, job.lastUpdated, language);
+    const updatedAtLabel = `${t.board.labels.lastUpdatedDetails}: ${exactUpdatedAt}`;
 
     const ensureAbsoluteUrl = (url: string) => {
         if (!url) return '';
@@ -276,23 +282,36 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                 </button>
             )}
 
-            <div className="flex justify-between items-center gap-1 pt-2 border-t border-gray-100 dark:border-slate-700 min-w-0">
-                <span className="text-xs text-gray-500 dark:text-slate-400 truncate min-w-0 shrink" title={`${t.board.labels.lastUpdated}: ${job.lastUpdated}`}>
-                    {t.board.labels.lastUpdated}: {job.lastUpdated}
-                </span>
+            <div data-testid="job-card-updated-at" className="flex items-center gap-1.5 pt-2 text-xs text-gray-500 dark:text-slate-400 min-w-0">
+                <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <time
+                    dateTime={job.updatedAt || undefined}
+                    title={updatedAtLabel}
+                    aria-label={updatedAtLabel}
+                    tabIndex={0}
+                    className="min-w-0 whitespace-nowrap rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                >
+                    {relativeUpdatedAt}
+                </time>
+            </div>
 
-                <div className="flex items-center shrink-0 min-w-0">
+            <div data-testid="job-card-footer" className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1 pt-2 border-t border-gray-100 dark:border-slate-700 min-w-0">
+                <div className="flex items-center shrink-0 min-w-0 w-full sm:w-auto">
                     {!isGhost && onMoveTo && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onMoveTo(job);
                             }}
-                            className="min-h-[44px] sm:min-h-8 px-2 -mx-2 sm:mx-0 sm:px-2.5 text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg sm:py-1 truncate"
+                            className="min-h-[44px] sm:min-h-8 flex-1 sm:flex-none px-2 -mx-2 sm:mx-0 sm:px-2.5 text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg sm:py-1 whitespace-nowrap"
                             title={t.board.moveTo}
                             aria-label={t.board.moveTo}
                         >
-                            {t.board.moveTo}
+                            <span className="hidden sm:inline">{t.board.moveTo}</span>
+                            <span className="sm:hidden inline-flex items-center gap-1">
+                                <span>{t.board.moveCompact}</span>
+                                <ChevronRight className="w-3.5 h-3.5" aria-hidden="true" />
+                            </span>
                         </button>
                     )}
                     {!isGhost && onNextStatus && (

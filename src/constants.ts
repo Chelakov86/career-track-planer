@@ -1,5 +1,25 @@
 import { ScheduleBlock, ApplicationStatus, Language, JobApplication, InterviewRoundStatus } from './types';
 
+export const RELATIVE_TIME_LABELS: Record<Language, {
+  justNow: string;
+  minutes: (count: number) => string;
+  hours: (count: number) => string;
+  yesterday: string;
+}> = {
+  en: {
+    justNow: 'just now',
+    minutes: (count) => `${count} min ago`,
+    hours: (count) => `${count} hr ago`,
+    yesterday: 'yesterday'
+  },
+  de: {
+    justNow: 'gerade eben',
+    minutes: (count) => `vor ${count} Min.`,
+    hours: (count) => `vor ${count} Std.`,
+    yesterday: 'gestern'
+  }
+};
+
 export const TRANSLATIONS = {
   en: {
     login: {
@@ -47,6 +67,7 @@ export const TRANSLATIONS = {
       viewJob: "View Application",
       moveStage: "Move to next stage",
       moveTo: "Move to...",
+      moveCompact: "Move",
       openLink: "Open Link",
       exportCSV: "Export CSV",
       newOpp: "New Application",
@@ -80,6 +101,7 @@ export const TRANSLATIONS = {
         notes: "Notes",
         dateAdded: "Date Added",
         lastUpdated: "Last Updated",
+        lastUpdatedDetails: "Last updated",
         interviewRound: "Interview Round",
         interviewDate: "Interview Date",
         interviewStart: "Start Time",
@@ -317,6 +339,7 @@ export const TRANSLATIONS = {
       viewJob: "Bewerbung anzeigen",
       moveStage: "In nächste Phase verschieben",
       moveTo: "Verschieben nach...",
+      moveCompact: "Verschieben",
       openLink: "Link öffnen",
       exportCSV: "CSV-Export",
       newOpp: "Neue Bewerbung",
@@ -350,6 +373,7 @@ export const TRANSLATIONS = {
         notes: "Notizen",
         dateAdded: "Hinzugefügt",
         lastUpdated: "Aktualisiert",
+        lastUpdatedDetails: "Zuletzt aktualisiert",
         interviewRound: "Interview-Runde",
         interviewDate: "Interview-Datum",
         interviewStart: "Startzeit",

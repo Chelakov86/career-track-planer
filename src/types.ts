@@ -45,6 +45,7 @@ export interface JobApplication {
   status: ApplicationStatus;
   dateAdded: string;
   lastUpdated: string;
+  updatedAt?: string | null;
   notes: string;
   salary?: string;
   link?: string;

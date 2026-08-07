@@ -159,16 +159,18 @@ export const useInterviewRounds = (jobId: string | null, userId: string | null) 
     // Optimistic update
     const previousRounds = [...rounds];
     setRounds(prev => prev.map(r =>
-      r.id === roundId ? { ...r, ...updates, updatedAt: new Date().toISOString() } : r
+      r.id === roundId ? { ...r, ...updates } : r
     ).sort((a, b) => (a.interviewDate || "").localeCompare(b.interviewDate || "")));
 
     // For updates, we don't send userId or jobId to avoid RLS/trigger issues
     const dbUpdates = mapUiToDb(updates);
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('interview_rounds')
       .update(dbUpdates)
-      .eq('id', roundId);
+      .eq('id', roundId)
+      .select()
+      .single();
 
     if (error) {
       console.error('Error updating interview round:', error);
@@ -177,6 +179,10 @@ export const useInterviewRounds = (jobId: string | null, userId: string | null) 
       // Revert optimistic update
       setRounds(previousRounds);
       alert(`Failed to update interview round: ${error.message}`);
+    } else if (data) {
+      const mappedData = mapDbToUi(data);
+      setRounds(prev => prev.map(r => r.id === roundId ? mappedData : r)
+        .sort((a, b) => (a.interviewDate || "").localeCompare(b.interviewDate || "")));
     }
   };
 

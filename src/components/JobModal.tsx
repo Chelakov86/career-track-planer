@@ -7,7 +7,7 @@ import { useFocusTrap } from '../hooks/useFocusTrap';
 import { InterviewRoundItem } from './InterviewRoundItem';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleCalendarImportPicker } from './GoogleCalendarImportPicker';
-import { formatLocalDate } from '../lib/date';
+import { formatLocalDate, formatUpdatedAt } from '../lib/date';
 
 interface JobModalProps {
     initialData: Partial<JobApplication>;
@@ -55,6 +55,7 @@ export const JobModal: React.FC<JobModalProps> = ({
     useFocusTrap(dialogRef, true);
     const t = TRANSLATIONS[language];
     const columns = Object.values(ApplicationStatus);
+    const formattedUpdatedAt = formatUpdatedAt(formData.updatedAt, formData.lastUpdated || '', language);
 
     // Interview rounds hook (only active for existing jobs)
     const { rounds, addRound, updateRound, deleteRound } = useInterviewRounds(
@@ -242,11 +243,11 @@ export const JobModal: React.FC<JobModalProps> = ({
                                         </div>
                                     </div>
                                 )}
-                                {formData.lastUpdated && (
+                                {(formData.updatedAt || formData.lastUpdated) && (
                                     <div className="col-span-2">
-                                        <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t.board.labels.lastUpdated}</label>
+                                        <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t.board.labels.lastUpdatedDetails}</label>
                                         <div className="w-full p-2 bg-gray-50 dark:bg-slate-700/50 rounded-lg text-sm text-gray-800 dark:text-gray-200 min-h-[36px] flex items-center">
-                                            {formData.lastUpdated}
+                                            {formattedUpdatedAt}
                                         </div>
                                     </div>
                                 )}

@@ -9,7 +9,7 @@ import { MobileStageDock } from './MobileStageDock';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { generateJobsCSV, downloadFile } from '../lib/csvExport';
 import { clearPendingCalendarImport, readPendingCalendarImport } from '../lib/googleCalendarAuth';
-import { formatLocalDate } from '../lib/date';
+import { formatLocalDate, getLastUpdatedTimestamp } from '../lib/date';
 
 // Debounce hook for search
 function useDebounce<T>(value: T, delay: number): T {
@@ -108,6 +108,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   const [mobileVisibleCounts, setMobileVisibleCounts] = useState<Partial<Record<ApplicationStatus, number>>>({});
   const [showBackToTop, setShowBackToTop] = useState(false);
   const isMobile = useIsMobile();
+  const [currentTime, setCurrentTime] = useState(() => new Date());
   const filterSheetRef = useRef<HTMLDivElement>(null);
   const moveSheetRef = useRef<HTMLDivElement>(null);
   const mobileActionsRef = useRef<HTMLDivElement>(null);
@@ -116,6 +117,19 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
   useFocusTrap(moveSheetRef, Boolean(moveToJob));
   useFocusTrap(mobileActionsRef, showMobileActions);
   useFocusTrap(mobileSortSheetRef, showMobileSort);
+
+  useEffect(() => {
+    const refreshCurrentTime = () => {
+      if (!document.hidden) setCurrentTime(new Date());
+    };
+    const timer = window.setInterval(refreshCurrentTime, 60 * 1000);
+    document.addEventListener('visibilitychange', refreshCurrentTime);
+
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener('visibilitychange', refreshCurrentTime);
+    };
+  }, []);
 
   // Drag and Drop State (Mouse & Touch)
   const [dragOverColumn, setDragOverColumn] = useState<ApplicationStatus | null>(null);
@@ -586,8 +600,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           cmp = a.position.localeCompare(b.position);
           break;
         case 'lastUpdated':
-          if (a.lastUpdated === b.lastUpdated) cmp = 0;
-          else cmp = a.lastUpdated < b.lastUpdated ? -1 : 1;
+          cmp = getLastUpdatedTimestamp(a.updatedAt, a.lastUpdated)
+            - getLastUpdatedTimestamp(b.updatedAt, b.lastUpdated);
           break;
         case 'dateAdded':
         default:
@@ -1069,6 +1083,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
               <JobCard
                 job={job}
                 language={language}
+                currentTime={currentTime}
                 isGhost={true}
                 onEdit={openEditModal}
                 onDelete={handleDeleteRequest}
@@ -1675,6 +1690,7 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
                           key={job.id}
                           job={job}
                           language={language}
+                          currentTime={currentTime}
                           draggedItemId={draggedItemId}
                           onView={openViewModal}
                           onEdit={openEditModal}

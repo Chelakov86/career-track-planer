@@ -123,6 +123,45 @@ test.describe('Job Board', () => {
         await expect(page.getByText('Hinzugefügt (neueste)')).not.toBeVisible();
     });
 
+    test('should order same-day application edits by precise update time', async ({ page, isMobile }) => {
+        test.skip(isMobile, 'Precise ordering is exercised on the desktop board');
+
+        const board = page.locator('[data-testid="job-board"]').first();
+        const firstCompany = `Sort Earlier ${Date.now()}`;
+        const secondCompany = `Sort Later ${Date.now()}`;
+
+        const createApplication = async (company: string) => {
+            await page.getByRole('button', { name: DE.board.addJob }).click();
+            await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
+            await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Sorting Tester');
+            await page.getByRole('button', { name: DE.board.save }).click();
+            await expect(page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true })).not.toBeVisible({ timeout: 5000 });
+            await page.waitForTimeout(500);
+        };
+
+        await createApplication(firstCompany);
+        await createApplication(secondCompany);
+
+        const firstCard = board.locator('.job-card').filter({ hasText: firstCompany }).first();
+        await firstCard.getByRole('button', { name: DE.board.editJob }).click();
+        await page.getByRole('textbox', { name: DE.board.placeholders.notes, exact: true }).fill('Edited after the second application.');
+        await page.getByRole('button', { name: DE.board.save }).click();
+        await page.waitForTimeout(1000);
+
+        await page.getByTitle(DE.board.sort).first().click();
+        await page.getByText('Aktualisiert (neueste)', { exact: true }).click();
+
+        const order = await board.locator('section[data-column-id="RESEARCH"] .job-card').evaluateAll((cards) =>
+            cards.map((card) => card.textContent || '')
+        );
+        const firstIndex = order.findIndex((text) => text.includes(firstCompany));
+        const secondIndex = order.findIndex((text) => text.includes(secondCompany));
+
+        expect(firstIndex).toBeGreaterThanOrEqual(0);
+        expect(secondIndex).toBeGreaterThanOrEqual(0);
+        expect(firstIndex).toBeLessThan(secondIndex);
+    });
+
     test('should toggle status filter chips', async ({ page }) => {
         const filterButton = page.locator('button[title="Filter"]:visible').first();
         await filterButton.click();

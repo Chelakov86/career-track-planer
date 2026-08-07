@@ -35,6 +35,8 @@ export const DE = {
         cancel: 'Abbrechen',
         close: 'Schließen',
         edit: 'Bearbeiten',
+        editJob: 'Bewerbung bearbeiten',
+        moveTo: 'Verschieben nach...',
         deleteTitle: 'Bewerbung löschen?',
         confirmDelete: 'Löschen',
         deleteJob: 'Bewerbung löschen',

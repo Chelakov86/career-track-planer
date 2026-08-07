@@ -13,7 +13,17 @@ test.describe('JobCard Responsive Behavior', () => {
         return page.locator('[data-testid="job-board"]').first();
     }
 
-    /** Helper to ensure cards are visible — expand accordion sections on mobile */
+    async function findClippedDescendants(locator: import('@playwright/test').Locator) {
+        return locator.evaluate((element) => Array.from(element.querySelectorAll('*'))
+            .filter((child) => {
+                const style = window.getComputedStyle(child);
+                return child.scrollWidth > child.clientWidth && ['hidden', 'clip'].includes(style.overflowX);
+            })
+            .map((child) => child.textContent?.trim())
+            .filter(Boolean));
+    }
+
+    /** Helper to ensure applications are visible — expand accordion sections on mobile */
     async function ensureCardsVisible(page: import('@playwright/test').Page) {
         const viewport = page.viewportSize();
         if (viewport && viewport.width < 640) {
@@ -37,7 +47,7 @@ test.describe('JobCard Responsive Behavior', () => {
         }
     }
 
-    /** Create a job with notes and return its card locator */
+    /** Create an application with notes and return its locator */
     async function createJobWithNotes(page: import('@playwright/test').Page, company: string) {
         const viewport = page.viewportSize();
         const isMobile = viewport && viewport.width < 640;
@@ -92,6 +102,48 @@ test.describe('JobCard Responsive Behavior', () => {
         const modal = page.locator('.fixed.inset-0');
         await expect(modal.getByText('This is a test note for responsive behavior verification.')).toBeVisible({ timeout: 5000 });
         await page.getByRole('button', { name: DE.board.close, exact: true }).click();
+    });
+
+    test('application footer avoids clipping across desktop, tablet, and mobile widths', async ({ page }) => {
+        for (const width of [1280, 768, 375]) {
+            await page.setViewportSize({ width, height: width === 768 ? 1024 : 900 });
+            await ensureCardsVisible(page);
+
+            const card = visibleBoard(page).locator('.job-card').first();
+            const footer = card.getByTestId('job-card-footer');
+            await expect(footer).toBeVisible();
+
+            const clippedDescendants = await findClippedDescendants(footer);
+
+            expect(clippedDescendants).toEqual([]);
+
+            const updatedMetadata = card.getByTestId('job-card-updated-at');
+            const metadataClippedDescendants = await findClippedDescendants(updatedMetadata);
+
+            expect(metadataClippedDescendants).toEqual([]);
+
+            if (width < 640) {
+                const moveButton = footer.getByRole('button', { name: DE.board.moveTo });
+                await expect(moveButton.getByText('Verschieben', { exact: true })).toBeVisible();
+                await expect(moveButton.locator('svg')).toBeVisible();
+            }
+        }
+    });
+
+    test('shows relative update metadata with an exact accessible value', async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 900 });
+        const card = await createJobWithNotes(page, `Relative Timestamp ${Date.now()}`);
+        const updatedAt = card.getByTestId('job-card-updated-at');
+        const updatedAtValue = updatedAt.locator('time');
+
+        await expect(updatedAt).toBeVisible();
+        await expect(updatedAtValue).toContainText('gerade eben');
+        await expect(updatedAtValue).toHaveAttribute('title', /Zuletzt aktualisiert:/);
+        await expect(updatedAtValue).toHaveAttribute('aria-label', /Zuletzt aktualisiert:/);
+
+        await page.setViewportSize({ width: 375, height: 667 });
+        await ensureCardsVisible(page);
+        await expect(updatedAt).toBeVisible();
     });
 
     test('tags live behind the view layer and expand on wide screens', async ({ page }) => {

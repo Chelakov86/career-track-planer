@@ -9,6 +9,12 @@ export const useJobs = (user: User | null) => {
     const [loading, setLoading] = useState(false);
     const [jobsRevision, setJobsRevision] = useState(0);
     const markJobsPersisted = () => setJobsRevision(revision => revision + 1);
+    const applyServerUpdatedAt = (jobId: string, updatedAt: string | null | undefined) => {
+        setJobs(prev => prev.map(job => job.id === jobId ? {
+            ...job,
+            updatedAt: updatedAt ?? undefined
+        } : job));
+    };
 
     const fetchJobs = async (currentUser: User) => {
         setLoading(true);
@@ -69,6 +75,7 @@ export const useJobs = (user: User | null) => {
                     status: job.status as ApplicationStatus,
                     dateAdded: job.date_added,
                     lastUpdated: job.last_updated,
+                    updatedAt: job.updated_at ?? undefined,
                     notes: job.notes,
                     salary: job.salary,
                     // Preserve link value - keep strings, convert null to undefined for consistency
@@ -131,7 +138,11 @@ export const useJobs = (user: User | null) => {
             throw new Error(error.message);
         } else if (data) {
             // Replace temp ID with real ID
-            setJobs(prev => prev.map(j => j.id === tempId ? { ...j, id: data.id } : j));
+            setJobs(prev => prev.map(j => j.id === tempId ? {
+                ...j,
+                id: data.id,
+                updatedAt: data.updated_at ?? undefined
+            } : j));
             markJobsPersisted();
         }
     };
@@ -162,16 +173,19 @@ export const useJobs = (user: User | null) => {
             } : {})
         };
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('jobs')
             .update(dbUpdate)
-            .eq('id', updatedJob.id);
+            .eq('id', updatedJob.id)
+            .select('updated_at')
+            .single();
 
         if (error) {
             console.error('Error updating job:', error);
             setJobs(previousJobs);
             throw new Error(error.message);
         } else {
+            applyServerUpdatedAt(updatedJob.id, data?.updated_at);
             markJobsPersisted();
         }
     };
@@ -184,7 +198,7 @@ export const useJobs = (user: User | null) => {
         const timezoneOffsetMinutes = new Date().getTimezoneOffset();
         setJobs(prev => prev.map(j => j.id === id ? { ...j, status, lastUpdated: date } : j));
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('jobs')
             .update({
                 status,
@@ -193,13 +207,16 @@ export const useJobs = (user: User | null) => {
                 status_change_token: crypto.randomUUID(),
                 status_timezone_offset_minutes: timezoneOffsetMinutes
             })
-            .eq('id', id);
+            .eq('id', id)
+            .select('updated_at')
+            .single();
 
         if (error) {
             console.error('Error updating status:', error);
             setJobs(previousJobs);
             throw new Error(error.message);
         } else {
+            applyServerUpdatedAt(id, data?.updated_at);
             markJobsPersisted();
         }
     };
