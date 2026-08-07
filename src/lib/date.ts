@@ -26,6 +26,19 @@ export const formatLocalizedDateTime = (
   }).format(date);
 };
 
+export const getLastUpdatedTimestamp = (
+  updatedAt: string | null | undefined,
+  fallbackDate: string
+): number => {
+  if (updatedAt) {
+    const preciseTimestamp = Date.parse(updatedAt);
+    if (!Number.isNaN(preciseTimestamp)) return preciseTimestamp;
+  }
+
+  const fallbackTimestamp = Date.parse(`${fallbackDate}T00:00:00`);
+  return Number.isNaN(fallbackTimestamp) ? 0 : fallbackTimestamp;
+};
+
 export const getMillisecondsUntilNextLocalMidnight = (date: Date = new Date()): number => {
   const nextMidnight = new Date(date);
   nextMidnight.setHours(24, 0, 0, 0);

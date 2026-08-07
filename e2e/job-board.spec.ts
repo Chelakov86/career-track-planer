@@ -123,6 +123,26 @@ test.describe('Job Board', () => {
         await expect(page.getByText('Hinzugefügt (neueste)')).not.toBeVisible();
     });
 
+    test('should select precise last-updated sorting', async ({ page, isMobile }) => {
+        if (isMobile) {
+            await page.getByTitle(DE.board.moreActionsTitle).click();
+            await page.getByRole('button', { name: DE.board.sort }).last().click();
+        } else {
+            await page.getByTitle(DE.board.sort).first().click();
+        }
+
+        await page.getByText('Aktualisiert (neueste)', { exact: true }).click();
+
+        if (isMobile) {
+            await page.getByTitle(DE.board.moreActionsTitle).click();
+            await page.getByRole('button', { name: DE.board.sort }).last().click();
+        } else {
+            await page.getByTitle(DE.board.sort).first().click();
+        }
+
+        await expect(page.getByText('Aktualisiert (neueste)', { exact: true })).toBeVisible();
+    });
+
     test('should toggle status filter chips', async ({ page }) => {
         const filterButton = page.locator('button[title="Filter"]:visible').first();
         await filterButton.click();

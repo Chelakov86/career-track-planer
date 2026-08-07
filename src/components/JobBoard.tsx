@@ -9,7 +9,7 @@ import { MobileStageDock } from './MobileStageDock';
 import { useFocusTrap } from '../hooks/useFocusTrap';
 import { generateJobsCSV, downloadFile } from '../lib/csvExport';
 import { clearPendingCalendarImport, readPendingCalendarImport } from '../lib/googleCalendarAuth';
-import { formatLocalDate } from '../lib/date';
+import { formatLocalDate, getLastUpdatedTimestamp } from '../lib/date';
 
 // Debounce hook for search
 function useDebounce<T>(value: T, delay: number): T {
@@ -586,8 +586,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           cmp = a.position.localeCompare(b.position);
           break;
         case 'lastUpdated':
-          if (a.lastUpdated === b.lastUpdated) cmp = 0;
-          else cmp = a.lastUpdated < b.lastUpdated ? -1 : 1;
+          cmp = getLastUpdatedTimestamp(a.updatedAt, a.lastUpdated)
+            - getLastUpdatedTimestamp(b.updatedAt, b.lastUpdated);
           break;
         case 'dateAdded':
         default:

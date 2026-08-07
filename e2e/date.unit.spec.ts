@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { formatLocalizedDateTime } from '../src/lib/date';
+import { formatLocalizedDateTime, getLastUpdatedTimestamp } from '../src/lib/date';
 
 test.describe('Localized date formatting', () => {
     test('formats precise timestamps for German and English viewers', () => {
@@ -19,5 +19,12 @@ test.describe('Localized date formatting', () => {
     test('returns no value for a missing or invalid timestamp', () => {
         expect(formatLocalizedDateTime(null, 'de')).toBeNull();
         expect(formatLocalizedDateTime('not-a-date', 'en')).toBeNull();
+    });
+
+    test('prefers a precise update timestamp over a legacy date-only value', () => {
+        const precise = getLastUpdatedTimestamp('2026-08-06T14:32:00.000Z', '2026-08-06');
+        const legacy = getLastUpdatedTimestamp(null, '2026-08-06');
+
+        expect(precise).toBeGreaterThan(legacy);
     });
 });
