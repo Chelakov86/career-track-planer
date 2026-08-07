@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { formatLocalizedDateTime, getLastUpdatedTimestamp } from '../src/lib/date';
+import { formatLocalizedDateTime, formatRelativeTime, getLastUpdatedTimestamp } from '../src/lib/date';
 
 test.describe('Localized date formatting', () => {
     test('formats precise timestamps for German and English viewers', () => {
@@ -26,5 +26,16 @@ test.describe('Localized date formatting', () => {
         const legacy = getLastUpdatedTimestamp(null, '2026-08-06');
 
         expect(precise).toBeGreaterThan(legacy);
+    });
+
+    test('formats recent updates with locale-aware relative labels', () => {
+        const now = new Date(2026, 7, 7, 14, 0, 0);
+        const twoMinutesAgo = new Date(2026, 7, 7, 13, 58, 0).toISOString();
+        const yesterday = new Date(2026, 7, 6, 9, 0, 0).toISOString();
+
+        expect(formatRelativeTime(twoMinutesAgo, '2026-08-07', 'de', now)).toBe('vor 2 Min.');
+        expect(formatRelativeTime(twoMinutesAgo, '2026-08-07', 'en', now)).toBe('2 min ago');
+        expect(formatRelativeTime(yesterday, '2026-08-06', 'de', now)).toBe('gestern');
+        expect(formatRelativeTime(yesterday, '2026-08-06', 'en', now)).toBe('yesterday');
     });
 });

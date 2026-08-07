@@ -7,7 +7,7 @@ import { useFocusTrap } from '../hooks/useFocusTrap';
 import { InterviewRoundItem } from './InterviewRoundItem';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleCalendarImportPicker } from './GoogleCalendarImportPicker';
-import { formatLocalDate, formatLocalizedDateTime } from '../lib/date';
+import { formatLocalDate, formatLocalizedDateOnly, formatLocalizedDateTime } from '../lib/date';
 
 interface JobModalProps {
     initialData: Partial<JobApplication>;
@@ -247,7 +247,7 @@ export const JobModal: React.FC<JobModalProps> = ({
                                     <div className="col-span-2">
                                         <label className="block text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">{t.board.labels.lastUpdatedDetails}</label>
                                         <div className="w-full p-2 bg-gray-50 dark:bg-slate-700/50 rounded-lg text-sm text-gray-800 dark:text-gray-200 min-h-[36px] flex items-center">
-                                            {formattedUpdatedAt || formData.lastUpdated}
+                                            {formattedUpdatedAt || formatLocalizedDateOnly(formData.lastUpdated, language) || formData.lastUpdated}
                                         </div>
                                     </div>
                                 )}

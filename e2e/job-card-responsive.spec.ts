@@ -113,10 +113,37 @@ test.describe('JobCard Responsive Behavior', () => {
 
             expect(clippedDescendants).toEqual([]);
 
+            const updatedMetadata = card.getByTestId('job-card-updated-at');
+            const metadataClippedDescendants = await updatedMetadata.evaluate((element) => Array.from(element.querySelectorAll('*'))
+                .filter((child) => {
+                    const style = window.getComputedStyle(child);
+                    return child.scrollWidth > child.clientWidth && ['hidden', 'clip'].includes(style.overflowX);
+                })
+                .map((child) => child.textContent?.trim())
+                .filter(Boolean));
+
+            expect(metadataClippedDescendants).toEqual([]);
+
             if (width < 640) {
                 await expect(footer.getByText('Verschieben', { exact: true })).toBeVisible();
             }
         }
+    });
+
+    test('shows relative update metadata with an exact accessible value', async ({ page }) => {
+        await page.setViewportSize({ width: 1280, height: 900 });
+        const card = await createJobWithNotes(page, `Relative Timestamp ${Date.now()}`);
+        const updatedAt = card.getByTestId('job-card-updated-at');
+        const updatedAtValue = updatedAt.locator('time');
+
+        await expect(updatedAt).toBeVisible();
+        await expect(updatedAtValue).toContainText('gerade eben');
+        await expect(updatedAtValue).toHaveAttribute('title', /Zuletzt aktualisiert:/);
+        await expect(updatedAtValue).toHaveAttribute('aria-label', /Zuletzt aktualisiert:/);
+
+        await page.setViewportSize({ width: 375, height: 667 });
+        await ensureCardsVisible(page);
+        await expect(updatedAt).toBeVisible();
     });
 
     test('tags live behind the view layer and expand on wide screens', async ({ page }) => {

@@ -1,5 +1,28 @@
 import { ScheduleBlock, ApplicationStatus, Language, JobApplication, InterviewRoundStatus } from './types';
 
+export const RELATIVE_TIME_LABELS: Record<Language, {
+  justNow: string;
+  minutes: (count: number) => string;
+  hours: (count: number) => string;
+  yesterday: string;
+  days: (count: number) => string;
+}> = {
+  en: {
+    justNow: 'just now',
+    minutes: (count) => `${count} min ago`,
+    hours: (count) => `${count} hr ago`,
+    yesterday: 'yesterday',
+    days: (count) => `${count} days ago`
+  },
+  de: {
+    justNow: 'gerade eben',
+    minutes: (count) => `vor ${count} Min.`,
+    hours: (count) => `vor ${count} Std.`,
+    yesterday: 'gestern',
+    days: (count) => `vor ${count} Tagen`
+  }
+};
+
 export const TRANSLATIONS = {
   en: {
     login: {

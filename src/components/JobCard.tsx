@@ -1,7 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { Pencil, Trash2, Calendar, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
+import { Pencil, Trash2, Calendar, Clock, ChevronDown, ChevronUp, ChevronRight } from 'lucide-react';
 import { JobApplication, ApplicationStatus, Language } from '../types';
 import { TRANSLATIONS, INTERVIEW_ROUND_STATUS_COLORS } from '../constants';
+import { formatLocalizedDateOnly, formatLocalizedDateTime, formatRelativeTime } from '../lib/date';
 
 const AVATAR_PALETTES = [
     'bg-blue-700 border-blue-600',
@@ -21,6 +22,7 @@ const getAvatarClasses = (name: string) => {
 interface JobCardProps {
     job: JobApplication;
     language: Language;
+    currentTime?: Date;
     isGhost?: boolean;
     draggedItemId?: string | null;
 
@@ -42,6 +44,7 @@ interface JobCardProps {
 export const JobCard: React.FC<JobCardProps> = React.memo(({
     job,
     language,
+    currentTime = new Date(),
     isGhost = false,
     draggedItemId,
     onView,
@@ -60,6 +63,11 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
     const mouseDownPos = useRef<{ x: number; y: number } | null>(null);
     const hasDragged = useRef(false);
     const [showInterviews, setShowInterviews] = useState(false);
+    const relativeUpdatedAt = formatRelativeTime(job.updatedAt, job.lastUpdated, language, currentTime);
+    const exactUpdatedAt = formatLocalizedDateTime(job.updatedAt, language)
+        || formatLocalizedDateOnly(job.lastUpdated, language)
+        || job.lastUpdated;
+    const updatedAtLabel = `${t.board.labels.lastUpdatedDetails}: ${exactUpdatedAt}`;
 
     const ensureAbsoluteUrl = (url: string) => {
         if (!url) return '';
@@ -276,11 +284,20 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                 </button>
             )}
 
-            <div data-testid="job-card-footer" className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-2 border-t border-gray-100 dark:border-slate-700 min-w-0">
-                <span data-testid="job-card-last-updated" className="text-xs text-gray-500 dark:text-slate-400 min-w-0 flex-1 basis-32" title={`${t.board.labels.lastUpdated}: ${job.lastUpdated}`}>
-                    {t.board.labels.lastUpdated}: {job.lastUpdated}
-                </span>
+            <div data-testid="job-card-updated-at" className="flex items-center gap-1.5 pt-2 text-xs text-gray-500 dark:text-slate-400 min-w-0">
+                <Clock className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                <time
+                    dateTime={job.updatedAt || undefined}
+                    title={updatedAtLabel}
+                    aria-label={updatedAtLabel}
+                    tabIndex={0}
+                    className="min-w-0 whitespace-nowrap rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                >
+                    {relativeUpdatedAt}
+                </time>
+            </div>
 
+            <div data-testid="job-card-footer" className="flex flex-wrap items-center justify-end gap-x-2 gap-y-1 pt-2 border-t border-gray-100 dark:border-slate-700 min-w-0">
                 <div className="flex items-center shrink-0 min-w-0 w-full sm:w-auto">
                     {!isGhost && onMoveTo && (
                         <button
