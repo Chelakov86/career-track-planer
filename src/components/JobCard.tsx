@@ -276,23 +276,24 @@ export const JobCard: React.FC<JobCardProps> = React.memo(({
                 </button>
             )}
 
-            <div className="flex justify-between items-center gap-1 pt-2 border-t border-gray-100 dark:border-slate-700 min-w-0">
-                <span className="text-xs text-gray-500 dark:text-slate-400 truncate min-w-0 shrink" title={`${t.board.labels.lastUpdated}: ${job.lastUpdated}`}>
+            <div data-testid="job-card-footer" className="flex flex-wrap items-center gap-x-2 gap-y-1 pt-2 border-t border-gray-100 dark:border-slate-700 min-w-0">
+                <span data-testid="job-card-last-updated" className="text-xs text-gray-500 dark:text-slate-400 min-w-0 flex-1 basis-32" title={`${t.board.labels.lastUpdated}: ${job.lastUpdated}`}>
                     {t.board.labels.lastUpdated}: {job.lastUpdated}
                 </span>
 
-                <div className="flex items-center shrink-0 min-w-0">
+                <div className="flex items-center shrink-0 min-w-0 w-full sm:w-auto">
                     {!isGhost && onMoveTo && (
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 onMoveTo(job);
                             }}
-                            className="min-h-[44px] sm:min-h-8 px-2 -mx-2 sm:mx-0 sm:px-2.5 text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg sm:py-1 truncate"
+                            className="min-h-[44px] sm:min-h-8 flex-1 sm:flex-none px-2 -mx-2 sm:mx-0 sm:px-2.5 text-xs font-medium text-gray-500 dark:text-slate-400 hover:text-primary dark:hover:text-primary transition-colors rounded-lg sm:py-1 whitespace-nowrap"
                             title={t.board.moveTo}
                             aria-label={t.board.moveTo}
                         >
-                            {t.board.moveTo}
+                            <span className="hidden sm:inline">{t.board.moveTo}</span>
+                            <span className="sm:hidden">{t.board.moveCompact}</span>
                         </button>
                     )}
                     {!isGhost && onNextStatus && (

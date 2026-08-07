@@ -94,6 +94,31 @@ test.describe('JobCard Responsive Behavior', () => {
         await page.getByRole('button', { name: DE.board.close, exact: true }).click();
     });
 
+    test('card footer avoids clipping across desktop, tablet, and mobile widths', async ({ page }) => {
+        for (const width of [1280, 768, 375]) {
+            await page.setViewportSize({ width, height: 900 });
+            await ensureCardsVisible(page);
+
+            const card = visibleBoard(page).locator('.job-card').first();
+            const footer = card.getByTestId('job-card-footer');
+            await expect(footer).toBeVisible();
+
+            const clippedDescendants = await footer.evaluate((element) => Array.from(element.querySelectorAll('*'))
+                .filter((child) => {
+                    const style = window.getComputedStyle(child);
+                    return child.scrollWidth > child.clientWidth && ['hidden', 'clip'].includes(style.overflowX);
+                })
+                .map((child) => child.textContent?.trim())
+                .filter(Boolean));
+
+            expect(clippedDescendants).toEqual([]);
+
+            if (width < 640) {
+                await expect(footer.getByText('Verschieben', { exact: true })).toBeVisible();
+            }
+        }
+    });
+
     test('tags live behind the view layer and expand on wide screens', async ({ page }) => {
         await page.setViewportSize({ width: 375, height: 667 });
         await ensureCardsVisible(page);
