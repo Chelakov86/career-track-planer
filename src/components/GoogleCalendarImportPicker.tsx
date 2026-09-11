@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Calendar, Check, ExternalLink, Link as LinkIcon, RefreshCw } from 'lucide-react';
+import { Calendar, Check, ExternalLink, Link as LinkIcon, RefreshCw, Search } from 'lucide-react';
 import { InterviewRound, JobApplication, Language } from '../types';
 import { TRANSLATIONS } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
@@ -69,6 +69,7 @@ export const GoogleCalendarImportPicker: React.FC<GoogleCalendarImportPickerProp
   const [selectedCalendarIds, setSelectedCalendarIds] = useState<string[]>([]);
   const [events, setEvents] = useState<GoogleCalendarEvent[]>([]);
   const [showAll, setShowAll] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [loadingCalendars, setLoadingCalendars] = useState(false);
   const [loadingEvents, setLoadingEvents] = useState(false);
   const [connecting, setConnecting] = useState(false);
@@ -81,9 +82,17 @@ export const GoogleCalendarImportPicker: React.FC<GoogleCalendarImportPickerProp
       .map((round) => `${round.sourceCalendarId}:${round.sourceEventId}`)
   ), [rounds]);
 
-  const visibleEvents = useMemo(() => (
-    showAll ? events : events.filter((event) => event.isInterviewLike || event.isJobMatch)
-  ), [events, showAll]);
+  const visibleEvents = useMemo(() => {
+    const filtered = showAll ? events : events.filter((event) => event.isInterviewLike || event.isJobMatch);
+    const query = searchQuery.trim().toLowerCase();
+    if (!query) return filtered;
+
+    return filtered.filter((event) => (
+      event.summary.toLowerCase().includes(query) ||
+      event.description.toLowerCase().includes(query) ||
+      event.calendarSummary.toLowerCase().includes(query)
+    ));
+  }, [events, showAll, searchQuery]);
 
   useEffect(() => {
     getGoogleCalendarProviderToken().then(setProviderToken);
@@ -280,6 +289,17 @@ export const GoogleCalendarImportPicker: React.FC<GoogleCalendarImportPickerProp
         </div>
       )}
 
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          placeholder={t.searchPlaceholder}
+          className="w-full pl-8 pr-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary"
+        />
+      </div>
+
       <div className="flex items-center justify-between gap-3">
         <button
           type="button"
@@ -294,7 +314,9 @@ export const GoogleCalendarImportPicker: React.FC<GoogleCalendarImportPickerProp
       {error && <p className="text-xs text-red-700 dark:text-red-300">{error}</p>}
 
       {!loadingEvents && visibleEvents.length === 0 && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">{t.noCalendarEventsFound}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {searchQuery.trim() ? t.noSearchResults : t.noCalendarEventsFound}
+        </p>
       )}
 
       <div className="space-y-2 max-h-72 overflow-y-auto custom-scrollbar">
