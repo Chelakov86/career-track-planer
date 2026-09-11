@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { GoogleCalendarApiEvent, normalizeGoogleCalendarEvent } from '../utils/googleCalendar';
+import { GoogleCalendarApiEvent, normalizeGoogleCalendarEvent } from '../utils/googleCalendar.js';
 
 interface GoogleEventsResponse {
   items?: GoogleCalendarApiEvent[];
