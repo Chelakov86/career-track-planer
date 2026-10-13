@@ -34,7 +34,11 @@ test.describe('Unauthenticated user', () => {
     await expect(page.getByText(DE.login.title)).toBeVisible({ timeout: 15000 });
 
     // Logo
-    await expect(page.getByText('CT').first()).toBeVisible();
+    const logo = page.getByRole('img', { name: 'CareerTrack', exact: true });
+    await expect(logo).toBeVisible();
+    await expect.poll(() => logo.evaluate((image: HTMLImageElement) =>
+      image.complete && image.naturalWidth > 0
+    )).toBe(true);
 
     // Subtitle
     await expect(page.getByText(DE.login.subtitle)).toBeVisible();
