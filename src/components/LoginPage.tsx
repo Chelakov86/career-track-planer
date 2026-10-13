@@ -31,9 +31,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ language, setLanguage }) =
     <div className="min-h-screen flex flex-col items-center justify-center bg-background-light dark:bg-background-dark p-4 transition-colors">
       <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-lg shadow-sm p-8 border border-gray-200 dark:border-slate-800 animate-fadeIn transition-colors">
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-16 h-16 bg-primary rounded-lg flex items-center justify-center text-white text-2xl font-bold shadow-lg mb-4">
-            CT
-          </div>
+          <img src="/favicon.svg?v=2" alt="CareerTrack" width={64} height={64} className="w-16 h-16 rounded-lg shadow-lg mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{t.login.title}</h1>
           <p className="text-gray-500 dark:text-gray-400">{t.login.subtitle}</p>
         </div>
