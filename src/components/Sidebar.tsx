@@ -31,7 +31,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
     `}>
             <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex items-center gap-3">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold shadow-sm">CT</div>
+                <img src="/favicon.svg?v=2" alt="" width={32} height={32} className="w-8 h-8 shrink-0 rounded-lg shadow-sm" />
                 <div>
                     <div className="font-bold text-gray-900 dark:text-white text-lg">CareerTrack</div>
                     <p className="text-xs text-gray-500 dark:text-gray-400">{t.nav.subtitle}</p>

@@ -26,7 +26,7 @@ export const Header: React.FC<HeaderProps> = ({
             style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}
         >
             <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">CT</div>
+                <img src="/favicon.svg?v=2" alt="" width={32} height={32} className="w-8 h-8 shrink-0 rounded-lg" />
                 <span className="font-bold text-gray-800 dark:text-white">CareerTrack</span>
             </div>
             <div className="flex items-center gap-2">
