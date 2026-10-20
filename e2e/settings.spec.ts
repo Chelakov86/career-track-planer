@@ -43,64 +43,18 @@ test.describe('Settings - Language & Theme', () => {
         }
     });
 
-    test('should toggle dark mode', async ({ page }) => {
+    test('should select and persist theme preference', async ({ page }) => {
         await navigateTo(page, '/');
         await expect(page.getByText(DE.board.title)).toBeVisible({ timeout: 10000 });
-
-        // Get initial theme state
-        const html = page.locator('html');
-
-        // Find the theme toggle button
-        const themeButton = page.getByTitle(DE.toggleTheme).or(page.getByLabel(DE.toggleTheme));
-
-        if (await themeButton.first().isVisible({ timeout: 3000 }).catch(() => false)) {
-            // Click to toggle theme
-            await themeButton.first().click();
-
-            // Check if dark class appeared or disappeared
-            const hasDark = await html.getAttribute('class');
-            const isDark = hasDark?.includes('dark');
-
-            // Toggle again
-            await themeButton.first().click();
-
-            // Class should have changed
-            const hasDarkAfter = await html.getAttribute('class');
-            const isDarkAfter = hasDarkAfter?.includes('dark');
-
-            expect(isDark).not.toEqual(isDarkAfter);
-        }
-    });
-
-    test('should persist theme preference on page reload', async ({ page }) => {
-        await navigateTo(page, '/');
-        await expect(page.getByText(DE.board.title)).toBeVisible({ timeout: 10000 });
-
-        const html = page.locator('html');
-        const themeButton = page.getByTitle(DE.toggleTheme).or(page.getByLabel(DE.toggleTheme));
-
-        if (await themeButton.first().isVisible({ timeout: 3000 }).catch(() => false)) {
-            // Get current state
-            const classBefore = await html.getAttribute('class');
-
-            // Toggle theme
-            await themeButton.first().click();
-            await page.waitForTimeout(300);
-            const classAfter = await html.getAttribute('class');
-
-            // Reload page
-            await page.reload();
-            await expect(page.getByText(DE.board.title)).toBeVisible({ timeout: 10000 });
-
-            // Theme should persist from localStorage
-            const classAfterReload = await html.getAttribute('class');
-            const darkAfter = classAfter?.includes('dark') ?? false;
-            const darkAfterReload = classAfterReload?.includes('dark') ?? false;
-            expect(darkAfter).toEqual(darkAfterReload);
-
-            // Toggle back to restore original state
-            await themeButton.first().click();
-        }
+        const trigger = page.locator(`button[title="${DE.toggleTheme}"]:visible`).first();
+        await trigger.click();
+        await page.getByRole('menuitemradio', { name: 'Dunkel', exact: true }).click();
+        await expect(page.locator('html')).toHaveClass(/dark/);
+        await page.reload();
+        await expect(page.locator('html')).toHaveClass(/dark/);
+        await trigger.click();
+        await page.getByRole('menuitemradio', { name: 'Hell', exact: true }).click();
+        await expect(page.locator('html')).not.toHaveClass(/dark/);
     });
 
     test('should update navigation labels when language changes', async ({ page }) => {

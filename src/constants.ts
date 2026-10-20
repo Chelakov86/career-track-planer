@@ -175,7 +175,8 @@ export const TRANSLATIONS = {
         REJECTED: 'Every no gets you closer to yes.',
       }
     },
-    toggleTheme: 'Toggle Dark Mode',
+    toggleTheme: 'Change theme',
+    themeOptions: { light: 'Light', dark: 'Dark', system: 'System' },
     dashboard: {
       total: "Total Applications",
       active: "Active Pipeline",
@@ -450,6 +451,7 @@ export const TRANSLATIONS = {
       }
     },
     toggleTheme: 'Design wechseln',
+    themeOptions: { light: 'Hell', dark: 'Dunkel', system: 'System' },
     dashboard: {
       total: "Bewerbungen Gesamt",
       active: "Aktive Pipeline",

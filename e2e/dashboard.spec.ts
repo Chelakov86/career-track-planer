@@ -51,13 +51,19 @@ test.describe('Dashboard', () => {
         const html = page.locator('html');
         const themeButton = page.locator(`button[title="${DE.toggleTheme}"]:visible`).first();
         const isDark = (await html.getAttribute('class'))?.includes('dark') ?? false;
-        if (!isDark) await themeButton.click();
+        if (!isDark) {
+            await themeButton.click();
+            await page.getByRole('menuitemradio', { name: 'Dunkel', exact: true }).click();
+        }
 
         await expect(html).toHaveClass(/dark/);
         await expect(page.getByTestId('analytics-controls')).toBeVisible();
         await expect(page.getByTestId('rejection-depth')).toBeVisible();
 
-        if (!isDark) await themeButton.click();
+        if (!isDark) {
+            await themeButton.click();
+            await page.getByRole('menuitemradio', { name: 'Hell', exact: true }).click();
+        }
     });
 
     test('should localize the replacement analytics section in English', async ({ page, isMobile }) => {
