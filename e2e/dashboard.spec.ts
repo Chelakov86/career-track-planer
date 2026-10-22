@@ -1,5 +1,11 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import { DE, EN, navigateTo } from './helpers';
+
+async function saveJob(page: Page) {
+    await page.getByRole('button', { name: DE.board.save }).click();
+    // The card appears optimistically; modal dismissal waits for persistence and refetch.
+    await expect(page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true })).not.toBeVisible({ timeout: 10000 });
+}
 
 test.describe('Dashboard', () => {
     test.beforeEach(async ({ page }) => {
@@ -66,6 +72,30 @@ test.describe('Dashboard', () => {
         }
     });
 
+    test('should update chart colors when the system theme changes', async ({ page }) => {
+        await page.emulateMedia({ colorScheme: 'light' });
+        await page.locator(`button[title="${DE.toggleTheme}"]:visible`).first().click();
+        await page.getByRole('menuitemradio', { name: 'System', exact: true }).click();
+
+        const chart = page.getByTestId('activity-chart');
+        const grid = chart.locator('.recharts-cartesian-grid line').first();
+        const tick = chart.locator('.recharts-cartesian-axis-tick text').first();
+        await expect(chart).toBeVisible({ timeout: 10000 });
+        await expect(page.locator('html')).not.toHaveClass(/dark/);
+        await expect(grid).toHaveAttribute('stroke', '#e5e7eb');
+        await expect(tick).toHaveAttribute('fill', '#6b7280');
+
+        await page.emulateMedia({ colorScheme: 'dark' });
+        await expect(page.locator('html')).toHaveClass(/dark/);
+        await expect(grid).toHaveAttribute('stroke', '#334155');
+        await expect(tick).toHaveAttribute('fill', '#94a3b8');
+
+        await page.emulateMedia({ colorScheme: 'light' });
+        await expect(page.locator('html')).not.toHaveClass(/dark/);
+        await expect(grid).toHaveAttribute('stroke', '#e5e7eb');
+        await expect(tick).toHaveAttribute('fill', '#6b7280');
+    });
+
     test('should localize the replacement analytics section in English', async ({ page, isMobile }) => {
         test.skip(isMobile, 'The desktop sidebar exposes the stable EN language control.');
 
@@ -89,7 +119,7 @@ test.describe('Dashboard', () => {
         await page.getByRole('button', { name: DE.board.addJob }).click();
         await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
         await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Analytics Smoke Test');
-        await page.getByRole('button', { name: DE.board.save }).click();
+        await saveJob(page);
         await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
 
         await navigateTo(page, '/stats');
@@ -115,7 +145,7 @@ test.describe('Dashboard', () => {
         await page.getByRole('button', { name: DE.board.addJob }).click();
         await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
         await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Analytics Row Test');
-        await page.getByRole('button', { name: DE.board.save }).click();
+        await saveJob(page);
         await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
 
         await navigateTo(page, '/stats');
@@ -143,7 +173,7 @@ test.describe('Dashboard', () => {
         await page.getByRole('button', { name: DE.board.addJob }).click();
         await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
         await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Analytics Filter Test');
-        await page.getByRole('button', { name: DE.board.save }).click();
+        await saveJob(page);
         await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
 
         await navigateTo(page, '/stats');
@@ -215,7 +245,7 @@ test.describe('Dashboard', () => {
         await page.getByRole('button', { name: DE.board.addJob }).click();
         await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
         await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Analytics Modal Test');
-        await page.getByRole('button', { name: DE.board.save }).click();
+        await saveJob(page);
         await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
 
         await navigateTo(page, '/stats');
@@ -270,7 +300,7 @@ test.describe('Dashboard', () => {
         await page.getByRole('textbox', { name: DE.board.placeholders.company, exact: true }).fill(company);
         await page.getByRole('textbox', { name: DE.board.placeholders.position, exact: true }).fill('Rejection Depth Test');
         await page.getByRole('combobox').selectOption('REJECTED');
-        await page.getByRole('button', { name: DE.board.save }).click();
+        await saveJob(page);
         await expect(page.getByText(company).first()).toBeVisible({ timeout: 10000 });
 
         await navigateTo(page, '/stats');

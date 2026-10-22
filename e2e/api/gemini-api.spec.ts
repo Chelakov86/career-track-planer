@@ -53,7 +53,8 @@ test.describe('Gemini API contract', () => {
         prompt: 'Return exactly the word OK and nothing else.',
         config: {
           temperature: 0,
-          maxOutputTokens: 10,
+          // A 10-token budget can be exhausted before the model returns text.
+          maxOutputTokens: 1024,
         },
       },
       timeout: 30_000,
