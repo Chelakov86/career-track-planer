@@ -1,8 +1,8 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { Calendar, Layout, Clock, BarChart2, LogOut, Moon, Sun, Settings } from 'lucide-react';
+import { Calendar, Layout, Clock, BarChart2, LogOut, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
+import { ThemeSelector } from './ThemeSelector';
 import { TRANSLATIONS } from '../constants';
 import { Language } from '../types';
 
@@ -20,7 +20,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     closeMobileMenu
 }) => {
     const { user, logout } = useAuth();
-    const { theme, toggleTheme } = useTheme();
     const t = TRANSLATIONS[language];
 
     if (!user) return null;
@@ -102,14 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 {/* Settings & Controls */}
                 <div className="flex items-center justify-between gap-2">
                     {/* Theme Toggle */}
-                    <button
-                        onClick={toggleTheme}
-                        className="flex items-center justify-center p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-primary transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900"
-                        title={t.toggleTheme}
-                        aria-label={t.toggleTheme}
-                    >
-                        {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                    </button>
+                    <ThemeSelector language={language} placement="top" />
 
                     {/* Language Switcher */}
                     <div className="flex flex-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-md p-0.5 shadow-sm">
