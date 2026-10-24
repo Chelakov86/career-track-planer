@@ -24,7 +24,8 @@ export const useJobs = (user: User | null) => {
             .from('jobs')
             .select('*')
             .eq('user_id', currentUser.id)
-            .order('date_added', { ascending: false });
+            .order('date_added', { ascending: false })
+            .order('id', { ascending: true });
 
         if (jobsError) {
             console.error('Error fetching jobs:', jobsError);
