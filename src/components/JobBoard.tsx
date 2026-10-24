@@ -610,7 +610,8 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
           break;
       }
 
-      return cmp * dir;
+      // Resolve ties consistently even when a refetch changes the input order.
+      return cmp * dir || a.id.localeCompare(b.id);
     });
 
     return result;
