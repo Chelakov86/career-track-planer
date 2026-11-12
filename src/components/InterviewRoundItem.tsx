@@ -43,13 +43,13 @@ export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, l
             value={round.roundName}
             onChange={(e) => onUpdate(round.id, { roundName: e.target.value })}
             placeholder={t.interviewRound.roundNamePlaceholder}
-            className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
+            className="block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
           />
         </div>
 
         {/* Date and Status Row */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="min-w-0">
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               {t.interviewRound.interviewDate}
             </label>
@@ -57,18 +57,18 @@ export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, l
               type="date"
               value={round.interviewDate}
               onChange={(e) => onUpdate(round.id, { interviewDate: e.target.value })}
-              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
+              className="block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
             />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               {t.interviewRound.status}
             </label>
             <select
               value={round.status}
               onChange={(e) => onUpdate(round.id, { status: e.target.value as any })}
-              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
+              className="block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
             >
               <option value="scheduled">{t.interviewRound.statuses.scheduled}</option>
               <option value="completed">{t.interviewRound.statuses.completed}</option>
@@ -78,8 +78,8 @@ export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, l
         </div>
 
         {/* Time Row */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="min-w-0">
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               {t.interviewRound.startTime}
             </label>
@@ -87,11 +87,11 @@ export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, l
               type="time"
               value={round.startTime || ''}
               onChange={(e) => onUpdate(round.id, { startTime: e.target.value })}
-              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
+              className="block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
             />
           </div>
 
-          <div>
+          <div className="min-w-0">
             <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
               {t.interviewRound.endTime}
             </label>
@@ -99,7 +99,7 @@ export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, l
               type="time"
               value={round.endTime || ''}
               onChange={(e) => onUpdate(round.id, { endTime: e.target.value })}
-              className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
+              className="block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
             />
           </div>
         </div>
@@ -114,13 +114,13 @@ export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, l
             value={round.meetingLink || ''}
             onChange={(e) => onUpdate(round.id, { meetingLink: e.target.value })}
             placeholder="https://teams.microsoft.com/..."
-            className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
+            className="block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
           />
         </div>
 
         {/* Actions Row */}
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2">
+          <div className="flex min-w-0 flex-wrap gap-2">
             <button
               type="button"
               onClick={addToCalendar}
@@ -158,7 +158,7 @@ export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, l
             onChange={(e) => onUpdate(round.id, { notes: e.target.value })}
             placeholder={t.interviewRound.notes}
             rows={3}
-            className="w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
+            className="block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
           />
         )}
       </div>
