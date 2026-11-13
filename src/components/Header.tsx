@@ -39,6 +39,8 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                     onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                     aria-label={mobileMenuOpen ? t.nav.closeMenu : t.nav.openMenu}
+                    aria-expanded={mobileMenuOpen}
+                    aria-controls="app-sidebar"
                     className="text-gray-600 dark:text-gray-400 p-2 -m-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-900"
                 >
                     {mobileMenuOpen ? <X /> : <Menu />}
