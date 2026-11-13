@@ -13,8 +13,12 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [preference, setPreference] = useState<ThemePreference>(() => {
-    const saved = localStorage.getItem('career_track_theme');
-    return saved === 'light' || saved === 'dark' ? saved : 'system';
+    try {
+      const saved = localStorage.getItem('career_track_theme');
+      return saved === 'light' || saved === 'dark' ? saved : 'system';
+    } catch {
+      return 'system';
+    }
   });
   const [systemDark, setSystemDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches);
   const theme: Theme = preference === 'system' ? (systemDark ? 'dark' : 'light') : preference;
@@ -32,7 +36,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [theme]);
 
   useEffect(() => {
-    localStorage.setItem('career_track_theme', preference);
+    try {
+      localStorage.setItem('career_track_theme', preference);
+    } catch {
+      // Keep the app and its navigation usable without persistent storage.
+    }
   }, [preference]);
 
   return <ThemeContext.Provider value={{ theme, preference, setPreference }}>{children}</ThemeContext.Provider>;

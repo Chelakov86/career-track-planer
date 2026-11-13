@@ -46,7 +46,9 @@ export const TRANSLATIONS = {
       logout: "Log out",
       language: "Language",
       openMenu: "Open menu",
-      closeMenu: "Close menu"
+      closeMenu: "Close menu",
+      collapseSidebar: "Collapse sidebar",
+      expandSidebar: "Expand sidebar"
     },
     schedule: {
       title: "Daily Routine",
@@ -321,7 +323,9 @@ export const TRANSLATIONS = {
       logout: "Abmelden",
       language: "Sprache",
       openMenu: "Menü öffnen",
-      closeMenu: "Menü schließen"
+      closeMenu: "Menü schließen",
+      collapseSidebar: "Menüleiste einklappen",
+      expandSidebar: "Menüleiste ausklappen"
     },
     schedule: {
       title: "Tagesablauf",

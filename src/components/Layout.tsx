@@ -4,6 +4,8 @@ import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { Language } from '../types';
 
+const SIDEBAR_STORAGE_KEY = 'career_track_sidebar_collapsed';
+
 interface LayoutProps {
     language: Language;
     setLanguage: (lang: Language) => void;
@@ -14,6 +16,30 @@ export const Layout: React.FC<LayoutProps> = ({
     setLanguage
 }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+        try {
+            return localStorage.getItem(SIDEBAR_STORAGE_KEY) === 'true';
+        } catch {
+            return false;
+        }
+    });
+
+    useEffect(() => {
+        try {
+            localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarCollapsed));
+        } catch {
+            // The menu remains usable when browser storage is unavailable.
+        }
+    }, [sidebarCollapsed]);
+
+    useEffect(() => {
+        const media = window.matchMedia('(min-width: 768px)');
+        const closeOnDesktop = () => {
+            if (media.matches) setMobileMenuOpen(false);
+        };
+        media.addEventListener('change', closeOnDesktop);
+        return () => media.removeEventListener('change', closeOnDesktop);
+    }, []);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -39,6 +65,8 @@ export const Layout: React.FC<LayoutProps> = ({
                 setLanguage={setLanguage}
                 mobileMenuOpen={mobileMenuOpen}
                 closeMobileMenu={() => setMobileMenuOpen(false)}
+                collapsed={sidebarCollapsed}
+                toggleCollapsed={() => setSidebarCollapsed(value => !value)}
             />
 
             <main className="min-w-0 min-h-0 flex-1 overflow-y-auto h-[calc(100vh-64px)] md:h-screen p-4 md:p-6 lg:p-8 relative">
