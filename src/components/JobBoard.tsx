@@ -1341,13 +1341,13 @@ export const JobBoard: React.FC<JobBoardProps> = ({ jobs, onAddJob, onEditJob, o
         />
       )}
 
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-3 shrink-0">
-        <div className="min-w-0">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap justify-between items-start sm:items-center gap-4 sm:gap-3 shrink-0">
+        <div className="min-w-0 max-w-full shrink-0">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-white">{t.board.title}</h1>
           <p className="text-gray-600 dark:text-gray-400 text-sm">{t.board.subtitle}</p>
         </div>
 
-        <div className="hidden sm:flex sm:flex-wrap gap-2 w-full sm:w-auto">
+        <div className="hidden sm:flex sm:flex-wrap sm:justify-end gap-2 w-full sm:w-auto sm:flex-1 sm:basis-[36rem] min-w-0">
           {searchField}
           <button
             type="button"

@@ -41,7 +41,7 @@ export const Layout: React.FC<LayoutProps> = ({
                 closeMobileMenu={() => setMobileMenuOpen(false)}
             />
 
-            <main className="min-h-0 flex-1 overflow-y-auto h-[calc(100vh-64px)] md:h-screen p-4 md:p-6 lg:p-8 relative">
+            <main className="min-w-0 min-h-0 flex-1 overflow-y-auto h-[calc(100vh-64px)] md:h-screen p-4 md:p-6 lg:p-8 relative">
                 <div className="max-w-[1920px] mx-auto h-full">
                     <Outlet />
                 </div>
