@@ -48,6 +48,16 @@ export default defineConfig({
       },
       dependencies: ['setup'],
     },
+    {
+      name: 'webkit-layout',
+      testMatch: /interview-round-layout\.spec\.ts/,
+      use: { ...devices['Desktop Safari'] },
+    },
+    {
+      name: 'iphone-layout',
+      testMatch: /interview-round-layout\.spec\.ts/,
+      use: { ...devices['iPhone 13'] },
+    },
   ],
   webServer: {
     command: 'npm run dev',

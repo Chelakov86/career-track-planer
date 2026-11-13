@@ -47,6 +47,8 @@ export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, l
           />
         </div>
 
+        {/* Disable native date/time appearance: iOS otherwise forces content-box
+            sizing and a minimum width, allowing these controls to overlap. */}
         {/* Date and Status Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="min-w-0">
@@ -57,7 +59,7 @@ export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, l
               type="date"
               value={round.interviewDate}
               onChange={(e) => onUpdate(round.id, { interviewDate: e.target.value })}
-              className="block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
+              className="appearance-none box-border min-h-[38px] block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
             />
           </div>
 
@@ -87,7 +89,7 @@ export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, l
               type="time"
               value={round.startTime || ''}
               onChange={(e) => onUpdate(round.id, { startTime: e.target.value })}
-              className="block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
+              className="appearance-none box-border min-h-[38px] block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
             />
           </div>
 
@@ -99,7 +101,7 @@ export const InterviewRoundItem: React.FC<InterviewRoundItemProps> = ({ round, l
               type="time"
               value={round.endTime || ''}
               onChange={(e) => onUpdate(round.id, { endTime: e.target.value })}
-              className="block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
+              className="appearance-none box-border min-h-[38px] block min-w-0 max-w-full w-full px-3 py-2 text-sm border border-gray-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary/50 dark:focus:ring-primary/50 focus:border-transparent"
             />
           </div>
         </div>
